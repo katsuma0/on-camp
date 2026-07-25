@@ -5,8 +5,13 @@ A personal Ontario Parks campsite journal by Katsuma Onishi. Walk a campground, 
 **Live app:** host this repo with GitHub Pages and open `index.html` (works offline once added to your home screen).
 
 ## What's here
-- `index.html` - the whole app (single file: HTML, CSS, JS, embedded park data)
-- `parks-data.json` - park/campground/site/trail data (also embedded in index.html)
+The app follows the same file layout as ON Wildlife and ON Fishing: a thin
+`index.html` that links out to the styles, the logic and the data.
+- `index.html` - markup only (the view sections and sheets)
+- `styles.css` - the shared iOS design system
+- `app.js` - all app logic
+- `data/parks.js` - park/campground/site/trail data as `window.PARKS_DATA` (loaded for instant offline start)
+- `parks-data.json` - the same data as plain JSON, kept for the pipeline and a background refresh
 - `service-worker.js`, `manifest.json`, icons - PWA install + offline support
 - `pipeline/` - the SQL data pipeline that generates parks-data.json
   - `build_db.py` seeds `scout.db` from the data tables in the file
@@ -19,6 +24,6 @@ python3 build_db.py
 python3 export_to_app.py --all
 cp parks-data.json ../parks-data.json
 ```
-Then re-embed the JSON into index.html (the app also fetches parks-data.json in the background) and bump the cache version in service-worker.js.
+Then regenerate `data/parks.js` from it (wrap the JSON as `window.PARKS_DATA = <json>;`) and bump the cache version in service-worker.js.
 
-Currently: 28 parks, ~9,270 sites, 92 trails, 29 unlockable themes.
+Currently: 124 parks, ~20,000 sites, ~211 trails. Appearance follows the system with a light/dark toggle.
