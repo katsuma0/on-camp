@@ -20,7 +20,7 @@
 
 <section id="view-parks">
   <div class="appbar">
-    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.194</button></div>
+    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.195</button></div>
     <div class="sub">Ontario Parks campsites. Walk a campground, rate the sites, and remember which ones to book next time.</div>
   </div>
   <div class="wrap">
@@ -29,13 +29,8 @@
     
   </div>
   <footer>
-    Ratings and photos are saved to this device only.<br>
+    Ratings and photos are saved to this device only. Manage your data in More.<br>
     Created by <a href="https://katsuma0.github.io" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Katsuma Onishi</a>
-    <br><br>
-    <button class="backuplink" id="exportBtn">Export a backup</button><br><br>
-    <button class="backuplink" id="importBtn">Import a backup</button><br><br>
-    <button class="resetlink" id="resetBtn">Reset all data</button>
-    <input type="file" id="importInput" accept=".json,application/json" hidden>
   </footer>
 </section>
 
@@ -57,7 +52,7 @@
   <div class="wrap">
     <div class="gsearch" id="gsearch">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="gq" inputmode="search" autocomplete="off" placeholder="Search parks, sites, or trails">
+      <input id="gq" inputmode="search" autocomplete="off" placeholder="Search parks, sites, trails, or a fish">
       <button class="gclear" id="gclear" aria-label="Clear search">✕</button>
     </div>
     <div id="gresults" class="gresults" hidden></div>
@@ -131,6 +126,7 @@
 <div class="sheet" id="versionsSheet" role="dialog" aria-modal="true" aria-label="Versions">
   <div class="grabber"></div>
   <div class="kind" style="margin-bottom:12px">Versions</div>
+  <div class="verline"><span class="vv">v0.195</span>Search a fish to find the parks that hold it; data controls moved to More; readable orange</div>
   <div class="verline"><span class="vv">v0.194</span>The map is bundled in so it works offline, and a safer, plainer search</div>
   <div class="verline"><span class="vv">v0.193</span>On a laptop the tabs move to a sidebar and the layout opens up</div>
   <div class="verline"><span class="vv">v0.192</span>Footer tabs, a map of the parks, search and learn get their own screens</div>
@@ -179,7 +175,14 @@
 <section id="view-more" class="tabscreen" hidden>
   <h1 class="screen-title">More</h1>
   <div class="wrap">
-  <div class="kind" style="margin:8px 0 12px">Appearance</div>
+  <div class="kind" style="margin:8px 0 12px">Your data</div>
+  <div class="aboutbody" style="margin:0 0 12px">Everything is saved on this device. Export a backup to move it to another phone.</div>
+  <button class="backuplink" id="exportBtn">Export a backup</button><br><br>
+  <button class="backuplink" id="importBtn">Import a backup</button><br><br>
+  <button class="resetlink" id="resetBtn">Reset all data</button>
+  <input type="file" id="importInput" accept=".json,application/json" hidden>
+
+  <div class="kind" style="margin:24px 0 12px">Appearance</div>
   <div class="segmented" id="themeRow"></div>
 
   <div class="kind" style="margin:24px 0 12px">More from the Ontario outdoors</div>
@@ -209,6 +212,7 @@
 <script src="vendor/leaflet/leaflet.js"></script>
 <script src="data/parks.js"></script>
 <script src="data/park-pins.js"></script>
+<script src="data/ecosystem.js"></script>
 <script src="app.js"></script>
 <script src="map.js"></script>
 </body>
