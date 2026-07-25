@@ -20,7 +20,7 @@
 
 <section id="view-parks">
   <div class="appbar">
-    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.195</button></div>
+    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.196</button></div>
     <div class="sub">Ontario Parks campsites. Walk a campground, rate the sites, and remember which ones to book next time.</div>
   </div>
   <div class="wrap">
@@ -73,6 +73,12 @@
   <div class="wrap" id="learnBody"></div>
 </section>
 
+<section id="view-shared" class="tabscreen" hidden>
+  <h1 class="screen-title">Shared with you</h1>
+  <p class="screen-sub">A park review someone sent you.</p>
+  <div class="wrap" id="sharedBody"></div>
+</section>
+
 <div class="backdrop" id="backdrop"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Rate">
   <div class="grabber"></div>
@@ -96,6 +102,7 @@
     <input type="file" id="photoInput" accept="image/*" multiple hidden>
     <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
   </div>
+  <button class="btn-share" id="shareReviewBtn" type="button">Share this review</button>
   <div class="sheet-foot">
     <button class="btn-clear" id="clearBtn">Clear</button>
     <button class="btn-done" id="doneBtn">Done</button>
@@ -126,6 +133,7 @@
 <div class="sheet" id="versionsSheet" role="dialog" aria-modal="true" aria-label="Versions">
   <div class="grabber"></div>
   <div class="kind" style="margin-bottom:12px">Versions</div>
+  <div class="verline"><span class="vv">v0.196</span>Share a park, campsite or trail review straight to Messages, with a card and a link that opens it</div>
   <div class="verline"><span class="vv">v0.195</span>Search a fish to find the parks that hold it; data controls moved to More; readable orange</div>
   <div class="verline"><span class="vv">v0.194</span>The map is bundled in so it works offline, and a safer, plainer search</div>
   <div class="verline"><span class="vv">v0.193</span>On a laptop the tabs move to a sidebar and the layout opens up</div>
@@ -213,6 +221,7 @@
 <script src="data/parks.js"></script>
 <script src="data/park-pins.js"></script>
 <script src="data/ecosystem.js"></script>
+<script src="share.js"></script>
 <script src="app.js"></script>
 <script src="map.js"></script>
 </body>

@@ -853,6 +853,63 @@ document.getElementById('d-notes').addEventListener('input',e=>{ autoGrowNotes(e
 })();
 document.getElementById('doneBtn').addEventListener('click',closeSheet);
 backdrop.addEventListener('click',closeSheet);
+
+/* ---- share a review (park / campground / site / trail) ------------------
+   Builds a self-contained item so the whole review travels inside a
+   #/shared/<data> link. share.js renders the card and opens the share sheet;
+   the recipient sees the same card. No server, nothing tracked. */
+function fmtMonthYear(iso){ var d=new Date(iso); if(isNaN(d)) return ''; return d.toLocaleDateString(undefined,{month:'long',year:'numeric'}); }
+function reviewShareItem(){
+  var type=cur.type, k=cur.k, score=sc(type,k), note=noteOf(type,k), kind, title, sub='';
+  if(type==='site'){ kind='site'; title=curPark.name; sub='Site '+cur.site+(cur.cg&&cur.cg!==curPark.name?(' · '+cur.cg):''); }
+  else if(type==='trail'){ kind='trail'; title=cur.cg; sub=curPark.name; }
+  else { var isPark=(curPark.dayuse&&cur.cg===curPark.name); kind=isPark?'park':'campground'; title=curPark.name;
+    sub=isPark?((curPark.region||'').split(' · ').slice(1).join(' · ')):cur.cg; }
+  return { t:'camp-review', kind:kind, title:title, sub:sub,
+    score:(score!=null?score:null), note:note?(note.length>200?note.slice(0,197)+'…':note):'',
+    want:(type==='site'?wantOf(k):false), when:new Date().toISOString() };
+}
+function campCard(it){
+  var kicker=it.kind==='site'?'Site review':it.kind==='trail'?'Trail review':it.kind==='park'?'Park review':'Campground review';
+  var emoji=it.kind==='trail'?'🥾':'🏕️';
+  var chips=[];
+  if(it.score!=null){ var s=Math.max(0,Math.min(5,it.score|0)); chips.push({label:'★'.repeat(s)+'☆'.repeat(5-s)}); }
+  if(it.want) chips.push({label:'Wishlist'});
+  var sub=(it.sub&&it.sub!==it.title)?it.sub:'';
+  return { eyebrow:'on-camp', kicker:kicker, emoji:emoji, title:it.title, subtitle:sub,
+    chips:chips.slice(0,4), meta:(it.when?('Reviewed '+fmtMonthYear(it.when)):'') };
+}
+function shareReview(){
+  if(!cur.type||!cur.k) return;
+  var score=sc(cur.type,cur.k), note=noteOf(cur.type,cur.k), want=(cur.type==='site'&&wantOf(cur.k));
+  if(score==null && !note && !want){ if(typeof showThemeToast==='function') showThemeToast('Add a rating or a note first'); return; }
+  if(!window.OnShare){ if(typeof showThemeToast==='function') showThemeToast('Sharing is not available'); return; }
+  var item=reviewShareItem();
+  OnShare.share({ card:campCard(item), item:item,
+    text:'My review of '+item.title+((item.sub&&item.sub!==item.title)?(' ('+item.sub+')'):'')+' on on-camp.' })
+    .then(function(r){ if(r==='fallback' && typeof showThemeToast==='function') showThemeToast('Link copied, card saved'); });
+}
+(function(){ var b=document.getElementById('shareReviewBtn'); if(b) b.addEventListener('click',function(){ if(typeof buzz==='function') buzz(6); shareReview(); }); })();
+
+/* ---- receive a shared review (#/shared/<data>) ---- */
+function showShared(item){
+  ['view-parks','view-park','view-search','view-map','view-learn','view-more'].forEach(function(id){ var el=document.getElementById(id); if(el) el.hidden=true; });
+  var sec=document.getElementById('view-shared'); if(!sec) return;
+  sec.hidden=false;
+  var tb=document.getElementById('tabbar');
+  if(tb) tb.querySelectorAll('.tab').forEach(function(b){ b.classList.remove('active'); b.setAttribute('aria-current','false'); });
+  var body=document.getElementById('sharedBody');
+  if(!item || item.t!=='camp-review'){
+    body.innerHTML='<p class="empty">This shared link could not be opened. It may be from a newer version of the app.</p>';
+    try{ window.scrollTo(0,0); }catch(e){} return;
+  }
+  body.innerHTML='<div class="shared-card-wrap"><img id="shared-card-img" class="shared-card" alt="Shared '+esc(item.title||'review')+'"></div>'
+    +(item.note?'<p class="shared-note">“'+esc(item.note)+'”</p>':'')
+    +'<button class="btn-share primary" id="sh-explore" type="button">Explore Ontario parks</button>';
+  if(window.OnShare) OnShare.makeCard(campCard(item)).then(function(b){ if(!b) return; var img=document.getElementById('shared-card-img'); if(img) img.src=URL.createObjectURL(b); });
+  var ex=document.getElementById('sh-explore'); if(ex) ex.onclick=function(){ history.replaceState(null,'',location.pathname+location.search); showTab('guide'); };
+  try{ window.scrollTo(0,0); }catch(e){}
+}
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeSheet(); document.getElementById('lightbox').classList.remove('on'); } });
 
 async function renderPhotos(k){ const box=document.getElementById('photos'); box.innerHTML=''; const list=await getPhotos(k);
@@ -1153,7 +1210,7 @@ var TAB_SECTIONS={guide:'view-parks',search:'view-search',map:'view-map',learn:'
 var learnRendered=false;
 function showTab(tab){
   if(!TAB_SECTIONS[tab]) tab='guide';
-  ['view-parks','view-park','view-search','view-map','view-learn','view-more'].forEach(function(id){ var el=document.getElementById(id); if(el) el.hidden=true; });
+  ['view-parks','view-park','view-search','view-map','view-learn','view-more','view-shared'].forEach(function(id){ var el=document.getElementById(id); if(el) el.hidden=true; });
   var target=document.getElementById(tab==='guide'?'view-parks':TAB_SECTIONS[tab]); if(target) target.hidden=false;
   var tb=document.getElementById('tabbar');
   if(tb) tb.querySelectorAll('.tab').forEach(function(b){ var on=b.dataset.tab===tab; b.classList.toggle('active',on); b.setAttribute('aria-current',on?'page':'false'); });
@@ -1256,6 +1313,16 @@ makeSheetSwipe(sheet,closeSheet);
     history.replaceState(null,'',location.pathname+location.search); }
   window.addEventListener('hashchange',fromHash);
   fromHash();
+})();
+if(window.OnShare) OnShare.config({ app:'on-camp', base:'https://katsuma0.github.io/on-camp/', accent:'#14804a' });
+(function(){ /* #/shared/<data> receive route */
+  function fromSharedHash(){
+    var m=(location.hash||'').match(/^#\/shared\/(.+)$/); if(!m) return;
+    var it=window.OnShare?OnShare.decode(m[1]):null;
+    if(typeof showShared==='function') showShared(it);
+  }
+  window.addEventListener('hashchange',fromSharedHash);
+  fromSharedHash();
 })();
 if('serviceWorker' in navigator){
   if(window.Capacitor){
