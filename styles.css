@@ -522,3 +522,35 @@
     .leaflet-container a.leaflet-popup-close-button{ color:#aaa; }
     .leaflet-zonefill-pane canvas{ mix-blend-mode:screen; opacity:.55; }
   }
+
+  /* ===================== laptop / desktop layout =====================
+     Same iOS design, but on a wide screen the bottom tab bar becomes a left
+     sidebar and the content uses the space, so it reads like a web app, not a
+     phone held up in the middle of the screen. */
+  @media (min-width:900px){
+    :root{ --sidebar-w:248px; }
+    .tabbar{ top:0; bottom:0; left:0; right:auto; width:var(--sidebar-w); height:100dvh;
+      flex-direction:column; justify-content:flex-start; align-items:stretch; gap:3px;
+      padding:calc(20px + env(safe-area-inset-top)) 12px 20px;
+      border-top:0; border-right:.5px solid var(--bar-border); }
+    .tabbar::before{ content:"on-camp"; display:block; font-size:21px; font-weight:700;
+      letter-spacing:-.4px; color:var(--label); padding:4px 14px 18px; }
+    .tab{ flex:0 0 auto; flex-direction:row; justify-content:flex-start; align-items:center;
+      gap:14px; height:46px; padding:0 14px; border-radius:10px; font-size:16px; letter-spacing:-.2px; }
+    .tab svg{ width:24px; height:24px; }
+    .tab span{ font-weight:500; }
+    .tab.active{ background:var(--tint-soft); }
+    .tab.active span{ font-weight:600; }
+    body{ padding-bottom:0; padding-left:var(--sidebar-w); }
+    .wrap{ max-width:860px; }
+    .appbar{ max-width:860px; }
+    .screen-title,.screen-sub{ max-width:860px; margin-left:auto; margin-right:auto; box-sizing:border-box; }
+    .backbar .inner{ max-width:860px; }
+    #view-map{ position:relative; }
+    .map-wrap{ height:100dvh; }
+    /* keep sheets centred over the whole window, not just the content column */
+    .sheet{ left:var(--sidebar-w); }
+  }
+  @media (min-width:1200px){
+    .wrap,.appbar,.screen-title,.screen-sub,.backbar .inner{ max-width:960px; }
+  }
