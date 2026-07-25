@@ -1,7 +1,7 @@
 /* on-camp map module.
    A self contained Leaflet map for the parks tab: Ontario provincial parks as
    pins over the 20 Fisheries Management Zone boundaries, styled to match the
-   sibling on-fishing app. The host page loads Leaflet (1.9) from a CDN before
+   sibling on-fishing app. The host page loads the vendored Leaflet (1.9) before
    this file, then calls window.initCampMap() when the tab appears.
    This file only defines window.initCampMap; it does nothing else at load. */
 (function () {
@@ -120,23 +120,33 @@
     });
   }
 
+  var NOTE_DEFAULT = 'Ontario parks over the fishing zones. Tap a pin to open a park.';
+  var NOTE_OFFLINE = 'Map tiles are offline. The park pins still work, tap one to open it.';
+  function setNote(text) {
+    var n = document.getElementById('campMapNote');
+    if (n) n.textContent = text;
+  }
+
   /* fetch the zone boundaries once and draw them on a canvas below the pins */
   function loadZones() {
     if (!map) return;
     var renderer = null;
     try { renderer = L.canvas({ padding: 0.4, pane: 'campZones' }); } catch (e) {}
+    setNote('Loading parks');
     try {
       fetch(BOUNDS_URL).then(function (r) {
         return r.json();
       }).then(function (gj) {
-        if (!map || !gj || !gj.features) return;
+        if (!map || !gj || !gj.features) { setNote(NOTE_DEFAULT); return; }
         var opts = { pane: 'campZones', smoothFactor: 1.4, style: zoneStyle };
         if (renderer) opts.renderer = renderer;
         try { L.geoJSON(gj, opts).addTo(map); } catch (e) {}
+        setNote(NOTE_DEFAULT);
       }).catch(function () {
         /* offline: leave the pins on the plain basemap */
+        setNote(NOTE_DEFAULT);
       });
-    } catch (e) {}
+    } catch (e) { setNote(NOTE_DEFAULT); }
   }
 
   /* find my location, quietly */
@@ -204,13 +214,18 @@
       map.setMaxBounds([[40, -97], [58, -72]]);
 
       /* base tiles */
-      L.tileLayer(CARTO + baseSet + '/{z}/{x}/{y}{r}.png', {
+      var baseLayer = L.tileLayer(CARTO + baseSet + '/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; OpenStreetMap, &copy; CARTO',
         subdomains: 'abcd',
         updateWhenIdle: true,
         updateWhenZooming: false,
         keepBuffer: 4
       }).addTo(map);
+      /* if the basemap cannot load (no connection), say so plainly once. */
+      var toldOffline = false;
+      baseLayer.on('tileerror', function () {
+        if (toldOffline) return; toldOffline = true; setNote(NOTE_OFFLINE);
+      });
 
       /* zone fill pane sits above the base tiles and below the pins */
       map.createPane('campZones');

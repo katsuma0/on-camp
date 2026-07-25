@@ -129,9 +129,9 @@ function searchAll(q){ q=q.trim().toLowerCase(); if(!q) return [];
 function onGSearch(){ const gq=document.getElementById('gq'), q=gq.value;
   if(q.trim().toLowerCase()==='debugsearch'){ renderDebug(); return; }
   if(q.trim().toLowerCase()==='statsearch'){ renderStats(); return; }
-  if(q.trim().toLowerCase()==='dummydata'){ renderDummyCard(''); return; }
-  if(q.trim().toLowerCase()==='dummyhundop'){ renderHundCard(''); return; }
-  if(q.trim().toLowerCase()==='-dummyhundop'){ renderZeroCard(''); return; }
+  // Data-planting QA commands (dummydata / dummyhundop) are not wired into the
+  // shipped build: they overwrite real ratings and must not be reachable by a
+  // stray keystroke. The functions remain for local testing only.
   if(['forlaurie','for laurie','tolaurie','to laurie'].indexOf(q.trim().toLowerCase())>=0){ renderLaurie(); return; }
   document.getElementById('gsearch').classList.toggle('has',!!q.trim());
   const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList'), about=document.querySelector('.about-scout');
@@ -507,7 +507,7 @@ function metaLine(p,st){ const isAlg=(p.region||'').indexOf('Algonquin')===0;
   else { segs.push(town); const n=p.campgrounds.length; segs.push(n+' campground'+(n===1?'':'s')); segs.push(st.total+' sites'); }
   return segs.map(x=>'<span>'+x+'</span>').join('<span>·</span>'); }
 function renderParks(){ const box=document.getElementById('parkList'); box.innerHTML='';
-  if(!PARKS.length){ box.innerHTML=`<div class="empty" style="border:1px solid var(--separator);border-radius:var(--r);background:var(--bg-elevated);padding:26px 18px">No park data loaded.<br>Add parks in the SQL pipeline, run <b>export_to_app.py</b>, and place <b>parks-data.json</b> next to this app.</div>`; return; }
+  if(!PARKS.length){ box.innerHTML=`<div class="empty" style="border:1px solid var(--separator);border-radius:var(--r);background:var(--bg-elevated);padding:26px 18px">Park data could not be loaded.<br>Check your connection and reopen the app.</div>`; return; }
   const idx=new Map(PARKS.map((p,i)=>[p.id,i]));
   const shown=(regionFilter==='All')?PARKS.slice():(regionFilter==='Pinned')?PARKS.filter(p=>isPinned(p.id)):PARKS.filter(p=>broadOf(p)===regionFilter);
   const SM={}; shown.forEach(p=>SM[p.id]=parkStats(p));
@@ -789,6 +789,7 @@ function buildDots(){ const d=document.getElementById('dots'); d.innerHTML='';
   for(let i=0;i<=5;i++){ const b=document.createElement('button'); b.className='dot'; b.textContent=i; b.dataset.v=i; b.addEventListener('click',()=>setScore(i)); d.appendChild(b); } }
 function paintDots(){ const s=sc(cur.type,cur.k); document.querySelectorAll('#dots .dot').forEach(dot=>{ const v=+dot.dataset.v, on=(s!=null)&&v<=s; dot.classList.toggle('on',on); dot.style.background=on?scoreColor(s):''; }); }
 function openSheet(type,k,cgId,site){ cur={type,k,cg:cgId,site,trailName:(type==='trail'?cgId:null)};
+  if(window.clearBtnSync) window.clearBtnSync();
   const wb=document.getElementById('wantBtn'), pw=document.getElementById('photoWrap'), whr=document.getElementById('d-where');
   if(type==='site'){ document.getElementById('d-kind').textContent='Site'; document.getElementById('d-title').textContent='Site '+site;
     whr.textContent=(cgId===curPark.name?((curPark.region||'').split(' · ')[0]||'')+' · '+cgId:cgId+' · '+curPark.name); whr.style.display='';
@@ -818,8 +819,23 @@ document.getElementById('wantBtn').addEventListener('click',function(){ const e=
   this.setAttribute('aria-pressed',e.want); this.textContent=(e.want?'★ ':'☆ ')+'Wishlist'; if(e.want&&e.score===0) showThemeToast("That doesn't make sense... noted anyways."); flashSaved(); persist(); if(cur.site) refreshChip(cur.k); renderGlance(); });
 function autoGrowNotes(el){ el.style.height='auto'; el.style.height=Math.max(106,el.scrollHeight)+'px'; }
 document.getElementById('d-notes').addEventListener('input',e=>{ autoGrowNotes(e.target); const en=ensure(); en.note=e.target.value; flashSaved(); persist(); if(cur.site) refreshChip(cur.k); else if(cur.type==='trail') refreshTrailCard(cur.trailName); });
-document.getElementById('clearBtn').addEventListener('click',()=>{ delete state[cur.type][cur.k]; const cnta=document.getElementById('d-notes'); cnta.value=''; autoGrowNotes(cnta);
-  const wb=document.getElementById('wantBtn'); wb.setAttribute('aria-pressed',false); wb.textContent='☆ Wishlist'; paintDots(); flashSaved(); afterChange(); });
+(function(){
+  var cb=document.getElementById('clearBtn'); if(!cb) return;
+  var armed=false, t=null;
+  function disarm(){ armed=false; clearTimeout(t); cb.classList.remove('armed'); cb.textContent='Clear'; }
+  window.clearBtnSync=disarm;   // reset when the sheet reopens on another item
+  cb.addEventListener('click',()=>{
+    // Nothing saved for this item, so there is nothing to clear.
+    if(!state[cur.type] || !state[cur.type][cur.k]){ return; }
+    if(!armed){ armed=true; cb.classList.add('armed'); cb.textContent='Tap again to clear';
+      t=setTimeout(disarm,4000); return; }
+    disarm();
+    delete state[cur.type][cur.k];
+    const cnta=document.getElementById('d-notes'); cnta.value=''; autoGrowNotes(cnta);
+    const wb=document.getElementById('wantBtn'); wb.setAttribute('aria-pressed',false); wb.textContent='☆ Wishlist';
+    paintDots(); flashSaved(); afterChange();
+  });
+})();
 document.getElementById('doneBtn').addEventListener('click',closeSheet);
 backdrop.addEventListener('click',closeSheet);
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeSheet(); document.getElementById('lightbox').classList.remove('on'); } });
@@ -1075,7 +1091,7 @@ function renderThemePicker(){
   var row=document.getElementById('themeRow'); if(!row) return;
   var cur=campAppearance();
   var opts=[['auto','Auto'],['light','Light'],['dark','Dark']];
-  row.innerHTML=opts.map(function(o){ return '<div class="seg-opt'+(o[0]===cur?' on':'')+'" data-app="'+o[0]+'" role="button" tabindex="0">'+o[1]+'</div>'; }).join('');
+  row.innerHTML=opts.map(function(o){ return '<button type="button" class="seg-opt'+(o[0]===cur?' on':'')+'" data-app="'+o[0]+'" aria-pressed="'+(o[0]===cur?'true':'false')+'">'+o[1]+'</button>'; }).join('');
   row.querySelectorAll('.seg-opt').forEach(function(b){ b.addEventListener('click', function(){ setAppearance(b.dataset.app); buzz(6); }); });
 }
 /* ---- one-time migration: single Algonquin -> split campground parks ---- */

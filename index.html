@@ -13,14 +13,14 @@
 <meta name="apple-mobile-web-app-title" content="Site Journal">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="icon" type="image/png" href="./icon-192.png">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css"/>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
 <section id="view-parks">
   <div class="appbar">
-    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.193</button></div>
+    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.194</button></div>
     <div class="sub">Ontario Parks campsites. Walk a campground, rate the sites, and remember which ones to book next time.</div>
   </div>
   <div class="wrap">
@@ -131,6 +131,7 @@
 <div class="sheet" id="versionsSheet" role="dialog" aria-modal="true" aria-label="Versions">
   <div class="grabber"></div>
   <div class="kind" style="margin-bottom:12px">Versions</div>
+  <div class="verline"><span class="vv">v0.194</span>The map is bundled in so it works offline, and a safer, plainer search</div>
   <div class="verline"><span class="vv">v0.193</span>On a laptop the tabs move to a sidebar and the layout opens up</div>
   <div class="verline"><span class="vv">v0.192</span>Footer tabs, a map of the parks, search and learn get their own screens</div>
   <div class="verline"><span class="vv">v0.191</span>New title, one summary, dark ratings fixed, about and stats</div>
@@ -205,7 +206,7 @@
   <button class="tab" data-tab="more" type="button" aria-label="More"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span>More</span></button>
 </nav>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="vendor/leaflet/leaflet.js"></script>
 <script src="data/parks.js"></script>
 <script src="data/park-pins.js"></script>
 <script src="app.js"></script>
