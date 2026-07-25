@@ -13,23 +13,17 @@
 <meta name="apple-mobile-web-app-title" content="Site Journal">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="icon" type="image/png" href="./icon-192.png">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css"/>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
 <section id="view-parks">
   <div class="appbar">
-    <div class="eyebrow">Ontario Parks</div>
-    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">Site Journal</h1><button class="ver" id="verBtn">v0.190</button></div>
-    <div class="sub">Pick a park, open its campgrounds, and go for a nice walk around the sites. Rate them and note which you'd book next time. Ratings and photos are saved to this device only.</div>
+    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.194</button></div>
+    <div class="sub">Ontario Parks campsites. Walk a campground, rate the sites, and remember which ones to book next time.</div>
   </div>
   <div class="wrap">
-    <div class="gsearch" id="gsearch">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="gq" inputmode="search" autocomplete="off" placeholder="Search parks, sites, or trails">
-      <button class="gclear" id="gclear" aria-label="Clear search">✕</button>
-    </div>
-    <div id="gresults" class="gresults" hidden></div>
     <div class="filters"><button class="fchip" id="regionPill" aria-haspopup="dialog"></button><button class="fchip" id="sortPill" aria-haspopup="dialog"></button><button class="fchip" id="groupPill" aria-haspopup="dialog"></button></div>
     <div id="parkList"></div>
     
@@ -56,6 +50,32 @@
     <br><br>
     <button class="resetlink" id="resetBtnPark"></button>
   </footer>
+</section>
+
+<section id="view-search" class="tabscreen" hidden>
+  <h1 class="screen-title">Search</h1>
+  <div class="wrap">
+    <div class="gsearch" id="gsearch">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="gq" inputmode="search" autocomplete="off" placeholder="Search parks, sites, or trails">
+      <button class="gclear" id="gclear" aria-label="Clear search">✕</button>
+    </div>
+    <div id="gresults" class="gresults" hidden></div>
+  </div>
+</section>
+
+<section id="view-map" class="tabscreen" hidden>
+  <div class="map-wrap">
+    <div id="campMap"></div>
+    <div class="map-note" id="campMapNote">Ontario parks over the fishing zones. Tap a pin to open a park.</div>
+    <div class="map-fabs"><button class="fab" id="mapLocate" type="button" aria-label="Find my location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/></svg></button></div>
+  </div>
+</section>
+
+<section id="view-learn" class="tabscreen" hidden>
+  <h1 class="screen-title">Learn</h1>
+  <p class="screen-sub">Stay safe out there, and leave no trace.</p>
+  <div class="wrap" id="learnBody"></div>
 </section>
 
 <div class="backdrop" id="backdrop"></div>
@@ -111,6 +131,10 @@
 <div class="sheet" id="versionsSheet" role="dialog" aria-modal="true" aria-label="Versions">
   <div class="grabber"></div>
   <div class="kind" style="margin-bottom:12px">Versions</div>
+  <div class="verline"><span class="vv">v0.194</span>The map is bundled in so it works offline, and a safer, plainer search</div>
+  <div class="verline"><span class="vv">v0.193</span>On a laptop the tabs move to a sidebar and the layout opens up</div>
+  <div class="verline"><span class="vv">v0.192</span>Footer tabs, a map of the parks, search and learn get their own screens</div>
+  <div class="verline"><span class="vv">v0.191</span>New title, one summary, dark ratings fixed, about and stats</div>
   <div class="verline"><span class="vv">v0.190</span>New look, one iOS style shared with ON Wildlife and ON Fishing</div>
   <div class="verline"><span class="vv">v0.182</span>Pull down from the top, the map is underneath</div>
   <div class="verline"><span class="vv">v0.181</span>One app: the fishing map moves in, parks get pins</div>
@@ -152,22 +176,40 @@
   <div id="townList" class="townlist scrolly"></div>
 </div>
 
-<div class="sheet" id="settingsSheet" role="dialog" aria-modal="true" aria-label="About">
-  <div class="grabber"></div>
-  <div class="kind" style="margin-bottom:12px">About</div>
-  <div class="aboutbody">
-        <p>I've been camping since I was a kid, and now I'm the person booking the campsites I visit with friends and family. It's stressful picking out the right campsite, and to be frank, there are some campsites (and campgrounds) out there that are not it.</p>
-        <p>So, I wanted to create a personal journal where you can log your favourite sites and the ones you'd rather avoid. When you have free time out camping, you can take a nice walk around the campground and jot down which sites you'd like to book next, give it a rating, and so on.</p>
-        <p>It's a pleasant excuse for a walk around the campgrounds, and it gives you ease knowing which campsite to book next time and not be surprised with a funky site.</p>
-        <div class="kind" style="margin:24px 0 12px">Appearance</div>
-        <div class="segmented" id="themeRow"></div>
-        <div class="kind" style="margin:24px 0 12px">More from the Ontario outdoors</div>
-        <a class="xapp" href="https://katsuma0.github.io/on-wildlife/" target="_blank" rel="noopener">ON Wildlife<span class="xgo">Open</span></a>
-        <a class="xapp" id="fishLink" href="https://katsuma0.github.io/on-fishing/" target="_blank" rel="noopener">ON Fishing<span class="xgo">Open</span></a>
-  <div class="theme-count" id="themeCount" style="text-align:left;margin-top:14px;font-weight:400">Three field guides for Ontario, one look. Take all three.</div>
-</div>
+<section id="view-more" class="tabscreen" hidden>
+  <h1 class="screen-title">More</h1>
+  <div class="wrap">
+  <div class="kind" style="margin:8px 0 12px">Appearance</div>
+  <div class="segmented" id="themeRow"></div>
 
+  <div class="kind" style="margin:24px 0 12px">More from the Ontario outdoors</div>
+  <a class="xapp" href="https://katsuma0.github.io/on-wildlife/" target="_blank" rel="noopener">on-wildlife<span class="xgo">Open</span></a>
+  <a class="xapp" id="fishLink" href="https://katsuma0.github.io/on-fishing/" target="_blank" rel="noopener">on-fishing<span class="xgo">Open</span></a>
+  <div class="theme-count" style="text-align:left;margin-top:12px;font-weight:400">Three field guides for Ontario, one look. Take all three.</div>
+
+  <div class="kind" style="margin:24px 0 12px">About</div>
+  <div class="aboutbody">
+    <p>on-camp is a private journal for Ontario Parks campsites. Walk a campground, rate each site out of five, add a note or a photo, and mark the ones worth booking again. It covers every reservable Ontario Park, down to the campgrounds, the individual sites, and the trails.</p>
+    <p>I book the camping trips for my friends and family, and choosing a site you have never seen is a gamble. Some are good and some are not, and a year later you cannot remember which was which. This is the notebook I wanted for that.</p>
+    <p>Everything you save stays on this device. There is no account, no server, and nothing is tracked. Ratings and notes live in the browser and photos in local storage, and you can export a backup to a file and load it on another phone. Please do not photograph occupied sites, and leave a site the way you would want to find it.</p>
+  </div>
+  <div id="aboutStats" style="margin-top:6px"></div>
+  <a class="xapp" href="https://katsuma0.github.io" target="_blank" rel="noopener" style="margin-top:14px">Made by Katsuma Onishi<span class="xgo">katsuma0.github.io</span></a>
+  </div>
+</section>
+
+<nav class="tabbar" id="tabbar">
+  <button class="tab active" data-tab="guide" type="button" aria-label="Guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z"/></svg><span>Guide</span></button>
+  <button class="tab" data-tab="search" type="button" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Search</span></button>
+  <button class="tab" data-tab="map" type="button" aria-label="Map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="m9 4-6 2v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>Map</span></button>
+  <button class="tab" data-tab="learn" type="button" aria-label="Learn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H18a2 2 0 0 1 2 2v13H6a2 2 0 0 0-2 2z"/><path d="M20 19a2 2 0 0 0-2 2H6"/></svg><span>Learn</span></button>
+  <button class="tab" data-tab="more" type="button" aria-label="More"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span>More</span></button>
+</nav>
+
+<script src="vendor/leaflet/leaflet.js"></script>
 <script src="data/parks.js"></script>
+<script src="data/park-pins.js"></script>
 <script src="app.js"></script>
+<script src="map.js"></script>
 </body>
 </html>

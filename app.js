@@ -66,7 +66,7 @@ function compress(file,maxDim=1400,q=0.72){ return new Promise((res,rej)=>{ cons
 
 /* ================= helpers ================= */
 const STOPS=['#B0574A','#B27C47','#95924A','#67934F','#2E8B50','#00753A'];
-function scoreColor(s){ return (typeof s==='number'&&s>=0&&s<=5)?('color-mix(in srgb, '+STOPS[s]+' 86%, var(--forest))'):null; }
+function scoreColor(s){ return (typeof s==='number'&&s>=0&&s<=5)?('color-mix(in srgb, '+STOPS[s]+' 86%, var(--tint))'):null; }
 function sc(type,k){ const e=state[type][k]; return (e&&typeof e.score==='number')?e.score:null; }
 function noteOf(type,k){ const e=state[type][k]; return e&&e.note?e.note:''; }
 function wantOf(k){ const e=state.site[k]; return !!(e&&e.want); }
@@ -129,9 +129,9 @@ function searchAll(q){ q=q.trim().toLowerCase(); if(!q) return [];
 function onGSearch(){ const gq=document.getElementById('gq'), q=gq.value;
   if(q.trim().toLowerCase()==='debugsearch'){ renderDebug(); return; }
   if(q.trim().toLowerCase()==='statsearch'){ renderStats(); return; }
-  if(q.trim().toLowerCase()==='dummydata'){ renderDummyCard(''); return; }
-  if(q.trim().toLowerCase()==='dummyhundop'){ renderHundCard(''); return; }
-  if(q.trim().toLowerCase()==='-dummyhundop'){ renderZeroCard(''); return; }
+  // Data-planting QA commands (dummydata / dummyhundop) are not wired into the
+  // shipped build: they overwrite real ratings and must not be reachable by a
+  // stray keystroke. The functions remain for local testing only.
   if(['forlaurie','for laurie','tolaurie','to laurie'].indexOf(q.trim().toLowerCase())>=0){ renderLaurie(); return; }
   document.getElementById('gsearch').classList.toggle('has',!!q.trim());
   const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList'), about=document.querySelector('.about-scout');
@@ -507,7 +507,7 @@ function metaLine(p,st){ const isAlg=(p.region||'').indexOf('Algonquin')===0;
   else { segs.push(town); const n=p.campgrounds.length; segs.push(n+' campground'+(n===1?'':'s')); segs.push(st.total+' sites'); }
   return segs.map(x=>'<span>'+x+'</span>').join('<span>·</span>'); }
 function renderParks(){ const box=document.getElementById('parkList'); box.innerHTML='';
-  if(!PARKS.length){ box.innerHTML=`<div class="empty" style="border:1px solid var(--line);border-radius:var(--r);background:var(--card);padding:26px 18px">No park data loaded.<br>Add parks in the SQL pipeline, run <b>export_to_app.py</b>, and place <b>parks-data.json</b> next to this app.</div>`; return; }
+  if(!PARKS.length){ box.innerHTML=`<div class="empty" style="border:1px solid var(--separator);border-radius:var(--r);background:var(--bg-elevated);padding:26px 18px">Park data could not be loaded.<br>Check your connection and reopen the app.</div>`; return; }
   const idx=new Map(PARKS.map((p,i)=>[p.id,i]));
   const shown=(regionFilter==='All')?PARKS.slice():(regionFilter==='Pinned')?PARKS.filter(p=>isPinned(p.id)):PARKS.filter(p=>broadOf(p)===regionFilter);
   const SM={}; shown.forEach(p=>SM[p.id]=parkStats(p));
@@ -764,7 +764,7 @@ function fmtLen(km){ return (km%1===0?km:km).toString()+' km'; }
 function renderTrails(){
   const box=document.getElementById('trails'); if(!box) return; box.innerHTML='';
   const trails=curPark.trails||[];
-  if(!trails.length){ box.innerHTML='<div class="empty" style="border:1px solid var(--line);border-radius:var(--r);background:var(--card);padding:20px 14px">No trails listed for this park yet.</div>'; return; }
+  if(!trails.length){ box.innerHTML='<div class="empty" style="border:1px solid var(--separator);border-radius:var(--r);background:var(--bg-elevated);padding:20px 14px">No trails listed for this park yet.</div>'; return; }
   trails.forEach(t=>{
     const k=trailKey(t.name), v=sc('trail',k), col=scoreColor(v), note=!!noteOf('trail',k), photo=photoKeys.has(k);
     const card=document.createElement('button'); card.className='trail'; card.dataset.trail=t.name;
@@ -789,6 +789,7 @@ function buildDots(){ const d=document.getElementById('dots'); d.innerHTML='';
   for(let i=0;i<=5;i++){ const b=document.createElement('button'); b.className='dot'; b.textContent=i; b.dataset.v=i; b.addEventListener('click',()=>setScore(i)); d.appendChild(b); } }
 function paintDots(){ const s=sc(cur.type,cur.k); document.querySelectorAll('#dots .dot').forEach(dot=>{ const v=+dot.dataset.v, on=(s!=null)&&v<=s; dot.classList.toggle('on',on); dot.style.background=on?scoreColor(s):''; }); }
 function openSheet(type,k,cgId,site){ cur={type,k,cg:cgId,site,trailName:(type==='trail'?cgId:null)};
+  if(window.clearBtnSync) window.clearBtnSync();
   const wb=document.getElementById('wantBtn'), pw=document.getElementById('photoWrap'), whr=document.getElementById('d-where');
   if(type==='site'){ document.getElementById('d-kind').textContent='Site'; document.getElementById('d-title').textContent='Site '+site;
     whr.textContent=(cgId===curPark.name?((curPark.region||'').split(' · ')[0]||'')+' · '+cgId:cgId+' · '+curPark.name); whr.style.display='';
@@ -818,8 +819,23 @@ document.getElementById('wantBtn').addEventListener('click',function(){ const e=
   this.setAttribute('aria-pressed',e.want); this.textContent=(e.want?'★ ':'☆ ')+'Wishlist'; if(e.want&&e.score===0) showThemeToast("That doesn't make sense... noted anyways."); flashSaved(); persist(); if(cur.site) refreshChip(cur.k); renderGlance(); });
 function autoGrowNotes(el){ el.style.height='auto'; el.style.height=Math.max(106,el.scrollHeight)+'px'; }
 document.getElementById('d-notes').addEventListener('input',e=>{ autoGrowNotes(e.target); const en=ensure(); en.note=e.target.value; flashSaved(); persist(); if(cur.site) refreshChip(cur.k); else if(cur.type==='trail') refreshTrailCard(cur.trailName); });
-document.getElementById('clearBtn').addEventListener('click',()=>{ delete state[cur.type][cur.k]; const cnta=document.getElementById('d-notes'); cnta.value=''; autoGrowNotes(cnta);
-  const wb=document.getElementById('wantBtn'); wb.setAttribute('aria-pressed',false); wb.textContent='☆ Wishlist'; paintDots(); flashSaved(); afterChange(); });
+(function(){
+  var cb=document.getElementById('clearBtn'); if(!cb) return;
+  var armed=false, t=null;
+  function disarm(){ armed=false; clearTimeout(t); cb.classList.remove('armed'); cb.textContent='Clear'; }
+  window.clearBtnSync=disarm;   // reset when the sheet reopens on another item
+  cb.addEventListener('click',()=>{
+    // Nothing saved for this item, so there is nothing to clear.
+    if(!state[cur.type] || !state[cur.type][cur.k]){ return; }
+    if(!armed){ armed=true; cb.classList.add('armed'); cb.textContent='Tap again to clear';
+      t=setTimeout(disarm,4000); return; }
+    disarm();
+    delete state[cur.type][cur.k];
+    const cnta=document.getElementById('d-notes'); cnta.value=''; autoGrowNotes(cnta);
+    const wb=document.getElementById('wantBtn'); wb.setAttribute('aria-pressed',false); wb.textContent='☆ Wishlist';
+    paintDots(); flashSaved(); afterChange();
+  });
+})();
 document.getElementById('doneBtn').addEventListener('click',closeSheet);
 backdrop.addEventListener('click',closeSheet);
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeSheet(); document.getElementById('lightbox').classList.remove('on'); } });
@@ -864,7 +880,7 @@ function renderParkStats(){ const p=curPark, box=document.getElementById('statsB
   if(rated){
     h+='<div class="glabel">Rating spread</div><div class="dbars">';
     for(let v=5; v>=0; v--){ const c=dist[v], w=Math.round(c/maxD*100);
-      h+='<div class="dbar"><span class="dl tnum">'+v+'</span><span class="dtrack"><i style="width:'+Math.max(c?6:0,w)+'%;background:'+(scoreColor(v)||'var(--forest)')+'"></i></span><span class="dc tnum">'+c+'</span></div>'; }
+      h+='<div class="dbar"><span class="dl tnum">'+v+'</span><span class="dtrack"><i style="width:'+Math.max(c?6:0,w)+'%;background:'+(scoreColor(v)||'var(--tint)')+'"></i></span><span class="dc tnum">'+c+'</span></div>'; }
     h+='</div>';
   }
   const multi=p.campgrounds.length>1;
@@ -1075,7 +1091,7 @@ function renderThemePicker(){
   var row=document.getElementById('themeRow'); if(!row) return;
   var cur=campAppearance();
   var opts=[['auto','Auto'],['light','Light'],['dark','Dark']];
-  row.innerHTML=opts.map(function(o){ return '<div class="seg-opt'+(o[0]===cur?' on':'')+'" data-app="'+o[0]+'" role="button" tabindex="0">'+o[1]+'</div>'; }).join('');
+  row.innerHTML=opts.map(function(o){ return '<button type="button" class="seg-opt'+(o[0]===cur?' on':'')+'" data-app="'+o[0]+'" aria-pressed="'+(o[0]===cur?'true':'false')+'">'+o[1]+'</button>'; }).join('');
   row.querySelectorAll('.seg-opt').forEach(function(b){ b.addEventListener('click', function(){ setAppearance(b.dataset.app); buzz(6); }); });
 }
 /* ---- one-time migration: single Algonquin -> split campground parks ---- */
@@ -1110,10 +1126,51 @@ function onParkNameTap(p){ /* park themes retired in favour of the shared appear
 
 /* ---- settings sheet (tap the Site Journal title) ---- */
 var settingsSheet=document.getElementById('settingsSheet'), settingsBackdrop=document.getElementById('settingsBackdrop');
-function openSettings(){ settingsBackdrop.classList.add('on'); settingsSheet.classList.add('on'); settingsSheet.scrollTop=0; lockScroll(); }
-function closeSettings(){ settingsBackdrop.classList.remove('on'); settingsSheet.classList.remove('on'); settingsSheet.style.transform=''; unlockScroll(); }
-document.getElementById('appTitle').addEventListener('click',openSettings);
+function fillAboutStats(){
+  var el=document.getElementById('aboutStats'); if(!el) return;
+  var parks=PARKS.length, cgs=0, sites=0;
+  PARKS.forEach(function(p){ (p.campgrounds||[]).forEach(function(c){ cgs++; sites+=cgSites(c).length; }); });
+  function row(k,v){ return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:11px 2px;border-top:.5px solid var(--separator)"><span>'+k+'</span><span class="tnum" style="color:var(--label-2)">'+v+'</span></div>'; }
+  el.innerHTML=row('Parks in guide',parks)+row('Campgrounds',cgs)+row('Sites',sites.toLocaleString());
+}
+/* ---- shared footer tab bar ---- */
+var TAB_SECTIONS={guide:'view-parks',search:'view-search',map:'view-map',learn:'view-learn',more:'view-more'};
+var learnRendered=false;
+function showTab(tab){
+  if(!TAB_SECTIONS[tab]) tab='guide';
+  ['view-parks','view-park','view-search','view-map','view-learn','view-more'].forEach(function(id){ var el=document.getElementById(id); if(el) el.hidden=true; });
+  var target=document.getElementById(tab==='guide'?'view-parks':TAB_SECTIONS[tab]); if(target) target.hidden=false;
+  var tb=document.getElementById('tabbar');
+  if(tb) tb.querySelectorAll('.tab').forEach(function(b){ var on=b.dataset.tab===tab; b.classList.toggle('active',on); b.setAttribute('aria-current',on?'page':'false'); });
+  try{ window.scrollTo(0,0); }catch(e){}
+  if(tab==='map' && window.initCampMap){ setTimeout(window.initCampMap,30); }
+  if(tab==='more'){ if(typeof renderThemePicker==='function') renderThemePicker(); if(typeof fillAboutStats==='function') fillAboutStats(); }
+  if(tab==='learn' && !learnRendered){ renderLearn(); learnRendered=true; }
+  if(tab==='search'){ var q=document.getElementById('gq'); if(q) try{ q.focus(); }catch(e){} }
+}
+window.openParkFromMap=function(id){ showTab('guide'); if(typeof openPark==='function') openPark(id); };
+function openSettings(){ showTab('more'); }
+function closeSettings(){}
+(function(){ var tb=document.getElementById('tabbar');
+  if(tb) tb.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('.tab'); if(b){ showTab(b.dataset.tab); if(typeof buzz==='function') buzz(6); } }); })();
+document.getElementById('appTitle').addEventListener('click',function(){ showTab('more'); });
 settingsBackdrop.addEventListener('click',closeSettings);
+
+/* ---- learn and safety ---- */
+function renderLearn(){
+  var el=document.getElementById('learnBody'); if(!el) return;
+  var CHEV='<span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span>';
+  var A=[
+    {t:'Bear safety and food storage', b:`<p>Black bears live across cottage country and the north, and most trouble comes down to food. A bear that finds a meal at a campsite comes back, and a bear that keeps coming back usually ends up dead, so a clean site protects the bear as much as you.</p><p>Store all food, garbage, coolers, and anything scented in your vehicle or a bear locker, never in the tent. Cook and eat away from where you sleep, and pack out every scrap. If you meet a bear, do not run. Make yourself look big, speak firmly, back away slowly, and give it a clear exit. Report a bear hanging around a campground to park staff or Bear Wise at 1-866-514-2327.</p>`},
+    {t:'Ticks and Lyme disease', b:`<p>Blacklegged ticks carry Lyme disease and are now common across much of southern and eastern Ontario. They wait in long grass and leaf litter and latch on as you brush past.</p><p>Wear light long sleeves and pants, tuck your pants into your socks on trails, and use a repellent with DEET or icaridin. Check yourself, kids, and dogs after every walk, especially the hairline, waist, and behind the knees. If you find one, pull it straight out with fine tweezers close to the skin and do not twist. See a doctor if you cannot remove it cleanly, if a spreading rash appears, or if you feel flu-like in the weeks after.</p>`},
+    {t:'Campfire safety', b:`<p>Check for a fire ban before you light anything. Bans are common in dry spells and carry real fines.</p><p>Use the existing fire pit, keep the fire small, and never leave it unattended. Keep water and a shovel within reach. Burn only clean wood, and buy or gather it locally, since moving firewood spreads tree-killing insects like the emerald ash borer. Before you sleep or leave, drown the fire, stir the ashes, and drown it again until it is cold to the touch.</p>`},
+    {t:'Leave no trace', b:`<p>The idea is simple: leave the site the way you would want to find it. Pack out all your trash, including food scraps and dog waste. Use the outhouse, or bury human waste well away from water.</p><p>Keep to the trails and the tent pads so the ground around the site can recover. Do not feed wildlife, and do not carve or nail into trees. Keep the noise down after quiet hours, since sound carries a long way over water at night. A good campsite is one the next person cannot tell you used.</p>`},
+    {t:'Wildlife on the roads', b:`<p>Moose and deer are most active at dawn and dusk, and a collision with a moose is dangerous because the body comes through the windshield. Slow down at night in wildlife areas and watch the shoulders for eye-shine.</p><p>If an animal is crossing, brake in a straight line rather than swerving. Turtles cross roads to nest in June, and you can move one across in the direction it was already headed, well clear of traffic. Never pick a snapping turtle up by the tail, which injures its spine.</p>`},
+    {t:'Cold water and weather', b:`<p>Cold water is the real risk on Ontario lakes, even in summer. It saps your strength fast, so wear a lifejacket in any boat or canoe and keep one on children at the shore.</p><p>Watch the sky. Afternoon thunderstorms build quickly, and open water is no place to be when one arrives. If you hear thunder, get off the water and away from tall lone trees. Tell someone your route and when you will be back before a longer paddle or hike.</p>`},
+    {t:'Report a bear or a hazard', b:`<p>Seeing a bear, a road hazard, or wildlife on a road? on-wildlife has a quick report that drops it on a shared map for the area, with sensitive spots coarsened for privacy.</p><p><a href="https://katsuma0.github.io/on-wildlife/#/more" target="_blank" rel="noopener">Open on-wildlife to report</a></p>`}
+  ];
+  el.innerHTML=A.map(function(a){ return '<details class="about-scout" style="margin-bottom:10px"><summary>'+a.t+CHEV+'</summary><div class="body">'+a.b+'</div></details>'; }).join('');
+}
 /* shared: body scroll lock while a sheet is open */
 var _lockY=0,_locks=0;
 function lockScroll(){ if(++_locks>1) return; _lockY=window.scrollY||0; var b=document.body;
@@ -1142,7 +1199,7 @@ function makeSheetSwipe(el,closeFn){
     if(dy>70){ closeFn(); } else { el.style.transform=''; }
   });
 }
-makeSheetSwipe(settingsSheet,closeSettings);
+/* settings is a tab screen now, not a swipe-to-close sheet */
 makeSheetSwipe(document.getElementById('regionSheet'),closeRegion);
 makeSheetSwipe(document.getElementById('sortSheet'),closeSort);
 settingsBackdrop.addEventListener('click',closeSort);

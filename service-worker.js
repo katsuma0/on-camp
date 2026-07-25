@@ -1,16 +1,25 @@
-/* Grundy Lake Site Scout — offline service worker */
-const CACHE = 'scout-v190';
+/* on-camp, offline service worker */
+const CACHE = 'scout-v194';
 const CORE = [
   './',
   './index.html',
   './styles.css',
   './app.js',
   './data/parks.js',
+  './data/park-pins.js',
+  './map.js',
   './manifest.json',
   './parks-data.json',
   './icon-192.png',
   './icon-512.png',
-  './apple-touch-icon.png'
+  './apple-touch-icon.png',
+  './vendor/leaflet/leaflet.js',
+  './vendor/leaflet/leaflet.css',
+  './vendor/leaflet/images/marker-icon.png',
+  './vendor/leaflet/images/marker-icon-2x.png',
+  './vendor/leaflet/images/marker-shadow.png',
+  './vendor/leaflet/images/layers.png',
+  './vendor/leaflet/images/layers-2x.png'
 ];
 
 self.addEventListener('install', (e) => {
