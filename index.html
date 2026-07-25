@@ -19,9 +19,8 @@
 
 <section id="view-parks">
   <div class="appbar">
-    <div class="eyebrow">Ontario Parks</div>
-    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">Site Journal</h1><button class="ver" id="verBtn">v0.190</button></div>
-    <div class="sub">Pick a park, open its campgrounds, and go for a nice walk around the sites. Rate them and note which you'd book next time. Ratings and photos are saved to this device only.</div>
+    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.191</button></div>
+    <div class="sub">Ontario Parks campsites. Walk a campground, rate the sites, and remember which ones to book next time.</div>
   </div>
   <div class="wrap">
     <div class="gsearch" id="gsearch">
@@ -111,6 +110,7 @@
 <div class="sheet" id="versionsSheet" role="dialog" aria-modal="true" aria-label="Versions">
   <div class="grabber"></div>
   <div class="kind" style="margin-bottom:12px">Versions</div>
+  <div class="verline"><span class="vv">v0.191</span>New title, one summary, dark ratings fixed, about and stats</div>
   <div class="verline"><span class="vv">v0.190</span>New look, one iOS style shared with ON Wildlife and ON Fishing</div>
   <div class="verline"><span class="vv">v0.182</span>Pull down from the top, the map is underneath</div>
   <div class="verline"><span class="vv">v0.181</span>One app: the fishing map moves in, parks get pins</div>
@@ -152,19 +152,24 @@
   <div id="townList" class="townlist scrolly"></div>
 </div>
 
-<div class="sheet" id="settingsSheet" role="dialog" aria-modal="true" aria-label="About">
+<div class="sheet" id="settingsSheet" role="dialog" aria-modal="true" aria-label="More">
   <div class="grabber"></div>
-  <div class="kind" style="margin-bottom:12px">About</div>
+  <div class="kind" style="margin-bottom:12px">Appearance</div>
+  <div class="segmented" id="themeRow"></div>
+
+  <div class="kind" style="margin:24px 0 12px">More from the Ontario outdoors</div>
+  <a class="xapp" href="https://katsuma0.github.io/on-wildlife/" target="_blank" rel="noopener">on-wildlife<span class="xgo">Open</span></a>
+  <a class="xapp" id="fishLink" href="https://katsuma0.github.io/on-fishing/" target="_blank" rel="noopener">on-fishing<span class="xgo">Open</span></a>
+  <div class="theme-count" style="text-align:left;margin-top:12px;font-weight:400">Three field guides for Ontario, one look. Take all three.</div>
+
+  <div class="kind" style="margin:24px 0 12px">About</div>
   <div class="aboutbody">
-        <p>I've been camping since I was a kid, and now I'm the person booking the campsites I visit with friends and family. It's stressful picking out the right campsite, and to be frank, there are some campsites (and campgrounds) out there that are not it.</p>
-        <p>So, I wanted to create a personal journal where you can log your favourite sites and the ones you'd rather avoid. When you have free time out camping, you can take a nice walk around the campground and jot down which sites you'd like to book next, give it a rating, and so on.</p>
-        <p>It's a pleasant excuse for a walk around the campgrounds, and it gives you ease knowing which campsite to book next time and not be surprised with a funky site.</p>
-        <div class="kind" style="margin:24px 0 12px">Appearance</div>
-        <div class="segmented" id="themeRow"></div>
-        <div class="kind" style="margin:24px 0 12px">More from the Ontario outdoors</div>
-        <a class="xapp" href="https://katsuma0.github.io/on-wildlife/" target="_blank" rel="noopener">ON Wildlife<span class="xgo">Open</span></a>
-        <a class="xapp" id="fishLink" href="https://katsuma0.github.io/on-fishing/" target="_blank" rel="noopener">ON Fishing<span class="xgo">Open</span></a>
-  <div class="theme-count" id="themeCount" style="text-align:left;margin-top:14px;font-weight:400">Three field guides for Ontario, one look. Take all three.</div>
+    <p>on-camp is a private journal for Ontario Parks campsites. Walk a campground, rate each site out of five, add a note or a photo, and mark the ones worth booking again. It covers every reservable Ontario Park, down to the campgrounds, the individual sites, and the trails.</p>
+    <p>I book the camping trips for my friends and family, and choosing a site you have never seen is a gamble. Some are good and some are not, and a year later you cannot remember which was which. This is the notebook I wanted for that.</p>
+    <p>Everything you save stays on this device. There is no account, no server, and nothing is tracked. Ratings and notes live in the browser and photos in local storage, and you can export a backup to a file and load it on another phone. Please do not photograph occupied sites, and leave a site the way you would want to find it.</p>
+  </div>
+  <div id="aboutStats" style="margin-top:6px"></div>
+  <a class="xapp" href="https://katsuma0.github.io" target="_blank" rel="noopener" style="margin-top:14px">Made by Katsuma Onishi<span class="xgo">katsuma0.github.io</span></a>
 </div>
 
 <script src="data/parks.js"></script>

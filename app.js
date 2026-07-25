@@ -66,7 +66,7 @@ function compress(file,maxDim=1400,q=0.72){ return new Promise((res,rej)=>{ cons
 
 /* ================= helpers ================= */
 const STOPS=['#B0574A','#B27C47','#95924A','#67934F','#2E8B50','#00753A'];
-function scoreColor(s){ return (typeof s==='number'&&s>=0&&s<=5)?('color-mix(in srgb, '+STOPS[s]+' 86%, var(--forest))'):null; }
+function scoreColor(s){ return (typeof s==='number'&&s>=0&&s<=5)?('color-mix(in srgb, '+STOPS[s]+' 86%, var(--tint))'):null; }
 function sc(type,k){ const e=state[type][k]; return (e&&typeof e.score==='number')?e.score:null; }
 function noteOf(type,k){ const e=state[type][k]; return e&&e.note?e.note:''; }
 function wantOf(k){ const e=state.site[k]; return !!(e&&e.want); }
@@ -507,7 +507,7 @@ function metaLine(p,st){ const isAlg=(p.region||'').indexOf('Algonquin')===0;
   else { segs.push(town); const n=p.campgrounds.length; segs.push(n+' campground'+(n===1?'':'s')); segs.push(st.total+' sites'); }
   return segs.map(x=>'<span>'+x+'</span>').join('<span>·</span>'); }
 function renderParks(){ const box=document.getElementById('parkList'); box.innerHTML='';
-  if(!PARKS.length){ box.innerHTML=`<div class="empty" style="border:1px solid var(--line);border-radius:var(--r);background:var(--card);padding:26px 18px">No park data loaded.<br>Add parks in the SQL pipeline, run <b>export_to_app.py</b>, and place <b>parks-data.json</b> next to this app.</div>`; return; }
+  if(!PARKS.length){ box.innerHTML=`<div class="empty" style="border:1px solid var(--separator);border-radius:var(--r);background:var(--bg-elevated);padding:26px 18px">No park data loaded.<br>Add parks in the SQL pipeline, run <b>export_to_app.py</b>, and place <b>parks-data.json</b> next to this app.</div>`; return; }
   const idx=new Map(PARKS.map((p,i)=>[p.id,i]));
   const shown=(regionFilter==='All')?PARKS.slice():(regionFilter==='Pinned')?PARKS.filter(p=>isPinned(p.id)):PARKS.filter(p=>broadOf(p)===regionFilter);
   const SM={}; shown.forEach(p=>SM[p.id]=parkStats(p));
@@ -764,7 +764,7 @@ function fmtLen(km){ return (km%1===0?km:km).toString()+' km'; }
 function renderTrails(){
   const box=document.getElementById('trails'); if(!box) return; box.innerHTML='';
   const trails=curPark.trails||[];
-  if(!trails.length){ box.innerHTML='<div class="empty" style="border:1px solid var(--line);border-radius:var(--r);background:var(--card);padding:20px 14px">No trails listed for this park yet.</div>'; return; }
+  if(!trails.length){ box.innerHTML='<div class="empty" style="border:1px solid var(--separator);border-radius:var(--r);background:var(--bg-elevated);padding:20px 14px">No trails listed for this park yet.</div>'; return; }
   trails.forEach(t=>{
     const k=trailKey(t.name), v=sc('trail',k), col=scoreColor(v), note=!!noteOf('trail',k), photo=photoKeys.has(k);
     const card=document.createElement('button'); card.className='trail'; card.dataset.trail=t.name;
@@ -864,7 +864,7 @@ function renderParkStats(){ const p=curPark, box=document.getElementById('statsB
   if(rated){
     h+='<div class="glabel">Rating spread</div><div class="dbars">';
     for(let v=5; v>=0; v--){ const c=dist[v], w=Math.round(c/maxD*100);
-      h+='<div class="dbar"><span class="dl tnum">'+v+'</span><span class="dtrack"><i style="width:'+Math.max(c?6:0,w)+'%;background:'+(scoreColor(v)||'var(--forest)')+'"></i></span><span class="dc tnum">'+c+'</span></div>'; }
+      h+='<div class="dbar"><span class="dl tnum">'+v+'</span><span class="dtrack"><i style="width:'+Math.max(c?6:0,w)+'%;background:'+(scoreColor(v)||'var(--tint)')+'"></i></span><span class="dc tnum">'+c+'</span></div>'; }
     h+='</div>';
   }
   const multi=p.campgrounds.length>1;
@@ -1110,7 +1110,14 @@ function onParkNameTap(p){ /* park themes retired in favour of the shared appear
 
 /* ---- settings sheet (tap the Site Journal title) ---- */
 var settingsSheet=document.getElementById('settingsSheet'), settingsBackdrop=document.getElementById('settingsBackdrop');
-function openSettings(){ settingsBackdrop.classList.add('on'); settingsSheet.classList.add('on'); settingsSheet.scrollTop=0; lockScroll(); }
+function fillAboutStats(){
+  var el=document.getElementById('aboutStats'); if(!el) return;
+  var parks=PARKS.length, cgs=0, sites=0;
+  PARKS.forEach(function(p){ (p.campgrounds||[]).forEach(function(c){ cgs++; sites+=cgSites(c).length; }); });
+  function row(k,v){ return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:11px 2px;border-top:.5px solid var(--separator)"><span>'+k+'</span><span class="tnum" style="color:var(--label-2)">'+v+'</span></div>'; }
+  el.innerHTML=row('Parks in guide',parks)+row('Campgrounds',cgs)+row('Sites',sites.toLocaleString());
+}
+function openSettings(){ fillAboutStats(); settingsBackdrop.classList.add('on'); settingsSheet.classList.add('on'); settingsSheet.scrollTop=0; lockScroll(); }
 function closeSettings(){ settingsBackdrop.classList.remove('on'); settingsSheet.classList.remove('on'); settingsSheet.style.transform=''; unlockScroll(); }
 document.getElementById('appTitle').addEventListener('click',openSettings);
 settingsBackdrop.addEventListener('click',closeSettings);
