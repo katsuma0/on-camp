@@ -1,5 +1,5 @@
 /* on-camp, offline service worker */
-const CACHE = 'scout-v194';
+const CACHE = 'scout-v195';
 const CORE = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const CORE = [
   './app.js',
   './data/parks.js',
   './data/park-pins.js',
+  './data/ecosystem.js',
   './map.js',
   './manifest.json',
   './parks-data.json',

@@ -115,6 +115,21 @@ function searchAll(q){ q=q.trim().toLowerCase(); if(!q) return [];
   });
   if(nameQ && !siteTok.length) SEARCH_TRAILS.forEach(t=>{ if(nameTok.every(x=>t.name.toLowerCase().includes(x)))
     res.push({type:'trail',score:nameHit(t.name,nameQ,75),parkId:t.parkId,trailName:t.name,title:t.name,sub:t.parkName+' · '+t.difficulty+' · '+fmtLen(t.length)}); });
+  /* Universal search: typing a fish surfaces the parks that have it. */
+  if(window.ECO && nameQ && !siteTok.length){
+    const ECO=window.ECO, keys=Object.keys(ECO.fish);
+    const matched=keys.filter(k=>{ const f=ECO.fish[k];
+      return f.syn.concat([f.name.toLowerCase()]).some(n=>n===nameQ||n.startsWith(nameQ)||(nameQ.length>=4&&n.indexOf(nameQ)>=0)); });
+    if(matched.length){
+      const have=new Set(res.filter(r=>r.type==='park').map(r=>r.parkId));
+      ECO.parks.forEach(pk=>{
+        const hit=pk.fish.find(fk=>matched.indexOf(fk)>=0);
+        if(!hit||have.has(pk.id)) return; have.add(pk.id);
+        res.push({type:'park',score:55,parkId:pk.id,title:pk.name,
+          sub:ECO.fish[hit].name+' · '+(((pk.region||'').split(' · ').slice(1).join(' · '))||pk.region)});
+      });
+    }
+  }
   /* the Wildlands answers the search directly, regardless of any list filtering */
   if(!res.some(r=>r.type==='park'&&r.parkId===EGG_ID)){
     const eg=PARKS.find(p=>p.id===EGG_ID);
