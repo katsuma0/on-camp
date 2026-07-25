@@ -1,11 +1,13 @@
 /* Grundy Lake Site Scout — offline service worker */
-const CACHE = 'scout-v191';
+const CACHE = 'scout-v192';
 const CORE = [
   './',
   './index.html',
   './styles.css',
   './app.js',
   './data/parks.js',
+  './data/park-pins.js',
+  './map.js',
   './manifest.json',
   './parks-data.json',
   './icon-192.png',

@@ -1117,10 +1117,44 @@ function fillAboutStats(){
   function row(k,v){ return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:11px 2px;border-top:.5px solid var(--separator)"><span>'+k+'</span><span class="tnum" style="color:var(--label-2)">'+v+'</span></div>'; }
   el.innerHTML=row('Parks in guide',parks)+row('Campgrounds',cgs)+row('Sites',sites.toLocaleString());
 }
-function openSettings(){ fillAboutStats(); settingsBackdrop.classList.add('on'); settingsSheet.classList.add('on'); settingsSheet.scrollTop=0; lockScroll(); }
-function closeSettings(){ settingsBackdrop.classList.remove('on'); settingsSheet.classList.remove('on'); settingsSheet.style.transform=''; unlockScroll(); }
-document.getElementById('appTitle').addEventListener('click',openSettings);
+/* ---- shared footer tab bar ---- */
+var TAB_SECTIONS={guide:'view-parks',search:'view-search',map:'view-map',learn:'view-learn',more:'view-more'};
+var learnRendered=false;
+function showTab(tab){
+  if(!TAB_SECTIONS[tab]) tab='guide';
+  ['view-parks','view-park','view-search','view-map','view-learn','view-more'].forEach(function(id){ var el=document.getElementById(id); if(el) el.hidden=true; });
+  var target=document.getElementById(tab==='guide'?'view-parks':TAB_SECTIONS[tab]); if(target) target.hidden=false;
+  var tb=document.getElementById('tabbar');
+  if(tb) tb.querySelectorAll('.tab').forEach(function(b){ var on=b.dataset.tab===tab; b.classList.toggle('active',on); b.setAttribute('aria-current',on?'page':'false'); });
+  try{ window.scrollTo(0,0); }catch(e){}
+  if(tab==='map' && window.initCampMap){ setTimeout(window.initCampMap,30); }
+  if(tab==='more'){ if(typeof renderThemePicker==='function') renderThemePicker(); if(typeof fillAboutStats==='function') fillAboutStats(); }
+  if(tab==='learn' && !learnRendered){ renderLearn(); learnRendered=true; }
+  if(tab==='search'){ var q=document.getElementById('gq'); if(q) try{ q.focus(); }catch(e){} }
+}
+window.openParkFromMap=function(id){ showTab('guide'); if(typeof openPark==='function') openPark(id); };
+function openSettings(){ showTab('more'); }
+function closeSettings(){}
+(function(){ var tb=document.getElementById('tabbar');
+  if(tb) tb.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('.tab'); if(b){ showTab(b.dataset.tab); if(typeof buzz==='function') buzz(6); } }); })();
+document.getElementById('appTitle').addEventListener('click',function(){ showTab('more'); });
 settingsBackdrop.addEventListener('click',closeSettings);
+
+/* ---- learn and safety ---- */
+function renderLearn(){
+  var el=document.getElementById('learnBody'); if(!el) return;
+  var CHEV='<span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span>';
+  var A=[
+    {t:'Bear safety and food storage', b:`<p>Black bears live across cottage country and the north, and most trouble comes down to food. A bear that finds a meal at a campsite comes back, and a bear that keeps coming back usually ends up dead, so a clean site protects the bear as much as you.</p><p>Store all food, garbage, coolers, and anything scented in your vehicle or a bear locker, never in the tent. Cook and eat away from where you sleep, and pack out every scrap. If you meet a bear, do not run. Make yourself look big, speak firmly, back away slowly, and give it a clear exit. Report a bear hanging around a campground to park staff or Bear Wise at 1-866-514-2327.</p>`},
+    {t:'Ticks and Lyme disease', b:`<p>Blacklegged ticks carry Lyme disease and are now common across much of southern and eastern Ontario. They wait in long grass and leaf litter and latch on as you brush past.</p><p>Wear light long sleeves and pants, tuck your pants into your socks on trails, and use a repellent with DEET or icaridin. Check yourself, kids, and dogs after every walk, especially the hairline, waist, and behind the knees. If you find one, pull it straight out with fine tweezers close to the skin and do not twist. See a doctor if you cannot remove it cleanly, if a spreading rash appears, or if you feel flu-like in the weeks after.</p>`},
+    {t:'Campfire safety', b:`<p>Check for a fire ban before you light anything. Bans are common in dry spells and carry real fines.</p><p>Use the existing fire pit, keep the fire small, and never leave it unattended. Keep water and a shovel within reach. Burn only clean wood, and buy or gather it locally, since moving firewood spreads tree-killing insects like the emerald ash borer. Before you sleep or leave, drown the fire, stir the ashes, and drown it again until it is cold to the touch.</p>`},
+    {t:'Leave no trace', b:`<p>The idea is simple: leave the site the way you would want to find it. Pack out all your trash, including food scraps and dog waste. Use the outhouse, or bury human waste well away from water.</p><p>Keep to the trails and the tent pads so the ground around the site can recover. Do not feed wildlife, and do not carve or nail into trees. Keep the noise down after quiet hours, since sound carries a long way over water at night. A good campsite is one the next person cannot tell you used.</p>`},
+    {t:'Wildlife on the roads', b:`<p>Moose and deer are most active at dawn and dusk, and a collision with a moose is dangerous because the body comes through the windshield. Slow down at night in wildlife areas and watch the shoulders for eye-shine.</p><p>If an animal is crossing, brake in a straight line rather than swerving. Turtles cross roads to nest in June, and you can move one across in the direction it was already headed, well clear of traffic. Never pick a snapping turtle up by the tail, which injures its spine.</p>`},
+    {t:'Cold water and weather', b:`<p>Cold water is the real risk on Ontario lakes, even in summer. It saps your strength fast, so wear a lifejacket in any boat or canoe and keep one on children at the shore.</p><p>Watch the sky. Afternoon thunderstorms build quickly, and open water is no place to be when one arrives. If you hear thunder, get off the water and away from tall lone trees. Tell someone your route and when you will be back before a longer paddle or hike.</p>`},
+    {t:'Report a bear or a hazard', b:`<p>Seeing a bear, a road hazard, or wildlife on a road? on-wildlife has a quick report that drops it on a shared map for the area, with sensitive spots coarsened for privacy.</p><p><a href="https://katsuma0.github.io/on-wildlife/#/more" target="_blank" rel="noopener">Open on-wildlife to report</a></p>`}
+  ];
+  el.innerHTML=A.map(function(a){ return '<details class="about-scout" style="margin-bottom:10px"><summary>'+a.t+CHEV+'</summary><div class="body">'+a.b+'</div></details>'; }).join('');
+}
 /* shared: body scroll lock while a sheet is open */
 var _lockY=0,_locks=0;
 function lockScroll(){ if(++_locks>1) return; _lockY=window.scrollY||0; var b=document.body;
@@ -1149,7 +1183,7 @@ function makeSheetSwipe(el,closeFn){
     if(dy>70){ closeFn(); } else { el.style.transform=''; }
   });
 }
-makeSheetSwipe(settingsSheet,closeSettings);
+/* settings is a tab screen now, not a swipe-to-close sheet */
 makeSheetSwipe(document.getElementById('regionSheet'),closeRegion);
 makeSheetSwipe(document.getElementById('sortSheet'),closeSort);
 settingsBackdrop.addEventListener('click',closeSort);
