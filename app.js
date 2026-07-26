@@ -30,9 +30,9 @@ function cidOf(pid,cgId){ return pid+'#'+cgId; }
 /* ================= state ================= */
 let state={site:{},campground:{},trail:{}};
 const KEY='ontario-scout-v2';
-/* inside the iOS app the fishing half ships bundled at fishing/, so every link stays in the app */
-const IN_APP=!!window.Capacitor||location.protocol==='capacitor:';
-const FISHREG_BASE=IN_APP?'fishing/index.html':'https://katsuma0.github.io/on-fishing/';
+/* fishing regulations live in the sibling on-fishing app; from the iOS shell
+   the link opens in Safari (the old bundled fishing/ copy no longer ships) */
+const FISHREG_BASE='https://katsuma0.github.io/on-fishing/';
 try{ history.scrollRestoration='manual'; }catch(e){} /* every open starts at the top */
 function load(){ try{ const v=localStorage.getItem(KEY); if(v) state=Object.assign({site:{},campground:{},trail:{}},JSON.parse(v)); }catch(e){}
   if(!Array.isArray(state.pins)) state.pins=[]; }

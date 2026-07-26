@@ -58,8 +58,11 @@ enum NativeBridge {
         };
       } catch (e) {}
 
-      /* 1. navigator.share */
+      /* 1. navigator.share
+         ids carry a per-load random prefix so a share sheet that outlives a
+         page reload can never settle a different page's pending share. */
       var seq = 0;
+      var runTag = 'p' + Math.random().toString(36).slice(2, 10);
       var pending = {};
       window.__bridgeShareDone = function (id, status) {
         var p = pending[id];
@@ -76,7 +79,7 @@ enum NativeBridge {
       navigator.share = function (data) {
         data = data || {};
         return new Promise(function (resolve, reject) {
-          var id = ++seq;
+          var id = runTag + '-' + (++seq);
           pending[id] = { resolve: resolve, reject: reject };
           var files = data.files || [];
           var out = [];
