@@ -554,3 +554,16 @@
   @media (min-width:1200px){
     .wrap,.appbar,.screen-title,.screen-sub,.backbar .inner{ max-width:960px; }
   }
+
+  /* ---- share a review + received card -------------------------------- */
+  .btn-share{width:100%;margin-top:12px;cursor:pointer;font-size:16px;font-weight:600;
+    border:0;border-radius:12px;padding:13px 16px;background:var(--tint-soft);color:var(--tint);
+    transition:transform .08s,background .12s}
+  .btn-share:active{transform:scale(.98)}
+  .btn-share.primary{background:var(--tint);color:var(--on-tint)}
+  .btn-share.primary:active{background:var(--tint-press)}
+  #view-shared .shared-card-wrap{max-width:420px;margin:6px auto 0}
+  #view-shared .shared-card{width:100%;height:auto;display:block;border-radius:22px;
+    box-shadow:0 12px 34px rgba(0,0,0,.18);background:var(--fill)}
+  #view-shared .shared-note{max-width:420px;margin:14px auto 2px;color:var(--label-2);font-style:italic;text-align:center}
+  #view-shared #sh-explore{max-width:420px;margin:18px auto 0;display:block}

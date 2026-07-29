@@ -1,9 +1,10 @@
 /* on-camp, offline service worker */
-const CACHE = 'scout-v196';
+const CACHE = 'scout-v197';
 const CORE = [
   './',
   './index.html',
   './styles.css',
+  './share.js',
   './app.js',
   './data/parks.js',
   './data/park-pins.js',
