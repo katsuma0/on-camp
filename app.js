@@ -581,6 +581,7 @@ function openPark(pid){
     </div>
     <div class="seclabel">${p.dayuse?'Rating':'Park rating'}</div>
     <button class="trail" id="parkRate"><div class="tr-left"><div class="tr-name">Rate this park</div></div><span class="tr-rate" id="prVal" hidden></span></button>
+    <div id="parkProg"></div>
     ${p.dayuse?'':'<div class="seclabel">Campgrounds</div>'}
     <div id="cgs"></div>
 
@@ -937,7 +938,19 @@ function openLightbox(src){ document.getElementById('lightboxImg').src=src; docu
 document.getElementById('lightbox').addEventListener('click',()=>document.getElementById('lightbox').classList.remove('on'));
 
 /* ================= progress + glance ================= */
-function updatePark(){ renderParkStats(); }
+function updatePark(){ renderParkStats(); renderParkProgress(); }
+/* How much of this park you have actually walked and rated. A real fraction of a
+   real number of sites, so the gap is honest, and the gap is what brings you back
+   to finish the loop. Hidden until there is something to show: "0 of 212" on
+   arrival is a chore, not an invitation. */
+function renderParkProgress(){
+  const p=curPark, box=document.getElementById('parkProg'); if(!p||!box) return;
+  const st=parkStats(p);
+  if(!st.rated||!st.total){ box.innerHTML=''; return; }
+  box.innerHTML='<div class="pprog"><div class="pprog-top"><span>Sites rated here</span>'
+    +'<span class="pprog-n tnum">'+st.rated+' of '+st.total+'</span></div>'
+    +'<span class="pprog-bar"><span class="pprog-fill" style="width:'+Math.max(2,st.pct)+'%"></span></span></div>';
+}
 function renderParkStats(){ const p=curPark, box=document.getElementById('statsBody'), wrap=document.getElementById('statsWrap'); if(!p||!box) return;
   let rated=0,total=0,sum=0,want=0,notes=0,photos=0; const dist=[0,0,0,0,0,0];
   p.campgrounds.forEach(cg=>{ cgSites(cg).forEach(sit=>{ const k=keyOf(p.id,cg.id,sit); total++;

@@ -65,8 +65,10 @@
   .eyebrow{font-size:13px;font-weight:400;letter-spacing:.4px;text-transform:uppercase;color:var(--label-2)}
   .titlebar{display:flex;align-items:baseline;justify-content:space-between;gap:9px}
   .appbar h1{font-weight:700;font-size:34px;line-height:41px;letter-spacing:.37px;margin:2px 0 0}
-  .ver{appearance:none;border:0;background:none;cursor:pointer;font-family:inherit;font-weight:600;font-size:15px;
+  .ver{position:relative;appearance:none;border:0;background:none;cursor:pointer;font-family:inherit;font-weight:600;font-size:15px;
     color:var(--tint);white-space:nowrap;padding:6px 4px;margin:0}
+  /* Fitts: the label stays small and quiet, the thing you aim at does not. */
+  .ver::after{content:"";position:absolute;top:50%;left:-6px;right:-6px;height:44px;transform:translateY(-50%)}
   .appbar .sub{color:var(--label-2);font-size:15px;margin-top:5px;line-height:1.4}
 
   /* translucent nav / back bar ----------------------------------------- */
@@ -120,9 +122,19 @@
   .fchip::after{content:"";position:absolute;left:-2px;right:-2px;top:-7px;bottom:-7px}
   /* appearance segmented control (light / dark / system) */
   .segmented{display:flex;background:var(--fill-strong);border-radius:9px;padding:2px;gap:2px}
-  .seg-opt{flex:1;text-align:center;padding:9px 8px;border-radius:7px;font-size:13px;font-weight:500;
+  /* Fitts: a segment is wide but was only 33px tall, a thin thing to hit while
+     walking a campground. Flex centring holds the label while the segment grows. */
+  .seg-opt{flex:1;display:flex;align-items:center;justify-content:center;min-height:44px;
+    text-align:center;padding:6px 8px;border-radius:7px;font-size:13px;font-weight:500;
     color:var(--label);cursor:pointer;transition:background .15s}
   .seg-opt.on{background:var(--bg-elevated);box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:600}
+
+  /* park progress: a real count against a real ceiling, never padded --- */
+  .pprog{background:var(--bg-elevated);border-radius:var(--r-sm);padding:13px 16px 15px;margin:8px 0 4px}
+  .pprog-top{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;color:var(--label)}
+  .pprog-n{font-size:14px;color:var(--label-2)}
+  .pprog-bar{display:block;margin-top:10px;height:6px;border-radius:3px;background:var(--fill-strong);overflow:hidden}
+  .pprog-fill{display:block;height:100%;border-radius:3px;background:var(--tint);transition:width .4s var(--ease)}
 
   /* option rows (sort / group choosers) -------------------------------- */
   .rrow{display:flex;justify-content:space-between;align-items:center;width:100%;appearance:none;cursor:pointer;border:0;
@@ -363,8 +375,10 @@
   textarea:focus{box-shadow:inset 0 0 0 2px var(--tint)}
   .sheet-foot{display:flex;align-items:center;gap:var(--gap-m);margin-top:22px}
   .saved{font-size:11px;font-weight:700;color:var(--on-tint);background:var(--tint);padding:5px 11px;border-radius:99px;opacity:0;transition:.2s}
-  .btn-clear{margin-left:auto;cursor:pointer;font-size:13px;font-weight:600;color:var(--label-2);background:none;border:0;
-    text-decoration:underline;text-underline-offset:3px}
+  .btn-clear{position:relative;margin-left:auto;cursor:pointer;font-size:13px;font-weight:600;color:var(--label-2);
+    background:none;border:0;text-decoration:underline;text-underline-offset:3px}
+  /* Fitts: the label stays small and quiet, the thing you aim at does not. */
+  .btn-clear::after{content:"";position:absolute;top:50%;left:-12px;right:-12px;height:44px;transform:translateY(-50%)}
   .btn-done{cursor:pointer;font-size:17px;font-weight:600;color:var(--on-tint);background:var(--tint);border:0;
     border-radius:var(--r-sm);padding:12px 24px;transition:transform .1s,background .15s}
   .btn-done:active{transform:scale(.97);background:var(--tint-press)}
