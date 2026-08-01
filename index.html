@@ -20,7 +20,7 @@
 
 <section id="view-parks">
   <div class="appbar">
-    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.196</button></div>
+    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.198</button></div>
     <div class="sub">Ontario Parks campsites. Walk a campground, rate the sites, and remember which ones to book next time.</div>
   </div>
   <div class="wrap">
@@ -133,6 +133,8 @@
 <div class="sheet" id="versionsSheet" role="dialog" aria-modal="true" aria-label="Versions">
   <div class="grabber"></div>
   <div class="kind" style="margin-bottom:12px">Versions</div>
+  <div class="verline"><span class="vv">v0.198</span>Bigger tap targets, and a park now shows how many of its sites you have rated</div>
+  <div class="verline"><span class="vv">v0.197</span>More and Learn are proper Settings style lists, with the chevrons out at the right edge</div>
   <div class="verline"><span class="vv">v0.196</span>Share a park, campsite or trail review straight to Messages, with a card and a link that opens it</div>
   <div class="verline"><span class="vv">v0.195</span>Search a fish to find the parks that hold it; data controls moved to More; readable orange</div>
   <div class="verline"><span class="vv">v0.194</span>The map is bundled in so it works offline, and a safer, plainer search</div>
@@ -183,29 +185,40 @@
 <section id="view-more" class="tabscreen" hidden>
   <h1 class="screen-title">More</h1>
   <div class="wrap">
-  <div class="kind" style="margin:8px 0 12px">Your data</div>
-  <div class="aboutbody" style="margin:0 0 12px">Everything is saved on this device. Export a backup to move it to another phone.</div>
-  <button class="backuplink" id="exportBtn">Export a backup</button><br><br>
-  <button class="backuplink" id="importBtn">Import a backup</button><br><br>
-  <button class="resetlink" id="resetBtn">Reset all data</button>
+  <div class="group">
+    <div class="group-header">Your data</div>
+    <div class="list">
+      <button class="cell tap" id="exportBtn" type="button"><span class="cell-body"><span class="cell-title">Export a backup</span></span><span class="chevron"><svg viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg></span></button>
+      <button class="cell tap" id="importBtn" type="button"><span class="cell-body"><span class="cell-title">Import a backup</span></span><span class="chevron"><svg viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg></span></button>
+      <button class="cell tap" id="resetBtn" type="button"><span class="cell-body"><span class="cell-title destructive">Reset all data</span></span><span class="chevron"><svg viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg></span></button>
+    </div>
+    <div class="group-footer">Everything is saved on this device. Export a backup to move it to another phone.</div>
+  </div>
   <input type="file" id="importInput" accept=".json,application/json" hidden>
 
-  <div class="kind" style="margin:24px 0 12px">Appearance</div>
-  <div class="segmented" id="themeRow"></div>
-
-  <div class="kind" style="margin:24px 0 12px">More from the Ontario outdoors</div>
-  <a class="xapp" href="https://katsuma0.github.io/on-wildlife/" target="_blank" rel="noopener">on-wildlife<span class="xgo">Open</span></a>
-  <a class="xapp" id="fishLink" href="https://katsuma0.github.io/on-fishing/" target="_blank" rel="noopener">on-fishing<span class="xgo">Open</span></a>
-  <div class="theme-count" style="text-align:left;margin-top:12px;font-weight:400">Three field guides for Ontario, one look. Take all three.</div>
-
-  <div class="kind" style="margin:24px 0 12px">About</div>
-  <div class="aboutbody">
-    <p>on-camp is a private journal for Ontario Parks campsites. Walk a campground, rate each site out of five, add a note or a photo, and mark the ones worth booking again. It covers every reservable Ontario Park, down to the campgrounds, the individual sites, and the trails.</p>
-    <p>I book the camping trips for my friends and family, and choosing a site you have never seen is a gamble. Some are good and some are not, and a year later you cannot remember which was which. This is the notebook I wanted for that.</p>
-    <p>Everything you save stays on this device. There is no account, no server, and nothing is tracked. Ratings and notes live in the browser and photos in local storage, and you can export a backup to a file and load it on another phone. Please do not photograph occupied sites, and leave a site the way you would want to find it.</p>
+  <div class="group">
+    <div class="group-header">Appearance</div>
+    <div class="segmented" id="themeRow"></div>
   </div>
-  <div id="aboutStats" style="margin-top:6px"></div>
-  <a class="xapp" href="https://katsuma0.github.io" target="_blank" rel="noopener" style="margin-top:14px">Made by Katsuma Onishi<span class="xgo">katsuma0.github.io</span></a>
+
+  <div class="group">
+    <div class="group-header">More from the Ontario outdoors</div>
+    <div class="list">
+      <a class="cell tap" href="https://katsuma0.github.io/on-wildlife/" target="_blank" rel="noopener"><span class="cell-body"><span class="cell-title">on-wildlife</span></span><span class="chevron"><svg viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg></span></a>
+      <a class="cell tap" id="fishLink" href="https://katsuma0.github.io/on-fishing/" target="_blank" rel="noopener"><span class="cell-body"><span class="cell-title">on-fishing</span></span><span class="chevron"><svg viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg></span></a>
+    </div>
+    <div class="group-footer">Three field guides for Ontario, one look. Take all three.</div>
+  </div>
+
+  <div class="group">
+    <div class="group-header">About</div>
+    <div class="aboutbody">
+      <p>on-camp is a private journal for Ontario Parks campsites. Walk a campground, rate each site out of five, add a note or a photo, and mark the ones worth booking again. It covers every reservable Ontario Park, down to the campgrounds, the individual sites, and the trails.</p>
+      <p>I book the camping trips for my friends and family, and choosing a site you have never seen is a gamble. Some are good and some are not, and a year later you cannot remember which was which. This is the notebook I wanted for that.</p>
+      <p>Everything you save stays on this device. There is no account, no server, and nothing is tracked. Ratings and notes live in the browser and photos in local storage, and you can export a backup to a file and load it on another phone. Please do not photograph occupied sites, and leave a site the way you would want to find it.</p>
+    </div>
+    <div class="list" id="aboutStats"></div>
+  </div>
   </div>
 </section>
 

@@ -65,8 +65,10 @@
   .eyebrow{font-size:13px;font-weight:400;letter-spacing:.4px;text-transform:uppercase;color:var(--label-2)}
   .titlebar{display:flex;align-items:baseline;justify-content:space-between;gap:9px}
   .appbar h1{font-weight:700;font-size:34px;line-height:41px;letter-spacing:.37px;margin:2px 0 0}
-  .ver{appearance:none;border:0;background:none;cursor:pointer;font-family:inherit;font-weight:600;font-size:15px;
+  .ver{position:relative;appearance:none;border:0;background:none;cursor:pointer;font-family:inherit;font-weight:600;font-size:15px;
     color:var(--tint);white-space:nowrap;padding:6px 4px;margin:0}
+  /* Fitts: the label stays small and quiet, the thing you aim at does not. */
+  .ver::after{content:"";position:absolute;top:50%;left:-6px;right:-6px;height:44px;transform:translateY(-50%)}
   .appbar .sub{color:var(--label-2);font-size:15px;margin-top:5px;line-height:1.4}
 
   /* translucent nav / back bar ----------------------------------------- */
@@ -120,9 +122,19 @@
   .fchip::after{content:"";position:absolute;left:-2px;right:-2px;top:-7px;bottom:-7px}
   /* appearance segmented control (light / dark / system) */
   .segmented{display:flex;background:var(--fill-strong);border-radius:9px;padding:2px;gap:2px}
-  .seg-opt{flex:1;text-align:center;padding:9px 8px;border-radius:7px;font-size:13px;font-weight:500;
+  /* Fitts: a segment is wide but was only 33px tall, a thin thing to hit while
+     walking a campground. Flex centring holds the label while the segment grows. */
+  .seg-opt{flex:1;display:flex;align-items:center;justify-content:center;min-height:44px;
+    text-align:center;padding:6px 8px;border-radius:7px;font-size:13px;font-weight:500;
     color:var(--label);cursor:pointer;transition:background .15s}
   .seg-opt.on{background:var(--bg-elevated);box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:600}
+
+  /* park progress: a real count against a real ceiling, never padded --- */
+  .pprog{background:var(--bg-elevated);border-radius:var(--r-sm);padding:13px 16px 15px;margin:8px 0 4px}
+  .pprog-top{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;color:var(--label)}
+  .pprog-n{font-size:14px;color:var(--label-2)}
+  .pprog-bar{display:block;margin-top:10px;height:6px;border-radius:3px;background:var(--fill-strong);overflow:hidden}
+  .pprog-fill{display:block;height:100%;border-radius:3px;background:var(--tint);transition:width .4s var(--ease)}
 
   /* option rows (sort / group choosers) -------------------------------- */
   .rrow{display:flex;justify-content:space-between;align-items:center;width:100%;appearance:none;cursor:pointer;border:0;
@@ -181,22 +193,49 @@
   .fmz svg{flex:none}
   .official{display:inline-block;background:var(--tint-soft);color:var(--tint);padding:10px 14px;border-radius:99px;font-weight:700}
 
-  /* about the project (details card) ----------------------------------- */
-  .about-scout{background:var(--bg-elevated);border-radius:var(--r);margin-top:22px;overflow:hidden}
-  .about-scout summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;
-    padding:var(--pad-card);font-weight:600;font-size:17px;letter-spacing:-.01em;color:var(--label);
-    -webkit-user-select:none;user-select:none;touch-action:manipulation}
-  .about-scout summary::-webkit-details-marker{display:none}
-  .about-scout summary .chev{color:var(--label-3);transition:transform .22s}
-  .about-scout[open] summary .chev{transform:rotate(180deg)}
-  .about-scout .body{margin:0 16px;padding:0 0 18px;border-top:.5px solid var(--separator);font-size:14px;line-height:1.65;color:var(--label)}
-  .about-scout .body p{margin:10px 0 0}
-  .about-scout .body .sig{margin-top:14px;font-size:13px;color:var(--label-2);font-weight:600}
-  .about-scout .fld{margin-top:16px}
-
   /* iOS group header --------------------------------------------------- */
   .seclabel{font-size:13px;font-weight:400;letter-spacing:.4px;text-transform:uppercase;color:var(--label-2);
     margin:22px 2px 10px;display:flex;align-items:center;gap:var(--gap-m)}
+
+  /* grouped lists (Settings style), shared with ON Wildlife / ON Fishing -- */
+  .group{margin:18px 16px 8px}
+  /* .wrap already pays the 16px side inset, so a group inside one must not pay it twice */
+  .wrap .group{margin-left:0;margin-right:0}
+  .group-header{padding:0 4px 7px;font-size:13px;font-weight:400;letter-spacing:.4px;text-transform:uppercase;color:var(--label-2)}
+  .group-footer{padding:7px 4px 0;font-size:13px;line-height:1.35;color:var(--label-2)}
+  .list{background:var(--bg-elevated);border-radius:var(--r-sm);overflow:hidden}
+  .cell{position:relative;display:flex;align-items:center;gap:var(--gap-l);min-height:44px;padding:11px 16px;
+    background:var(--bg-elevated);color:var(--label);text-align:left;transition:background .12s}
+  /* A <button> is a form control, so its width is fit-content unless told otherwise.
+     Left alone a button row shrink-wraps its text: the chevron lands beside the label
+     and the hairline divider stops short, while the <a> rows above it run full width.
+     Force every row element into the same box so one list reads as one list. */
+  a.cell,button.cell,summary.cell{width:100%;box-sizing:border-box}
+  button.cell{-webkit-appearance:none;appearance:none;border:0;background:var(--bg-elevated);font:inherit;color:inherit;cursor:pointer}
+  summary.cell{list-style:none;cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+  summary.cell::-webkit-details-marker{display:none}
+  /* Divider inset 16px on the left and flush right, the iOS convention. Two selectors
+     because a row can sit directly in the list or be the <summary> of a <details>. */
+  .list>*+.cell::before,
+  .list>*+*>.cell::before{content:"";position:absolute;top:0;left:16px;right:0;height:.5px;background:var(--separator)}
+  .cell.tap:active{background:var(--fill)}
+  .cell-body{flex:1 1 auto;min-width:0}
+  .cell-title{display:block;font-size:17px;letter-spacing:-.2px;color:var(--label)}
+  .cell-title.destructive{color:var(--red)}
+  /* a row waiting for its second tap says so in red, not just in words */
+  .cell.armed .cell-title{color:var(--red);font-weight:600}
+  .cell-sub{display:block;font-size:13px;color:var(--label-2);margin-top:1px;line-height:1.35}
+  /* margin-left:auto pins the trailing value and the chevron to the right edge even on
+     rows with no .cell-body to push them there (a plain "Version v0.197" row). */
+  .cell-value{flex:none;margin-left:auto;font-size:16px;color:var(--label-2)}
+  .chevron{flex:none;margin-left:auto;color:var(--label-3)}
+  .cell-value+.chevron{margin-left:8px}
+  .chevron svg{display:block;width:14px;height:20px}
+  /* a disclosure row keeps the chevron pointing down and spins it when open */
+  .cell-details>summary .chevron svg{width:16px;height:16px;transition:transform .22s}
+  .cell-details[open]>summary .chevron svg{transform:rotate(180deg)}
+  .cell-details .cell-detail-body{padding:0 16px 16px;font-size:14px;line-height:1.65;color:var(--label)}
+  .cell-details .cell-detail-body p{margin:10px 0 0}
 
   /* campgrounds --------------------------------------------------------- */
   .cg{background:var(--bg-elevated);border-radius:var(--r);margin-bottom:var(--gap-m);overflow:hidden;scroll-margin-top:70px}
@@ -336,8 +375,10 @@
   textarea:focus{box-shadow:inset 0 0 0 2px var(--tint)}
   .sheet-foot{display:flex;align-items:center;gap:var(--gap-m);margin-top:22px}
   .saved{font-size:11px;font-weight:700;color:var(--on-tint);background:var(--tint);padding:5px 11px;border-radius:99px;opacity:0;transition:.2s}
-  .btn-clear{margin-left:auto;cursor:pointer;font-size:13px;font-weight:600;color:var(--label-2);background:none;border:0;
-    text-decoration:underline;text-underline-offset:3px}
+  .btn-clear{position:relative;margin-left:auto;cursor:pointer;font-size:13px;font-weight:600;color:var(--label-2);
+    background:none;border:0;text-decoration:underline;text-underline-offset:3px}
+  /* Fitts: the label stays small and quiet, the thing you aim at does not. */
+  .btn-clear::after{content:"";position:absolute;top:50%;left:-12px;right:-12px;height:44px;transform:translateY(-50%)}
   .btn-done{cursor:pointer;font-size:17px;font-weight:600;color:var(--on-tint);background:var(--tint);border:0;
     border-radius:var(--r-sm);padding:12px 24px;transition:transform .1s,background .15s}
   .btn-done:active{transform:scale(.97);background:var(--tint-press)}
@@ -362,13 +403,10 @@
   .lightbox.on{display:flex}
   .lightbox img{max-width:100%;max-height:100%;border-radius:var(--r-sm)}
 
-  /* settings sheet (about + cross-app link) ---------------------------- */
+  /* about copy on the More screen -------------------------------------- */
+  .aboutbody{padding:0 4px}
   .aboutbody p{margin:1em 0;font-size:16px;line-height:1.5;color:var(--label)}
-  .xapp{display:flex;align-items:center;justify-content:space-between;background:var(--bg-elevated);border-radius:10px;
-    padding:13px 16px;font-weight:400;font-size:17px;color:var(--label);text-decoration:none;letter-spacing:-.2px;
-    margin-bottom:8px;transition:background .12s,transform .1s}
-  .xapp:active{background:var(--fill);transform:scale(.99)}
-  .xapp .xgo{font-size:15px;font-weight:400;color:var(--tint)}
+  .aboutbody p:first-child{margin-top:0}
 
   /* stats sheet detail -------------------------------------------------- */
   .statscard{background:var(--bg-elevated);border-radius:var(--r);overflow:hidden}
@@ -436,10 +474,6 @@
     font-size:13px;line-height:1.55;color:var(--red);text-decoration:underline;text-underline-offset:2px;font-weight:600}
   .resetlink.armed{font-weight:800}
   .resetlink::after{content:"";position:absolute;left:-16px;right:-16px;top:-12px;bottom:-12px}
-  .backuplink{position:relative;appearance:none;border:0;background:none;padding:0;cursor:pointer;font-family:inherit;
-    font-size:13px;line-height:1.55;color:var(--label-2);text-decoration:underline;text-underline-offset:2px;font-weight:600}
-  .backuplink.armed{font-weight:800;color:var(--red)}
-  .backuplink::after{content:"";position:absolute;left:-16px;right:-16px;top:-12px;bottom:-12px}
   .footlink{position:relative;appearance:none;border:0;background:none;cursor:pointer;font-family:inherit;font-size:12px;
     font-weight:600;color:var(--label-2);text-decoration:underline;padding:8px 12px;margin:-4px 0 2px}
   footer{max-width:720px;margin:0 auto;padding:20px 16px 40px;color:var(--label-2);font-size:13px;line-height:1.55}
