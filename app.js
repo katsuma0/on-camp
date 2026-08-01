@@ -149,9 +149,9 @@ function onGSearch(){ const gq=document.getElementById('gq'), q=gq.value;
   // stray keystroke. The functions remain for local testing only.
   if(['forlaurie','for laurie','tolaurie','to laurie'].indexOf(q.trim().toLowerCase())>=0){ renderLaurie(); return; }
   document.getElementById('gsearch').classList.toggle('has',!!q.trim());
-  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList'), about=document.querySelector('.about-scout');
-  if(!q.trim()){ rbox.hidden=true; rbox.innerHTML=''; plist.hidden=false; if(about) about.hidden=false; return; }
-  plist.hidden=true; if(about) about.hidden=true; rbox.hidden=false;
+  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList');
+  if(!q.trim()){ rbox.hidden=true; rbox.innerHTML=''; plist.hidden=false; return; }
+  plist.hidden=true; rbox.hidden=false;
   const results=searchAll(q);
   if(!results.length){ rbox.innerHTML='<div class="gnone">No matches. Try a park, a campground, or Hemlock 112.</div>'; return; }
   const tagLabel={park:'Park',cg:'Camp',site:'Site',trail:'Trail'};
@@ -161,12 +161,11 @@ function onGSearch(){ const gq=document.getElementById('gq'), q=gq.value;
 function clearGSearch(){ const gq=document.getElementById('gq'); if(gq) gq.value='';
   const w=document.getElementById('gsearch'); if(w) w.classList.remove('has');
   const rb=document.getElementById('gresults'); if(rb){ rb.hidden=true; rb.innerHTML=''; }
-  const pl=document.getElementById('parkList'); if(pl) pl.hidden=false;
-  const ab=document.querySelector('.about-scout'); if(ab) ab.hidden=false; }
+  const pl=document.getElementById('parkList'); if(pl) pl.hidden=false; }
 function esc(x){ return String(x).replace(/</g,'&lt;'); }
 function renderConsole(cmd,pairs){
-  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList'), about=document.querySelector('.about-scout');
-  plist.hidden=true; if(about) about.hidden=true; rbox.hidden=false;
+  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList');
+  plist.hidden=true; rbox.hidden=false;
   rbox.innerHTML='<div class="dbg"><div class="dhead">&gt; '+esc(cmd)+'</div>'+
     pairs.map(p=>'<div class="drow"><span class="dk">'+esc(p[0])+'</span><span class="dv">'+esc(p[1])+'</span></div>').join('')+
     '</div>';
@@ -184,8 +183,8 @@ function renderDebug(){
   renderConsole('debugsearch',pairs);
 }
 function renderDummyCard(msg){
-  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList'), about=document.querySelector('.about-scout');
-  plist.hidden=true; if(about) about.hidden=true; rbox.hidden=false;
+  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList');
+  plist.hidden=true; rbox.hidden=false;
   rbox.innerHTML='<div class="dbg"><div class="dhead">&gt; dummydata</div>'
     +'<div class="drow"><span class="dk">status</span><span class="dv">'+esc(msg||'ready, nothing planted')+'</span></div>'
     +'<button class="dummybtn" id="dummyGo">'+(msg?'Plant again, reshuffled':'Plant dummy data')+'</button></div>';
@@ -193,8 +192,8 @@ function renderDummyCard(msg){
   if(go) go.addEventListener('click',()=>{ buzz(9); const m=plantDummy(); renderDummyCard(m); });
 }
 function renderHundCard(msg){
-  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList'), about=document.querySelector('.about-scout');
-  plist.hidden=true; if(about) about.hidden=true; rbox.hidden=false;
+  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList');
+  plist.hidden=true; rbox.hidden=false;
   rbox.innerHTML='<div class="dbg"><div class="dhead">&gt; dummyhundop</div>'
     +'<div class="drow"><span class="dk">status</span><span class="dv">'+esc(msg||'ready, overwrites every rating')+'</span></div>'
     +'<button class="dummybtn" id="hundGo">'+(msg?'Run again':'Max everything to 5/5')+'</button></div>';
@@ -202,8 +201,8 @@ function renderHundCard(msg){
   if(go) go.addEventListener('click',()=>{ buzz(12); const m=plantHund(); renderHundCard(m); });
 }
 function renderLaurie(){
-  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList'), about=document.querySelector('.about-scout');
-  plist.hidden=true; if(about) about.hidden=true; rbox.hidden=false;
+  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList');
+  plist.hidden=true; rbox.hidden=false;
   rbox.innerHTML='<div class="dedic">'
     +'<div class="d-for">For Laurie</div>'
     +'<p>who introduced us to Bowser, the famous snapping turtle of Gurd Lake at Grundy.</p>'
@@ -214,8 +213,8 @@ function renderLaurie(){
   buzz(6);
 }
 function renderZeroCard(msg){
-  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList'), about=document.querySelector('.about-scout');
-  plist.hidden=true; if(about) about.hidden=true; rbox.hidden=false;
+  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList');
+  plist.hidden=true; rbox.hidden=false;
   rbox.innerHTML='<div class="dbg"><div class="dhead">&gt; -dummyhundop</div>'
     +'<div class="drow"><span class="dk">status</span><span class="dv">'+esc(msg||'ready, the worst season imaginable')+'</span></div>'
     +'<button class="dummybtn" id="zeroGo" style="background:#B3261E">'+(msg?'Run again':'Zero everything')+'</button></div>';
@@ -610,10 +609,13 @@ document.getElementById('backBtn').addEventListener('click',function(){
   if(window.sjExitPark){ window.sjExitPark(); } else { goHome(); } });
 (function(){
   const rb=document.getElementById('resetBtn');
+  /* the row is a .cell now, so the confirm copy goes in the title span, not on the button
+     itself, or writing textContent would wipe the chevron out of the row */
+  const rbT=rb&&(rb.querySelector('.cell-title')||rb);
   if(rb){ let armed=false, t=null;
     rb.addEventListener('click',function(){
-      if(!armed){ armed=true; rb.classList.add('armed'); rb.textContent='Tap again to erase everything';
-        t=setTimeout(function(){ armed=false; rb.classList.remove('armed'); rb.textContent='Reset all data'; },4000); return; }
+      if(!armed){ armed=true; rb.classList.add('armed'); rbT.textContent='Tap again to erase everything';
+        t=setTimeout(function(){ armed=false; rb.classList.remove('armed'); rbT.textContent='Reset all data'; },4000); return; }
       clearTimeout(t);
       try{ localStorage.removeItem(KEY); }catch(e){}
       ['site-journal-theme','site-journal-theme-vars','site-journal-unlocks','site-journal-sort','site-journal-origin'].forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
@@ -657,7 +659,8 @@ document.getElementById('backBtn').addEventListener('click',function(){
       .catch(function(){ showThemeToast('Could not build the backup. Try again.'); })
       .then(function(){ eb.disabled=false; }); });
   var pendingPayload=null, armT=null;
-  function disarmImport(){ pendingPayload=null; clearTimeout(armT); ib.classList.remove('armed'); ib.textContent='Import a backup'; }
+  var ibT=ib.querySelector('.cell-title')||ib;   /* keep the chevron, write into the title only */
+  function disarmImport(){ pendingPayload=null; clearTimeout(armT); ib.classList.remove('armed'); ibT.textContent='Import a backup'; }
   ib.addEventListener('click',function(){
     if(pendingPayload){ clearTimeout(armT); applyBackup(pendingPayload); pendingPayload=null; return; }
     fi.value=''; fi.click(); });
@@ -668,7 +671,7 @@ document.getElementById('backBtn').addEventListener('click',function(){
       var n=0; try{ var s=JSON.parse(p.data['ontario-scout-v2']);
         ['site','campground','trail'].forEach(function(t){ var m=s&&s[t]||{}; for(var k in m){ if(m[k]&&typeof m[k].score==='number') n++; } }); }catch(e){}
       pendingPayload=p; ib.classList.add('armed');
-      ib.textContent='Tap again to restore '+n+(n===1?' rating':' ratings');
+      ibT.textContent='Tap again to restore '+n+(n===1?' rating':' ratings');
       armT=setTimeout(disarmImport,6000); })
       .catch(function(){ showThemeToast('Could not read that file.'); }); });
   function applyBackup(p){
@@ -733,6 +736,8 @@ function renderCgs(){ const box=document.getElementById('cgs'); box.innerHTML=''
 function fillGrid(card){ if(card.dataset.filled) return; const cg=CG_BY_ID(card.dataset.cg); const grid=card.querySelector('.grid');
   const frag=document.createDocumentFragment(); cgSites(cg).forEach(s=>frag.appendChild(makeChip(cg,s))); grid.appendChild(frag); card.dataset.filled='1'; }
 const MEDAL_SVG='<svg class="medal" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M12 1a11 11 0 1 0 .01 0z M12 4.4 13.88 9.41 19.23 9.65 15.04 12.99 16.47 18.15 12 15.2 7.53 18.15 8.96 12.99 4.77 9.65 10.12 9.41z"/></svg>';
+/* the trailing disclosure chevron on a grouped-list row; same glyph the More screen uses in index.html */
+const CHEV_RIGHT='<span class="chevron"><svg viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg></span>';
 function chipInner(cg,s){ const k=keyOf(curPark.id,cg.id,s), v=sc('site',k), c=scoreColor(v), note=!!noteOf('site',k), want=wantOf(k), photo=photoKeys.has(k);
   return `${s}`; }
 function makeChip(cg,s){ const k=keyOf(curPark.id,cg.id,s), c=scoreColor(sc('site',k));
@@ -1202,8 +1207,16 @@ function fillAboutStats(){
   var el=document.getElementById('aboutStats'); if(!el) return;
   var parks=PARKS.length, cgs=0, sites=0;
   PARKS.forEach(function(p){ (p.campgrounds||[]).forEach(function(c){ cgs++; sites+=cgSites(c).length; }); });
-  function row(k,v){ return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:11px 2px;border-top:.5px solid var(--separator)"><span>'+k+'</span><span class="tnum" style="color:var(--label-2)">'+v+'</span></div>'; }
-  el.innerHTML=row('Parks in guide',parks)+row('Campgrounds',cgs)+row('Sites',sites.toLocaleString());
+  function row(k,v){ return '<div class="cell"><span class="cell-body"><span class="cell-title">'+k+'</span></span>'+
+    '<span class="cell-value tnum">'+v+'</span></div>'; }
+  var ver=document.getElementById('verBtn');
+  el.innerHTML=row('Parks in guide',parks)+row('Campgrounds',cgs)+row('Sites',sites.toLocaleString())+
+    '<button class="cell tap" id="aboutVerBtn" type="button"><span class="cell-body"><span class="cell-title">Version</span></span>'+
+    '<span class="cell-value tnum">'+(ver?ver.textContent:'')+'</span></button>'+
+    '<a class="cell tap" href="https://katsuma0.github.io" target="_blank" rel="noopener">'+
+    '<span class="cell-body"><span class="cell-title">Made by Katsuma Onishi</span></span>'+CHEV_RIGHT+'</a>';
+  var vb=document.getElementById('aboutVerBtn');
+  if(vb) vb.addEventListener('click',function(){ buzz(6); openVersions(); });
 }
 /* ---- shared footer tab bar ---- */
 var TAB_SECTIONS={guide:'view-parks',search:'view-search',map:'view-map',learn:'view-learn',more:'view-more'};
@@ -1231,7 +1244,7 @@ settingsBackdrop.addEventListener('click',closeSettings);
 /* ---- learn and safety ---- */
 function renderLearn(){
   var el=document.getElementById('learnBody'); if(!el) return;
-  var CHEV='<span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span>';
+  var CHEV='<span class="chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span>';
   var A=[
     {t:'Bear safety and food storage', b:`<p>Black bears live across cottage country and the north, and most trouble comes down to food. A bear that finds a meal at a campsite comes back, and a bear that keeps coming back usually ends up dead, so a clean site protects the bear as much as you.</p><p>Store all food, garbage, coolers, and anything scented in your vehicle or a bear locker, never in the tent. Cook and eat away from where you sleep, and pack out every scrap. If you meet a bear, do not run. Make yourself look big, speak firmly, back away slowly, and give it a clear exit. Report a bear hanging around a campground to park staff or Bear Wise at 1-866-514-2327.</p>`},
     {t:'Ticks and Lyme disease', b:`<p>Blacklegged ticks carry Lyme disease and are now common across much of southern and eastern Ontario. They wait in long grass and leaf litter and latch on as you brush past.</p><p>Wear light long sleeves and pants, tuck your pants into your socks on trails, and use a repellent with DEET or icaridin. Check yourself, kids, and dogs after every walk, especially the hairline, waist, and behind the knees. If you find one, pull it straight out with fine tweezers close to the skin and do not twist. See a doctor if you cannot remove it cleanly, if a spreading rash appears, or if you feel flu-like in the weeks after.</p>`},
@@ -1241,7 +1254,9 @@ function renderLearn(){
     {t:'Cold water and weather', b:`<p>Cold water is the real risk on Ontario lakes, even in summer. It saps your strength fast, so wear a lifejacket in any boat or canoe and keep one on children at the shore.</p><p>Watch the sky. Afternoon thunderstorms build quickly, and open water is no place to be when one arrives. If you hear thunder, get off the water and away from tall lone trees. Tell someone your route and when you will be back before a longer paddle or hike.</p>`},
     {t:'Report a bear or a hazard', b:`<p>Seeing a bear, a road hazard, or wildlife on a road? on-wildlife has a quick report that drops it on a shared map for the area, with sensitive spots coarsened for privacy.</p><p><a href="https://katsuma0.github.io/on-wildlife/#/more" target="_blank" rel="noopener">Open on-wildlife to report</a></p>`}
   ];
-  el.innerHTML=A.map(function(a){ return '<details class="about-scout" style="margin-bottom:10px"><summary>'+a.t+CHEV+'</summary><div class="body">'+a.b+'</div></details>'; }).join('');
+  el.innerHTML='<div class="group"><div class="list">'+A.map(function(a){
+    return '<details class="cell-details"><summary class="cell tap"><span class="cell-body"><span class="cell-title">'+a.t+'</span></span>'+CHEV+'</summary>'+
+      '<div class="cell-detail-body">'+a.b+'</div></details>'; }).join('')+'</div></div>';
 }
 /* shared: body scroll lock while a sheet is open */
 var _lockY=0,_locks=0;
@@ -1296,8 +1311,6 @@ makeSheetSwipe(sheet,closeSheet);
   applyAppearance();
   buildDots(); load(); migrateAlgonquin(); migrateScale5();
   loadParksEmbedded(); renderFilters(); buildSearchIndex(); wireGlobalSearch(); renderThemePicker();
-  (function(){ var ab=document.querySelector('.about-scout'); if(!ab) return;
-    var body=ab.querySelector('.body'); if(body) body.addEventListener('click',function(){ ab.removeAttribute('open'); }); })();
   renderParks();                 /* instant first paint, no network wait */
   await loadPhotoIndex();        /* fast local IndexedDB */
   migrateAlgPhotos();
