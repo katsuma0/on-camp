@@ -1,9 +1,10 @@
 /* on-camp, offline service worker */
-const CACHE = 'scout-v200';
+const CACHE = 'scout-v201';
 const CORE = [
   './',
   './index.html',
-  './styles.css',
+  './assets/ios.css',
+  './assets/icons.svg',
   './share.js',
   './app.js',
   './data/parks.js',
@@ -16,7 +17,6 @@ const CORE = [
   './icon-512.png',
   './apple-touch-icon.png',
   './vendor/leaflet/leaflet.js',
-  './vendor/leaflet/leaflet.css',
   './vendor/leaflet/images/marker-icon.png',
   './vendor/leaflet/images/marker-icon-2x.png',
   './vendor/leaflet/images/marker-shadow.png',

@@ -145,7 +145,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\nSRC=\"${SRCROOT}/..\"\nDEST=\"${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Web\"\nrm -rf \"$DEST\"\nmkdir -p \"$DEST\"\nfor item in index.html styles.css app.js map.js share.js manifest.json parks-data.json data vendor icon-192.png icon-512.png apple-touch-icon.png; do\n  cp -R \"$SRC/$item\" \"$DEST/$item\"\ndone\necho \"Bundled web app into $DEST\"\n";
+			shellScript = "set -e\nSRC=\"${SRCROOT}/..\"\nDEST=\"${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Web\"\nrm -rf \"$DEST\"\nmkdir -p \"$DEST\"\nfor item in index.html assets app.js map.js share.js manifest.json parks-data.json data vendor icon-192.png icon-512.png apple-touch-icon.png; do\n  cp -R \"$SRC/$item\" \"$DEST/$item\"\ndone\necho \"Bundled web app into $DEST\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
