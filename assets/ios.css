@@ -1,0 +1,408 @@
+/* =====================================================================
+   ios.css, part 1 of 2: the shared iOS design system.
+   One stylesheet per site. Tokens live on :root; dark mode follows the
+   OS through prefers-color-scheme. The apps carry their own
+   Auto / Light / Dark setting, which lands as data-theme on <html> and
+   must win in both directions. The .ios-scheme-* classes expose the
+   same two palettes to the styleguide so it can show both modes on one
+   page without duplicating a token anywhere else.
+   No hex outside the token blocks below.
+   ===================================================================== */
+
+:root {
+  /* ground and surfaces */
+  --bg: #F2F2F7;
+  --card: #FFFFFF;
+  --card-pressed: #D1D1D6;
+
+  /* text */
+  --label: #000000;
+  --label-2: rgba(60, 60, 67, .60);
+  --label-3: rgba(60, 60, 67, .30);
+  --sep: rgba(60, 60, 67, .29);
+
+  /* chrome and tint */
+  --tint: #007AFF;
+  --tint-press: #0062CC;
+  --tint-soft: rgba(0, 122, 255, .12);
+  --on-tint: #FFFFFF;
+  --chrome: rgba(255, 255, 255, .72);
+
+  /* accents, one per tile colour */
+  --green: #34C759;
+  --blue: #007AFF;
+  --purple: #AF52DE;
+  --grey: #8E8E93;
+  --graphite: #48484A;
+  --orange: #FF9500;
+  --yellow: #FFCC00;
+  --red: #FF3B30;
+
+  /* system fills */
+  --fill: rgba(120, 120, 128, .12);
+  --fill-strong: rgba(120, 120, 128, .2);
+  --press-pill: rgba(120, 120, 128, .16);
+  --shadow-float: 0 8px 24px rgba(0, 0, 0, .12);
+
+  /* geometry */
+  --r-group: 12px;
+  --r-tile: 7px;
+  --row-min: 48px;
+  --gutter: 16px;
+
+  /* compat aliases: older component css reads these names */
+  --bg-elevated: var(--card);
+  --bg-secondary: var(--bg);
+  --bar: var(--chrome);
+  --bar-border: var(--sep);
+  --separator: var(--sep);
+  --tab-inactive: var(--label-2);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #000000;
+    --card: #1C1C1E;
+    --card-pressed: #2C2C2E;
+    --label: #FFFFFF;
+    --label-2: rgba(235, 235, 245, .60);
+    --label-3: rgba(235, 235, 245, .30);
+    --sep: rgba(84, 84, 88, .65);
+    --tint: #0A84FF;
+    --tint-press: #409CFF;
+    --tint-soft: rgba(10, 132, 255, .16);
+    --chrome: rgba(28, 28, 30, .72);
+    --green: #30D158;
+    --blue: #0A84FF;
+    --purple: #BF5AF2;
+    --graphite: #3A3A3C;
+    --orange: #FF9F0A;
+    --yellow: #FFD60A;
+    --red: #FF453A;
+    --fill: rgba(120, 120, 128, .24);
+    --fill-strong: rgba(120, 120, 128, .36);
+    --press-pill: rgba(120, 120, 128, .29);
+    color-scheme: dark;
+  }
+}
+
+/* The in-app theme picker must beat the OS in both directions, and the
+   styleguide borrows the same palettes for its side by side panels. */
+:root[data-theme="light"],
+.ios-scheme-light {
+  --bg: #F2F2F7;
+  --card: #FFFFFF;
+  --card-pressed: #D1D1D6;
+  --label: #000000;
+  --label-2: rgba(60, 60, 67, .60);
+  --label-3: rgba(60, 60, 67, .30);
+  --sep: rgba(60, 60, 67, .29);
+  --tint: #007AFF;
+  --tint-press: #0062CC;
+  --tint-soft: rgba(0, 122, 255, .12);
+  --chrome: rgba(255, 255, 255, .72);
+  --green: #34C759;
+  --blue: #007AFF;
+  --purple: #AF52DE;
+  --grey: #8E8E93;
+  --graphite: #48484A;
+  --orange: #FF9500;
+  --yellow: #FFCC00;
+  --red: #FF3B30;
+  --fill: rgba(120, 120, 128, .12);
+  --fill-strong: rgba(120, 120, 128, .2);
+  --press-pill: rgba(120, 120, 128, .16);
+  color-scheme: light;
+}
+:root[data-theme="dark"],
+.ios-scheme-dark {
+  --bg: #000000;
+  --card: #1C1C1E;
+  --card-pressed: #2C2C2E;
+  --label: #FFFFFF;
+  --label-2: rgba(235, 235, 245, .60);
+  --label-3: rgba(235, 235, 245, .30);
+  --sep: rgba(84, 84, 88, .65);
+  --tint: #0A84FF;
+  --tint-press: #409CFF;
+  --tint-soft: rgba(10, 132, 255, .16);
+  --chrome: rgba(28, 28, 30, .72);
+  --green: #30D158;
+  --blue: #0A84FF;
+  --purple: #BF5AF2;
+  --grey: #8E8E93;
+  --graphite: #3A3A3C;
+  --orange: #FF9F0A;
+  --yellow: #FFD60A;
+  --red: #FF453A;
+  --fill: rgba(120, 120, 128, .24);
+  --fill-strong: rgba(120, 120, 128, .36);
+  --press-pill: rgba(120, 120, 128, .29);
+  color-scheme: dark;
+}
+
+/* ------------------------------------------------------------ globals */
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--label);
+  font-family: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  /* content must clear the floating tab bar */
+  padding-bottom: 88px;
+}
+img { max-width: 100%; }
+a { color: var(--tint); text-decoration: none; }
+button {
+  font-family: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+:focus-visible {
+  outline: 2px solid var(--tint);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+/* one centred column, capped at 640px */
+.ios-page { max-width: 640px; margin: 0 auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+/* ------------------------------------------------------- 1. header */
+.ios-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--chrome);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  padding: calc(8px + env(safe-area-inset-top)) var(--gutter) 8px;
+}
+.ios-header-row {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+}
+.ios-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--fill-strong);
+  color: var(--label);
+  font-size: 19px;
+  font-weight: 600;
+  text-decoration: none;
+  overflow: hidden;
+  flex: none;
+}
+.ios-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.ios-avatar svg { width: 22px; height: 22px; color: var(--label-2); }
+.ios-avatar:active { background: var(--card-pressed); }
+.ios-header-actions { display: flex; gap: 10px; margin-left: auto; }
+.ios-glass-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--fill);
+  border: 0.5px solid var(--sep);
+  color: var(--label);
+}
+.ios-glass-btn svg { width: 22px; height: 22px; }
+.ios-glass-btn:active { background: var(--card-pressed); }
+
+/* ------------------------------------------------ 2. section title */
+.ios-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--label);
+  margin: 26px 0 8px;
+  padding-left: var(--gutter);
+}
+.ios-overflow {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--label-2);
+  margin-right: var(--gutter);
+}
+.ios-overflow svg { width: 24px; height: 24px; }
+
+/* -------------------------------------------------------- 3. group */
+.ios-group {
+  background: var(--card);
+  border-radius: var(--r-group);
+  margin: 0 var(--gutter) 32px;
+  overflow: hidden;
+}
+/* small footnote under a group, outside the card */
+.ios-group-foot {
+  font-size: 13px;
+  color: var(--label-2);
+  margin: -24px var(--gutter) 32px;
+  padding: 8px 4px 0;
+  line-height: 1.35;
+}
+
+/* ---------------------------------------------------------- 4. row */
+.ios-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: var(--row-min);
+  padding: 8px 14px;
+  gap: 12px;
+  color: var(--label);
+  font-size: 17px;
+  text-decoration: none;
+  text-align: left;
+  background: var(--card);
+  /* a <button> is a form control: without this its row shrink-wraps */
+  width: 100%;
+  border: 0;
+}
+.ios-row:active { background: var(--card-pressed); }
+/* separator starts at the label, never the card edge:
+   14px pad + 32px tile + 12px gap = 58px when a tile leads the row */
+.ios-row + .ios-row::before,
+.ios-row + details > .ios-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 58px;
+  right: 0;
+  height: 0.5px;
+  background: var(--sep);
+}
+/* rows with no leading tile: the label starts at the padding */
+.ios-row--plain + .ios-row--plain::before { left: 14px; }
+.ios-row-body { flex: 1; min-width: 0; }
+.ios-row-title {
+  display: block;
+  font-size: 17px;
+  color: var(--label);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ios-row-sub {
+  display: block;
+  font-size: 13px;
+  color: var(--label-2);
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ios-row-value {
+  flex: none;
+  margin-left: auto;
+  color: var(--label-2);
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+.ios-chevron {
+  flex: none;
+  margin-left: auto;
+  display: flex;
+  color: var(--label-3);
+}
+.ios-row-value + .ios-chevron { margin-left: 8px; }
+.ios-chevron svg { width: 16px; height: 16px; display: block; }
+
+/* --------------------------------------------------------- 5. tile */
+.ios-tile {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-tile);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-tint);
+  flex: none;
+}
+.ios-tile svg { width: 18px; height: 18px; }
+.ios-tile--green { background: var(--green); }
+.ios-tile--blue { background: var(--blue); }
+.ios-tile--purple { background: var(--purple); }
+.ios-tile--grey { background: var(--grey); }
+.ios-tile--graphite { background: var(--graphite); }
+.ios-tile--orange { background: var(--orange); }
+.ios-tile--yellow { background: var(--yellow); }
+.ios-tile--red { background: var(--red); }
+.ios-tile--tint { background: var(--tint); }
+
+/* ------------------------------------------------------ 6. tab bar */
+.ios-tabbar {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(8px + env(safe-area-inset-bottom));
+  height: 56px;
+  max-width: 616px;
+  margin: 0 auto;
+  border-radius: 28px;
+  background: var(--chrome);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 0.5px solid var(--sep);
+  box-shadow: var(--shadow-float);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 50;
+}
+.ios-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 62px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 22px;
+  color: var(--label-2);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+}
+.ios-tab svg { width: 24px; height: 24px; }
+.ios-tab[aria-current="page"],
+.ios-tab.on {
+  background: var(--press-pill);
+  color: var(--tint);
+}
+/* static variant so the styleguide can show the bar in the flow */
+.ios-tabbar--demo { position: static; margin: 8px auto; }

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <title>styleguide</title>
+  <link rel="stylesheet" href="assets/ios.css">
+  <style>
+    /* Demo scaffolding only. Components come from ios.css; the two panels
+       borrow the palettes through the .ios-scheme-* classes it defines,
+       so no colour is duplicated here. */
+    .sg-note {
+      margin: 12px 16px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: var(--tint-soft);
+      color: var(--label);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .sg-pane { padding: 4px 0 24px; background: var(--bg); color: var(--label); }
+    .sg-pane + .sg-pane { border-top: 4px solid var(--sep); }
+    .sg-pane-label {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+      color: var(--label-2);
+      margin: 18px 16px 4px;
+    }
+    .sg-swatches { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 16px 24px; }
+    .sg-swatch {
+      width: 64px;
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 10px;
+      color: var(--label-2);
+      text-align: center;
+    }
+    .sg-swatch i { display: block; height: 40px; border: 0.5px solid var(--sep); border-radius: 8px; }
+    .sg-tiles { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 16px 24px; }
+    .sg-phone { max-width: 375px; margin: 0 auto; }
+    .sg-kbd { font-size: 13px; color: var(--label-2); margin: 0 16px 24px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+<div class="ios-page">
+
+  <div class="sg-note">
+    This page is the design contract for the iOS look: every component, in both
+    modes, on one page. It is designed at 375px wide and must also hold at
+    320px with no horizontal scroll. Resize to check. The dark panel below is
+    forced; the page itself follows your OS setting.
+  </div>
+
+  <!-- ============================== LIGHT ============================== -->
+  <section class="sg-pane ios-scheme-light">
+    <div class="sg-pane-label">Light</div>
+    <div class="sg-phone">
+
+      <header class="ios-header">
+        <div class="ios-header-row">
+          <a class="ios-avatar" href="#" aria-label="Account">k</a>
+          <div class="ios-header-actions">
+            <button class="ios-glass-btn" type="button" aria-label="New entry"><svg><use href="assets/icons.svg#plus"/></svg></button>
+            <button class="ios-glass-btn" type="button" aria-label="Search"><svg><use href="assets/icons.svg#search"/></svg></button>
+          </div>
+        </div>
+      </header>
+
+      <h2 class="ios-section-title">My work
+        <button class="ios-overflow" type="button" aria-label="More options"><svg><use href="assets/icons.svg#ellipsis"/></svg></button>
+      </h2>
+      <nav class="ios-group">
+        <a class="ios-row" href="#">
+          <span class="ios-tile ios-tile--green"><svg><use href="assets/icons.svg#notebook"/></svg></span>
+          <span class="ios-row-body"><span class="ios-row-title">Journal</span></span>
+          <span class="ios-chevron"><svg><use href="assets/icons.svg#chevron-right"/></svg></span>
+        </a>
+        <a class="ios-row" href="#">
+          <span class="ios-tile ios-tile--blue"><svg><use href="assets/icons.svg#map"/></svg></span>
+          <span class="ios-row-body"><span class="ios-row-title">Map</span></span>
+          <span class="ios-chevron"><svg><use href="assets/icons.svg#chevron-right"/></svg></span>
+        </a>
+        <a class="ios-row" href="#">
+          <span class="ios-tile ios-tile--purple"><svg><use href="assets/icons.svg#chart"/></svg></span>
+          <span class="ios-row-body"><span class="ios-row-title">Stats</span><span class="ios-row-sub">Two line row with a subtitle</span></span>
+          <span class="ios-chevron"><svg><use href="assets/icons.svg#chevron-right"/></svg></span>
+        </a>
+        <a class="ios-row" href="#">
+          <span class="ios-tile ios-tile--orange"><svg><use href="assets/icons.svg#image"/></svg></span>
+          <span class="ios-row-body"><span class="ios-row-title">Photos</span></span>
+          <span class="ios-row-value">128</span>
+          <span class="ios-chevron"><svg><use href="assets/icons.svg#chevron-right"/></svg></span>
+        </a>
+        <a class="ios-row" href="#">
+          <span class="ios-tile ios-tile--yellow"><svg><use href="assets/icons.svg#star"/></svg></span>
+          <span class="ios-row-body"><span class="ios-row-title">Starred</span></span>
+          <span class="ios-chevron"><svg><use href="assets/icons.svg#chevron-right"/></svg></span>
+        </a>
+      </nav>
+
+      <h2 class="ios-section-title">Plain rows</h2>
+      <div class="ios-group">
+        <div class="ios-row ios-row--plain">
+          <span class="ios-row-body"><span class="ios-row-title">Species in guide</span></span>
+          <span class="ios-row-value">778</span>
+        </div>
+        <div class="ios-row ios-row--plain">
+          <span class="ios-row-body"><span class="ios-row-title">Version</span></span>
+          <span class="ios-row-value">3.0</span>
+        </div>
+        <a class="ios-row ios-row--plain" href="#">
+          <span class="ios-row-body"><span class="ios-row-title">A row that navigates</span></span>
+          <span class="ios-chevron"><svg><use href="assets/icons.svg#chevron-right"/></svg></span>
+        </a>
+      </div>
+      <p class="ios-group-foot">Separators start at the label, never at the card edge. Press any row to see the pressed state.</p>
+
+      <div class="sg-pane-label">Accent tiles</div>
+      <div class="sg-tiles">
+        <span class="ios-tile ios-tile--green"><svg><use href="assets/icons.svg#leaf"/></svg></span>
+        <span class="ios-tile ios-tile--blue"><svg><use href="assets/icons.svg#map"/></svg></span>
+        <span class="ios-tile ios-tile--purple"><svg><use href="assets/icons.svg#chart"/></svg></span>
+        <span class="ios-tile ios-tile--grey"><svg><use href="assets/icons.svg#lock"/></svg></span>
+        <span class="ios-tile ios-tile--graphite"><svg><use href="assets/icons.svg#shield"/></svg></span>
+        <span class="ios-tile ios-tile--orange"><svg><use href="assets/icons.svg#alert"/></svg></span>
+        <span class="ios-tile ios-tile--yellow"><svg><use href="assets/icons.svg#star"/></svg></span>
+        <span class="ios-tile ios-tile--red"><svg><use href="assets/icons.svg#trash"/></svg></span>
+      </div>
+
+      <div class="sg-pane-label">Tab bar</div>
+      <nav class="ios-tabbar ios-tabbar--demo">
+        <a class="ios-tab" aria-current="page" href="#"><svg><use href="assets/icons.svg#home"/></svg><span>Home</span></a>
+        <a class="ios-tab" href="#"><svg><use href="assets/icons.svg#map"/></svg><span>Map</span></a>
+        <a class="ios-tab" href="#"><svg><use href="assets/icons.svg#notebook"/></svg><span>Journal</span></a>
+        <a class="ios-tab" href="#"><svg><use href="assets/icons.svg#ellipsis"/></svg><span>More</span></a>
+      </nav>
+
+      <div class="sg-pane-label">Tokens</div>
+      <div class="sg-swatches">
+        <span class="sg-swatch"><i style="background:var(--bg)"></i>bg</span>
+        <span class="sg-swatch"><i style="background:var(--card)"></i>card</span>
+        <span class="sg-swatch"><i style="background:var(--card-pressed)"></i>pressed</span>
+        <span class="sg-swatch"><i style="background:var(--tint)"></i>tint</span>
+        <span class="sg-swatch"><i style="background:var(--green)"></i>green</span>
+        <span class="sg-swatch"><i style="background:var(--purple)"></i>purple</span>
+        <span class="sg-swatch"><i style="background:var(--orange)"></i>orange</span>
+        <span class="sg-swatch"><i style="background:var(--yellow)"></i>yellow</span>
+        <span class="sg-swatch"><i style="background:var(--grey)"></i>grey</span>
+        <span class="sg-swatch"><i style="background:var(--graphite)"></i>graphite</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== DARK =============================== -->
+  <section class="sg-pane ios-scheme-dark">
+    <div class="sg-pane-label">Dark, forced for comparison</div>
+    <div class="sg-phone">
+
+      <header class="ios-header">
+        <div class="ios-header-row">
+          <a class="ios-avatar" href="#" aria-label="Account">k</a>
+          <div class="ios-header-actions">
+            <button class="ios-glass-btn" type="button" aria-label="New entry"><svg><use href="assets/icons.svg#plus"/></svg></button>
+            <button class="ios-glass-btn" type="button" aria-label="Search"><svg><use href="assets/icons.svg#search"/></svg></button>
+          </div>
+        </div>
+      </header>
+
+      <h2 class="ios-section-title">My work
+        <button class="ios-overflow" type="button" aria-label="More options"><svg><use href="assets/icons.svg#ellipsis"/></svg></button>
+      </h2>
+      <nav class="ios-group">
+        <a class="ios-row" href="#">
+          <span class="ios-tile ios-tile--green"><svg><use href="assets/icons.svg#notebook"/></svg></span>
+          <span class="ios-row-body"><span class="ios-row-title">Journal</span></span>
+          <span class="ios-chevron"><svg><use href="assets/icons.svg#chevron-right"/></svg></span>
+        </a>
+        <a class="ios-row" href="#">
+          <span class="ios-tile ios-tile--blue"><svg><use href="assets/icons.svg#map"/></svg></span>
+          <span class="ios-row-body"><span class="ios-row-title">Map</span></span>
+          <span class="ios-chevron"><svg><use href="assets/icons.svg#chevron-right"/></svg></span>
+        </a>
+        <a class="ios-row" href="#">
+          <span class="ios-tile ios-tile--purple"><svg><use href="assets/icons.svg#chart"/></svg></span>
+          <span class="ios-row-body"><span class="ios-row-title">Stats</span><span class="ios-row-sub">Two line row with a subtitle</span></span>
+          <span class="ios-chevron"><svg><use href="assets/icons.svg#chevron-right"/></svg></span>
+        </a>
+        <div class="ios-row ios-row--plain">
+          <span class="ios-row-body"><span class="ios-row-title">Version</span></span>
+          <span class="ios-row-value">3.0</span>
+        </div>
+      </nav>
+
+      <div class="sg-pane-label">Tab bar</div>
+      <nav class="ios-tabbar ios-tabbar--demo">
+        <a class="ios-tab" aria-current="page" href="#"><svg><use href="assets/icons.svg#home"/></svg><span>Home</span></a>
+        <a class="ios-tab" href="#"><svg><use href="assets/icons.svg#map"/></svg><span>Map</span></a>
+        <a class="ios-tab" href="#"><svg><use href="assets/icons.svg#notebook"/></svg><span>Journal</span></a>
+        <a class="ios-tab" href="#"><svg><use href="assets/icons.svg#ellipsis"/></svg><span>More</span></a>
+      </nav>
+
+      <div class="sg-pane-label">Tokens</div>
+      <div class="sg-swatches">
+        <span class="sg-swatch"><i style="background:var(--bg)"></i>bg</span>
+        <span class="sg-swatch"><i style="background:var(--card)"></i>card</span>
+        <span class="sg-swatch"><i style="background:var(--card-pressed)"></i>pressed</span>
+        <span class="sg-swatch"><i style="background:var(--tint)"></i>tint</span>
+        <span class="sg-swatch"><i style="background:var(--green)"></i>green</span>
+        <span class="sg-swatch"><i style="background:var(--purple)"></i>purple</span>
+        <span class="sg-swatch"><i style="background:var(--orange)"></i>orange</span>
+        <span class="sg-swatch"><i style="background:var(--yellow)"></i>yellow</span>
+      </div>
+    </div>
+  </section>
+
+  <p class="sg-kbd">
+    Rules of the system: tokens only, no hex outside the :root blocks of
+    ios.css. Rows are at least 48px tall and every tap target at least 44px.
+    Icons are 24px strokes at width 2 from assets/icons.svg. The tab bar
+    floats 8px above the home indicator and content pads 88px to clear it.
+    No hover states; touch gets the pressed colour instead.
+  </p>
+</div>
+</body>
+</html>
