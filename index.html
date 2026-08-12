@@ -13,6 +13,38 @@
 <meta name="apple-mobile-web-app-title" content="Site Journal">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="icon" type="image/png" href="./icon-192.png">
+<script>
+/* Appearance, stamped before first paint so there is no flash. One JSON key,
+   'outdoors-appearance', shared by every outdoors app on this origin:
+   { theme:'auto'|'light'|'dark', glass:'on'|'off', palette:'parks'|'field'|'granite',
+     face:'parks'|'system'|'rounded'|'serif'|'avenir'|'mono', size:'s'|'m'|'l'|'xl' }.
+   Defaults (auto, on, parks, parks, m) stamp nothing. The old per-app
+   'oncamp-appearance' theme migrates into the key once, then only the key is read. */
+(function(){
+  var d=document.documentElement;
+  try{
+    var K='outdoors-appearance', a=null, save=false;
+    try{ a=JSON.parse(localStorage.getItem(K)); }catch(x){}
+    if(!a||typeof a!=='object') a={};
+    var old=localStorage.getItem('oncamp-appearance');
+    if(old!=null){
+      if((old==='light'||old==='dark')&&!a.theme){ a.theme=old; save=true; }
+      localStorage.removeItem('oncamp-appearance');
+    }
+    /* one time: face "system" saved before the parks round was the old
+       default, not a choice, so it moves to the new default. a System
+       pick made in the panel now writes v2 alongside, so it sticks. */
+    if(a.face==='system'&&!a.v2){ delete a.face; a.v2=1; save=true; }
+    if(a.palette==='shore'){ a.palette='parks'; save=true; }
+    if(save) localStorage.setItem(K,JSON.stringify(a));
+    if(a.theme==='light'||a.theme==='dark') d.setAttribute('data-theme',a.theme);
+    if(a.glass==='off') d.setAttribute('data-glass','off');
+    if(a.palette==='field'||a.palette==='granite') d.setAttribute('data-palette',a.palette);
+    if(['system','rounded','serif','avenir','mono'].indexOf(a.face)>=0) d.setAttribute('data-face',a.face);
+    if(['s','l','xl'].indexOf(a.size)>=0) d.setAttribute('data-textsize',a.size);
+  }catch(e){}
+})();
+</script>
 <link rel="stylesheet" href="assets/ios.css">
 </head>
 <body>
@@ -20,6 +52,7 @@
 <header class="ios-header" id="iosHeader">
   <div class="ios-header-row">
     <button class="ios-avatar" id="avatarBtn" type="button" aria-label="Account"><svg aria-hidden="true"><use href="assets/icons.svg#user"/></svg></button>
+    <span class="ios-brand">on-camp</span>
     <div class="ios-header-actions">
       <button class="ios-glass-btn" id="rateSiteBtn" type="button" aria-label="Rate a campsite"><svg aria-hidden="true"><use href="assets/icons.svg#plus"/></svg></button>
       <button class="ios-glass-btn" id="searchBtn" type="button" aria-label="Search"><svg aria-hidden="true"><use href="assets/icons.svg#search"/></svg></button>
@@ -30,13 +63,13 @@
 <main id="views">
 <section id="view-parks">
   <div class="appbar">
-    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.201</button></div>
-    <div class="sub">Ontario Parks campsites. Walk a campground, rate the sites, and remember which ones to book next time.</div>
+    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.204</button></div>
+    <div class="sub">Walk a campground, rate the sites, and book the good ones next time.</div>
   </div>
   <div class="wrap">
     <div class="gsearch" id="gsearch">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="gq" inputmode="search" autocomplete="off" placeholder="Search parks, sites, trails, or a fish">
+      <input id="gq" inputmode="search" autocomplete="off" placeholder="Parks, sites, trails, or a fish">
       <button class="gclear" id="gclear" aria-label="Clear search">✕</button>
     </div>
     <div id="gresults" class="gresults" hidden></div>
@@ -45,7 +78,7 @@
   </div>
   <div class="azrail" id="azRail" aria-label="Jump to a letter" hidden></div>
   <footer>
-    Ratings and photos are saved to this device only. Manage your data in More.<br>
+    Everything you save stays on this device.<br>
     Created by <a href="https://katsuma0.github.io" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Katsuma Onishi</a> · <a href="https://katsuma.ca/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px">katsuma.ca</a>
   </footer>
 </section>
@@ -56,7 +89,7 @@
   </div></div>
   <div class="wrap" id="parkBody"></div>
   <footer>
-    Ratings and photos are saved to this device only.<br>
+    Everything you save stays on this device.<br>
     Created by <a href="https://katsuma0.github.io" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Katsuma Onishi</a> · <a href="https://katsuma.ca/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px">katsuma.ca</a>
     <br><br>
     <button class="resetlink" id="resetBtnPark"></button>
@@ -66,7 +99,7 @@
 <section id="view-map" class="tabscreen" hidden>
   <div class="map-wrap">
     <div id="campMap"></div>
-    <div class="map-note" id="campMapNote">Ontario parks over the fishing zones. Tap a pin to open a park.</div>
+    <div class="map-note" id="campMapNote">Tap a pin to open its park.</div>
     <div class="map-fabs"><button class="fab" id="mapLocate" type="button" aria-label="Find my location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/></svg></button></div>
   </div>
 </section>
@@ -95,7 +128,7 @@
         <input class="acct-input" id="displayName" type="text" placeholder="Your name" autocomplete="name" enterkeyhint="done">
       </label>
     </div>
-    <p class="ios-group-foot">Shown as your avatar initial, shared with the other outdoors apps on this device. It never leaves it.</p>
+    <p class="ios-group-foot">Your avatar initial, shared with the other outdoors apps. It never leaves this device.</p>
 
     <div class="acct-stats">
       <div class="acct-stat"><b id="stParks" class="tnum">0</b><span>Parks touched</span></div>
@@ -138,7 +171,7 @@
     <button class="acct-back" id="photosBack" type="button"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-left"/></svg>Account</button>
   </div>
   <h1 class="screen-title">Photos</h1>
-  <p class="screen-sub">Every photo you have saved. Tap one to open its site.</p>
+  <p class="screen-sub">Tap a photo to open its site.</p>
   <div class="wrap"><div class="pgrid" id="photosGrid"></div></div>
 </section>
 
@@ -177,6 +210,9 @@
 <div class="sheet" id="versionsSheet" role="dialog" aria-modal="true" aria-label="Versions">
   <div class="grabber"></div>
   <div class="kind" style="margin-bottom:12px">Versions</div>
+  <div class="verline"><span class="vv">v0.204</span>On a laptop it reads as a website: top bar, sidebar tabs, and sheets become dialogs</div>
+  <div class="verline"><span class="vv">v0.203</span>The Parks Canada look is the new default: federal blues, a red title rule, and Lato with Noto Sans</div>
+  <div class="verline"><span class="vv">v0.202</span>Appearance settings shared across the outdoors apps: theme, colours, glass, text size and face</div>
   <div class="verline"><span class="vv">v0.201</span>Parks in one A to Z list with a letter rail, a Journal tab, and Learn lives in More</div>
   <div class="verline"><span class="vv">v0.200</span>The iOS look: floating tab capsule, one blue tint, and an account page</div>
   <div class="verline"><span class="vv">v0.198</span>Bigger tap targets, and a park now shows how many of its sites you have rated</div>
@@ -247,13 +283,12 @@
       <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
     </button>
   </div>
-  <p class="ios-group-foot">Everything is saved on this device. Export a backup to move it to another phone.</p>
+  <p class="ios-group-foot">Export a backup to move your journal to another phone.</p>
   <input type="file" id="importInput" accept=".json,application/json" hidden>
 
   <h2 class="ios-section-title">Appearance</h2>
-  <div class="ios-group">
-    <div class="segmented" id="themeRow"></div>
-  </div>
+  <div class="ios-group" id="appearancePanel"></div>
+  <p class="ios-group-foot">One look, shared by the outdoors apps on this device.</p>
 
   <h2 class="ios-section-title">More from the Ontario outdoors</h2>
   <div class="ios-group">

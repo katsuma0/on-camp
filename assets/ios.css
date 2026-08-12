@@ -494,7 +494,7 @@ button {
   .appbar{padding:10px 16px 14px;max-width:640px;margin:0 auto}
   .eyebrow{font-size:13px;font-weight:400;letter-spacing:.4px;text-transform:uppercase;color:var(--label-2)}
   .titlebar{display:flex;align-items:baseline;justify-content:space-between;gap:9px}
-  .appbar h1{font-weight:700;font-size:34px;line-height:41px;letter-spacing:.37px;margin:2px 0 0}
+  .appbar h1{font-weight:700;font-size:34px;line-height:41px;letter-spacing:var(--ls-large-title);margin:2px 0 0}
   .ver{position:relative;appearance:none;border:0;background:none;cursor:pointer;font-family:var(--font-sys);font-weight:600;font-size:15px;
     color:var(--tint-text);white-space:nowrap;padding:6px 4px;margin:0}
   /* Fitts: the label stays small and quiet, the thing you aim at does not. */
@@ -930,7 +930,7 @@ button {
 
   /* tab screens (the bar itself is the core .ios-tabbar) ---------------- */
   .tabscreen[hidden]{ display:none; }
-  .screen-title{ font-size:34px; line-height:41px; font-weight:700; letter-spacing:.37px; margin:0;
+  .screen-title{ font-size:34px; line-height:41px; font-weight:700; letter-spacing:var(--ls-large-title); margin:0;
     padding:8px 16px 6px; max-width:640px; margin-left:auto; margin-right:auto; box-sizing:border-box; }
   .screen-sub{ color:var(--label-2); font-size:15px; margin:0; padding:0 16px 8px; max-width:640px;
     margin-left:auto; margin-right:auto; box-sizing:border-box; }
@@ -1701,3 +1701,552 @@ svg.leaflet-image-layer.leaflet-interactive path {
 		print-color-adjust: exact;
 		}
 	}
+
+/* =====================================================================
+   ios.css appearance layer: liquid glass, the three tone palettes, six
+   faces, four text sizes, and the blended header.
+   Driven by data attributes on <html>, set pre-paint from the shared
+   'outdoors-appearance' key so every site dresses the same:
+     data-glass="off"          glass chrome off (on is the default)
+     data-palette="parks|field|granite"   (parks default, no attribute)
+     data-face="parks|system|rounded|serif|avenir|mono"   (parks default, no attribute)
+     data-textsize="s|m|l|xl"  (m is the default)
+   Tone rules: tone 1 is the tint and carries controls, tone 2 supports
+   (chips, secondary highlights), tone 3 is fills and bars only, never
+   small text. Each palette redefines the tint family so every existing
+   component follows without knowing palettes exist.
+   ===================================================================== */
+
+/* the Parks face ships its own type: Lato for headings and buttons,
+   Noto Sans for text, the same files the Canada.ca theme loads.
+   Both are SIL OFL; see assets/fonts/OFL.txt. */
+@font-face { font-family: "Lato"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/lato-400.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Lato"; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/lato-700.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Noto Sans"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/noto-400.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Noto Sans"; font-style: italic; font-weight: 400; font-display: swap; src: url("fonts/noto-400i.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Noto Sans"; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/noto-700.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+/* ------------------------------------------------ three tone palettes */
+/* parks is the default: the palette the Parks Canada site wears.
+   tone 1 #284162 carries links and controls with #26374A on filled
+   buttons, tone 2 #355688 supports, tone 3 is the #A62A1E rule red,
+   fills and bars only. */
+:root {
+  --tint: #284162; --tint-press: #243850; --tint-text: #284162; --tint-fill: #26374A;
+  --tint-soft: rgba(40, 65, 98, .12);
+  --tone2: #355688; --tone3: #A62A1E;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --tint: #8FB0DC; --tint-press: #A3C2EA; --tint-text: #8FB0DC; --tint-fill: #3A5A8C;
+    --tint-soft: rgba(143, 176, 220, .16);
+    --tone2: #4C76B0; --tone3: #E8604C;
+  }
+}
+:root[data-theme="dark"] {
+  --tint: #8FB0DC; --tint-press: #A3C2EA; --tint-text: #8FB0DC; --tint-fill: #3A5A8C;
+  --tint-soft: rgba(143, 176, 220, .16);
+  --tone2: #4C76B0; --tone3: #E8604C;
+}
+/* the explicit Light choice re-lists the tint family above at higher
+   specificity, so parks re-asserts its light values for that case.
+   field and granite still win: their blocks sit later in the file. */
+:root[data-theme="light"] {
+  --tint: #284162; --tint-press: #243850; --tint-text: #284162; --tint-fill: #26374A;
+  --tint-soft: rgba(40, 65, 98, .12);
+}
+
+:root[data-palette="field"] {
+  --tint: #2E7D4F; --tint-press: #256B42; --tint-text: #256B42; --tint-fill: #256B42;
+  --tint-soft: rgba(46, 125, 79, .13);
+  --tone2: #6B7F3E; --tone3: #E8A13D;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="field"]:not([data-theme="light"]) {
+    --tint: #30D158; --tint-press: #6CE28A; --tint-text: #30D158; --tint-fill: #30D158;
+    --tint-soft: rgba(48, 209, 88, .17);
+    --tone2: #ACD98A; --tone3: #FFB340;
+  }
+}
+:root[data-palette="field"][data-theme="dark"] {
+  --tint: #30D158; --tint-press: #6CE28A; --tint-text: #30D158; --tint-fill: #30D158;
+  --tint-soft: rgba(48, 209, 88, .17);
+  --tone2: #ACD98A; --tone3: #FFB340;
+}
+
+:root[data-palette="granite"] {
+  --tint: #5E5CE6; --tint-press: #4B49C4; --tint-text: #4B49C4; --tint-fill: #4B49C4;
+  --tint-soft: rgba(94, 92, 230, .13);
+  --tone2: #6E6E73; --tone3: #F5C400;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="granite"]:not([data-theme="light"]) {
+    --tint: #7D7AFF; --tint-press: #9E9CFF; --tint-text: #7D7AFF; --tint-fill: #7D7AFF;
+    --tint-soft: rgba(125, 122, 255, .19);
+    --tone2: #98989D; --tone3: #FFD60A;
+  }
+}
+:root[data-palette="granite"][data-theme="dark"] {
+  --tint: #7D7AFF; --tint-press: #9E9CFF; --tint-text: #7D7AFF; --tint-fill: #7D7AFF;
+  --tint-soft: rgba(125, 122, 255, .19);
+  --tone2: #98989D; --tone3: #FFD60A;
+}
+
+/* -------------------------------------------------------- six faces */
+/* parks is the default face: Lato heads it, Noto Sans carries it, as on
+   the Parks Canada site. the five alternates are faces iOS ships
+   natively; elsewhere they fall back gracefully. */
+:root {
+  --font-sys: "Noto Sans", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Lato", "Noto Sans", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+  /* web faces carry their own fitted metrics; SF tracking returns with
+     the SF-family faces below */
+  --ls-large-title: 0; --ls-title1: 0; --ls-title2: 0; --ls-title3: 0;
+  --ls-headline: 0; --ls-body: 0; --ls-callout: 0; --ls-subhead: 0;
+  --ls-footnote: 0; --ls-caption1: 0; --ls-caption2: 0;
+}
+h1, h2, h3, h4, .btn { font-family: var(--font-display); }
+:root[data-face] { --font-display: var(--font-sys); }
+:root[data-face="system"] { --font-sys: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif; }
+:root[data-face="rounded"] { --font-sys: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+:root[data-face="serif"] { --font-sys: ui-serif, "New York", Georgia, "Times New Roman", serif; }
+:root[data-face="avenir"] { --font-sys: "Avenir Next", Avenir, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+:root[data-face="mono"] { --font-sys: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+/* SF-family faces get the HIG tracking back; serif and mono stay zeroed */
+:root[data-face="system"], :root[data-face="rounded"], :root[data-face="avenir"] {
+  --ls-large-title: 0.37px; --ls-title1: 0.36px; --ls-title2: 0.35px; --ls-title3: 0.38px;
+  --ls-headline: -0.41px; --ls-body: -0.41px; --ls-callout: -0.32px; --ls-subhead: -0.24px;
+  --ls-footnote: -0.08px; --ls-caption1: 0; --ls-caption2: 0.07px;
+}
+
+/* the parks palette signs its screens the way canada.ca signs a page:
+   a 72px, 6px-thick rule in the flag red under the main title. only the
+   top of screen large titles carry it, never section heads or sheets. */
+:root:not([data-palette="field"]):not([data-palette="granite"]) .appbar h1::after,
+:root:not([data-palette="field"]):not([data-palette="granite"]) .screen-title::after {
+  content: "";
+  display: block;
+  width: 72px;
+  height: 6px;
+  margin-top: 10px;
+  background: var(--tone3);
+}
+
+/* -------------------------------------------------- four text sizes */
+/* real Dynamic Type steps from the HIG, not a multiplier */
+:root[data-textsize="s"] {
+  --fs-large-title: 32px; --lh-large-title: 39px;
+  --fs-title1: 26px; --lh-title1: 32px;
+  --fs-title2: 20px; --lh-title2: 25px;
+  --fs-title3: 18px; --lh-title3: 23px;
+  --fs-headline: 15px; --lh-headline: 20px;
+  --fs-body: 15px; --lh-body: 20px;
+  --fs-callout: 14px; --lh-callout: 19px;
+  --fs-subhead: 13px; --lh-subhead: 18px;
+  --fs-footnote: 12px; --lh-footnote: 16px;
+  --fs-caption1: 11px; --lh-caption1: 13px;
+  --fs-caption2: 11px; --lh-caption2: 13px;
+}
+:root[data-textsize="l"] {
+  --fs-large-title: 36px; --lh-large-title: 43px;
+  --fs-title1: 30px; --lh-title1: 37px;
+  --fs-title2: 24px; --lh-title2: 30px;
+  --fs-title3: 22px; --lh-title3: 28px;
+  --fs-headline: 19px; --lh-headline: 24px;
+  --fs-body: 19px; --lh-body: 24px;
+  --fs-callout: 18px; --lh-callout: 23px;
+  --fs-subhead: 17px; --lh-subhead: 22px;
+  --fs-footnote: 15px; --lh-footnote: 20px;
+  --fs-caption1: 13px; --lh-caption1: 17px;
+  --fs-caption2: 12px; --lh-caption2: 14px;
+}
+:root[data-textsize="xl"] {
+  --fs-large-title: 38px; --lh-large-title: 46px;
+  --fs-title1: 32px; --lh-title1: 39px;
+  --fs-title2: 26px; --lh-title2: 32px;
+  --fs-title3: 24px; --lh-title3: 30px;
+  --fs-headline: 21px; --lh-headline: 26px;
+  --fs-body: 21px; --lh-body: 26px;
+  --fs-callout: 20px; --lh-callout: 25px;
+  --fs-subhead: 19px; --lh-subhead: 24px;
+  --fs-footnote: 17px; --lh-footnote: 22px;
+  --fs-caption1: 14px; --lh-caption1: 18px;
+  --fs-caption2: 13px; --lh-caption2: 16px;
+}
+
+/* --------------------------------------------------- blended header */
+/* at rest the header is the page: no chrome wash, no blur. the wash and
+   blur arrive only once content actually runs underneath. JS stamps
+   .is-scrolled on the header past ~8px of scroll. */
+.ios-header, .nav, .backbar {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  transition: background .25s;
+}
+.ios-header.is-scrolled, .ios-header.scrolled, .nav.is-scrolled, .nav.scrolled,
+.backbar.is-scrolled, .backbar.scrolled {
+  background: var(--chrome);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+}
+
+/* ------------------------------------------------------ liquid glass */
+/* On by default; data-glass="off" returns to the flat chrome. The look:
+   deep blur with lifted saturation, a translucent white-to-clear wash,
+   a specular top edge, a soft inner shadow at the base, and a floating
+   drop shadow. Nothing structural changes, so the toggle is pure paint. */
+:root:not([data-glass="off"]) {
+  --glass-wash: linear-gradient(180deg, rgba(255, 255, 255, .46), rgba(255, 255, 255, .18));
+  --glass-edge: rgba(255, 255, 255, .62);
+  --glass-base: rgba(24, 26, 32, .06);
+  --glass-blur: blur(28px) saturate(190%);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-glass="off"]):not([data-theme="light"]) {
+    --glass-wash: linear-gradient(180deg, rgba(94, 98, 110, .34), rgba(44, 46, 54, .22));
+    --glass-edge: rgba(255, 255, 255, .16);
+    --glass-base: rgba(0, 0, 0, .28);
+  }
+}
+:root:not([data-glass="off"])[data-theme="dark"] {
+  --glass-wash: linear-gradient(180deg, rgba(94, 98, 110, .34), rgba(44, 46, 54, .22));
+  --glass-edge: rgba(255, 255, 255, .16);
+  --glass-base: rgba(0, 0, 0, .28);
+}
+
+:root:not([data-glass="off"]) .ios-tabbar,
+:root:not([data-glass="off"]) .ios-glass-btn,
+:root:not([data-glass="off"]) .fab,
+:root:not([data-glass="off"]) .ios-avatar,
+:root:not([data-glass="off"]) .segmented,
+:root:not([data-glass="off"]) .chip,
+:root:not([data-glass="off"]) .fchip:not(.on) {
+  background: var(--glass-wash);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 0.5px solid var(--sep);
+  box-shadow:
+    inset 0 1px 0 var(--glass-edge),
+    inset 0 -1px 0 var(--glass-base),
+    var(--shadow-float);
+}
+/* the floating bar carries the strongest presence */
+:root:not([data-glass="off"]) .ios-tabbar {
+  box-shadow:
+    inset 0 1px 0 var(--glass-edge),
+    inset 0 -1px 0 var(--glass-base),
+    0 12px 32px rgba(0, 0, 0, .16);
+}
+/* small round controls keep a tighter shadow so they read crisp */
+:root:not([data-glass="off"]) .ios-glass-btn,
+:root:not([data-glass="off"]) .ios-avatar,
+:root:not([data-glass="off"]) .fab {
+  box-shadow:
+    inset 0 1px 0 var(--glass-edge),
+    inset 0 -1px 0 var(--glass-base),
+    0 4px 14px rgba(0, 0, 0, .12);
+}
+/* the active tab pill glows in the tint instead of flat grey */
+:root:not([data-glass="off"]) .ios-tab[aria-current="page"],
+:root:not([data-glass="off"]) .ios-tab.on {
+  background: var(--tint-soft);
+  box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+/* filled controls turn to tinted glass but keep AA: the wash sits on the
+   solid AA tint rather than replacing it */
+:root:not([data-glass="off"]) .btn-primary,
+:root:not([data-glass="off"]) .fchip.on,
+:root:not([data-glass="off"]) .seg-opt.on {
+  background-color: var(--tint-fill);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .28), rgba(255, 255, 255, 0) 55%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 4px 14px rgba(0, 0, 0, .14);
+}
+:root:not([data-glass="off"]) .seg-opt.on { color: var(--on-tint); }
+/* segmented track goes glassy, the selected pill stays solid enough to read */
+:root:not([data-glass="off"]) .segmented { padding: 3px; }
+/* sheets rise as glass panes */
+:root:not([data-glass="off"]) .sheet {
+  background: var(--bg);
+  background-image: var(--glass-wash);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: inset 0 1px 0 var(--glass-edge), 0 -8px 32px rgba(0, 0, 0, .18);
+}
+/* scrolled headers pick up the same pane treatment */
+:root:not([data-glass="off"]) .ios-header.is-scrolled,
+:root:not([data-glass="off"]) .ios-header.scrolled,
+:root:not([data-glass="off"]) .nav.is-scrolled,
+:root:not([data-glass="off"]) .nav.scrolled,
+:root:not([data-glass="off"]) .backbar.is-scrolled,
+:root:not([data-glass="off"]) .backbar.scrolled {
+  background: var(--glass-wash);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: inset 0 -1px 0 var(--glass-base);
+}
+/* the letter rail rides the content, so it wears a light glass capsule */
+:root:not([data-glass="off"]) .azrail {
+  background: var(--glass-wash);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 0.5px solid var(--sep);
+  box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 -1px 0 var(--glass-base);
+}
+/* glass off: the switch means it. The bars drop every blur, not just the
+   wash, so the chrome sits truly flat on the page. */
+/* glass off returns to the classic frosted chrome the family shipped with:
+   translucent bar, 24px blur, no wash, no specular edges */
+:root[data-glass="off"] .ios-tabbar,
+:root[data-glass="off"] .ios-header.is-scrolled,
+:root[data-glass="off"] .ios-header.scrolled,
+:root[data-glass="off"] .nav.is-scrolled,
+:root[data-glass="off"] .nav.scrolled,
+:root[data-glass="off"] .backbar.is-scrolled,
+:root[data-glass="off"] .backbar.scrolled {
+  background: var(--chrome);
+  background-image: none;
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+}
+:root[data-glass="off"] .ios-header.is-scrolled,
+:root[data-glass="off"] .ios-header.scrolled,
+:root[data-glass="off"] .nav.is-scrolled,
+:root[data-glass="off"] .nav.scrolled,
+:root[data-glass="off"] .backbar.is-scrolled,
+:root[data-glass="off"] .backbar.scrolled {
+  background: var(--bg);
+  box-shadow: 0 0.5px 0 var(--sep);
+}
+
+/* respect transparency reduction: fall back to the flat chrome */
+@media (prefers-reduced-transparency: reduce) {
+  :root:not([data-glass="off"]) .ios-tabbar,
+  :root:not([data-glass="off"]) .ios-glass-btn,
+  :root:not([data-glass="off"]) .fab,
+  :root:not([data-glass="off"]) .ios-avatar,
+  :root:not([data-glass="off"]) .azrail,
+  :root:not([data-glass="off"]) .sheet,
+  :root:not([data-glass="off"]) .ios-header.is-scrolled,
+  :root:not([data-glass="off"]) .ios-header.scrolled,
+  :root:not([data-glass="off"]) .nav.is-scrolled,
+  :root:not([data-glass="off"]) .nav.scrolled,
+  :root:not([data-glass="off"]) .backbar.is-scrolled,
+  :root:not([data-glass="off"]) .backbar.scrolled {
+    background: var(--card);
+    background-image: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* tone 3 belongs to bars and fills so every palette shows its warmth */
+.riskbar-fill, .clprog-fill, .pprog-fill { background: var(--tone3); }
+/* tone 2 carries secondary highlights */
+.pill-new, .badge-info.on { background: var(--tone2); }
+
+/* ----------------------------------------------- the appearance panel */
+/* the Appearance group in More: Theme, Colours, Glass, Text size, Face.
+   Same markup and copy in every app; everything applies live and lands
+   in the shared 'outdoors-appearance' key. */
+.ap-row { justify-content: space-between; }
+/* the title keeps its word; the control is the part that shrinks */
+.ap-row .ios-row-body { flex: 0 0 auto; }
+.ap-row .ap-seg { flex: 1 1 auto; min-width: 0; max-width: 236px; margin-left: auto; }
+.ap-seg .seg-opt { min-width: 0; padding: 6px 4px; }
+/* colour swatches: 44px capsules, three tone dots each, ring in the tint.
+   The dot colours are the palettes' own token block; they never restyle
+   the page, only preview it. */
+.swatches { display: flex; gap: 8px; margin-left: auto; flex: none; }
+.swatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 54px;
+  min-height: 44px;
+  border-radius: 22px;
+  background: var(--fill);
+  border: 0.5px solid var(--sep);
+  cursor: pointer;
+  transition: box-shadow .15s;
+}
+.swatch--parks { --sw1: #284162; --sw2: #355688; --sw3: #A62A1E; }
+.swatch--field { --sw1: #2E7D4F; --sw2: #6B7F3E; --sw3: #E8A13D; }
+.swatch--granite { --sw1: #5E5CE6; --sw2: #6E6E73; --sw3: #F5C400; }
+/* the parks dots would sink into a dark card, so they lighten there */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .swatch--parks { --sw1: #8FB0DC; --sw2: #4C76B0; --sw3: #E8604C; }
+}
+:root[data-theme="dark"] .swatch--parks { --sw1: #8FB0DC; --sw2: #4C76B0; --sw3: #E8604C; }
+.swatch i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.swatch i:nth-child(1) { background: var(--sw1); }
+.swatch i:nth-child(2) { background: var(--sw2); }
+.swatch i:nth-child(3) { background: var(--sw3); }
+.swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--tint); }
+/* the iOS switch: a 51x31 track, the knob slides on aria-checked */
+.ios-switch {
+  flex: none;
+  position: relative;
+  width: 51px;
+  height: 31px;
+  border-radius: 16px;
+  background: var(--fill-strong);
+  transition: background .2s;
+}
+.ios-switch i {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: var(--on-tint);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .15), 0 1px 1px rgba(0, 0, 0, .16);
+  transition: left .2s;
+}
+[role="switch"][aria-checked="true"] .ios-switch { background: var(--green); }
+[role="switch"][aria-checked="true"] .ios-switch i { left: 22px; }
+/* face rows: each label wears its own face so the choice previews itself */
+.face-parks { font-family: "Lato", "Noto Sans", sans-serif; }
+.face-system { font-family: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif; }
+.face-rounded { font-family: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.face-serif { font-family: ui-serif, "New York", Georgia, "Times New Roman", serif; }
+.face-avenir { font-family: "Avenir Next", Avenir, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.face-mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.ap-check { flex: none; margin-left: auto; display: flex; color: var(--tint); }
+.ap-check svg { width: 18px; height: 18px; display: block; }
+
+/* on phone widths a labelled segmented row stacks so every option keeps a
+   comfortable target */
+@media (max-width: 480px) {
+  .field:has(> .segmented), .ap-row:has(.segmented) { flex-wrap: wrap; }
+  .field:has(> .segmented) > .segmented, .ap-row > .segmented { width: 100% !important; margin-top: 6px; }
+}
+
+/* =====================================================================
+   ios.css desktop layer: the responsive arrangement for big screens.
+   Under 700px nothing changes; the phone chrome above is the app.
+   From 700px (tablet) the bottom capsule stays but the column relaxes
+   to 900px and bottom sheets become centered dialogs. From 1100px
+   (desktop) the page reads as a normal website: a solid 60px top bar,
+   the tabs restyled as a 264px left sidebar of labelled rows, and one
+   1016px main column. Plain media queries only, so a window resize
+   reflows live and everything works with JS off.
+   Chrome selectors are scoped with body > because the styleguide nests
+   demo headers and tab bars inside its panels; only the app's real
+   chrome sits directly on body.
+   ===================================================================== */
+
+/* the brand name sits in the header only on big screens */
+.ios-brand { display: none; }
+
+/* ------------------------------------------------------- tablet, 700+ */
+@media (min-width: 700px) {
+  /* the phone column relaxes to 900px */
+  .wrap, .appbar, .screen-title, .screen-sub, footer,
+  .backbar .inner, .ios-header-row { max-width: 900px; }
+
+  /* denser grids so the wide column does not blow the cells up */
+  .grid { grid-template-columns: repeat(10, 1fr); }
+  .pgrid { grid-template-columns: repeat(4, 1fr); }
+
+  /* bottom sheets become centered dialogs. The base sheet centres with
+     left and right plus margin auto, so the transform stays a plain
+     translateY and the pull-down-to-close drag keeps working. Both
+     states are restated so the open and close transitions survive;
+     100vh clears the viewport from the 8vh resting spot. */
+  .sheet {
+    top: 8vh;
+    bottom: auto;
+    width: min(560px, 92vw);
+    max-height: 84vh;
+    border-radius: 16px;
+    transform: translateY(100vh);
+  }
+  .sheet.on { transform: translateY(0); }
+}
+
+/* ------------------------------------------------------ desktop, 1100+ */
+@media (min-width: 1100px) {
+  /* room for the fixed sidebar; no bottom capsule to clear down here */
+  body:has(> .ios-tabbar) { padding-left: 264px; padding-bottom: 0; }
+
+  /* one wide main column, centered in the space right of the sidebar */
+  #views { max-width: 1016px; margin: 0 auto; padding-top: 60px; }
+  .wrap, .appbar, .screen-title, .screen-sub, footer, .backbar .inner { max-width: none; }
+  .grid { grid-template-columns: repeat(12, 1fr); }
+  .pgrid { grid-template-columns: repeat(5, 1fr); }
+
+  /* the top bar: solid, full width, frosted-free in every glass state */
+  body > .ios-header,
+  body > .ios-header.is-scrolled, body > .ios-header.scrolled,
+  :root:not([data-glass="off"]) body > .ios-header.is-scrolled,
+  :root:not([data-glass="off"]) body > .ios-header.scrolled,
+  :root[data-glass="off"] body > .ios-header.is-scrolled,
+  :root[data-glass="off"] body > .ios-header.scrolled {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 60px; padding: 0;
+    background: var(--card);
+    background-image: none;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    border-bottom: 1px solid var(--sep);
+    box-shadow: none;
+    z-index: 40;
+  }
+  /* the park page hides the phone header; on desktop the top bar stays */
+  body > .ios-header[hidden] { display: block; }
+  .ios-header-row { height: 60px; max-width: none; padding: 0 20px; justify-content: flex-start; gap: 12px; }
+  .ios-brand { display: block; font-family: var(--font-display); font-weight: 700; font-size: var(--fs-headline); color: var(--label); }
+  .ios-header-actions { margin-left: auto; }
+
+  /* the tab bar becomes the sidebar */
+  body > .ios-tabbar,
+  :root:not([data-glass="off"]) body > .ios-tabbar,
+  :root[data-glass="off"] body > .ios-tabbar {
+    left: 0; right: auto; top: 60px; bottom: 0;
+    width: 264px; height: auto; max-width: none; margin: 0;
+    border-radius: 0; border: 0; border-right: 1px solid var(--sep);
+    background: var(--bg);
+    background-image: none;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    box-shadow: none;
+    display: flex; flex-direction: column; justify-content: flex-start;
+    gap: 4px; padding: 16px 12px;
+  }
+  body > .ios-tabbar .ios-tab,
+  :root:not([data-glass="off"]) body > .ios-tabbar .ios-tab[aria-current="page"],
+  :root:not([data-glass="off"]) body > .ios-tabbar .ios-tab.on {
+    flex: 0 0 auto; width: 100%; max-width: none;
+    flex-direction: row; justify-content: flex-start; gap: 10px;
+    min-height: 36px; height: 36px; padding: 0 12px;
+    border-radius: 8px; box-shadow: none;
+  }
+  body > .ios-tabbar .ios-tab svg { width: 18px; height: 18px; }
+  body > .ios-tabbar .ios-tab span { font-size: var(--fs-subhead); line-height: 1; }
+  body > .ios-tabbar .ios-tab:hover { background: var(--fill); }
+  body > .ios-tabbar .ios-tab[aria-current="page"],
+  body > .ios-tabbar .ios-tab.active,
+  body > .ios-tabbar .ios-tab.on { background: var(--tint-soft); color: var(--tint-text); }
+
+  /* large titles read as page headings under the fixed bar */
+  .appbar { padding-top: 28px; }
+  .screen-title { padding-top: 28px; }
+
+  /* the park page back bar rides just under the fixed top bar */
+  .backbar { top: 60px; }
+
+  /* desktop pages do not slide sideways; the gentle fade-up stays */
+  #view-park.view-anim { animation: none; }
+  .view-out { animation: none; }
+
+  /* no bottom capsule, so the map fills to the bottom edge */
+  .map-wrap { height: calc(100dvh - 60px); }
+
+  /* the letter rail hugs the main column instead of the window edge;
+     264px sidebar plus the 1016px column is 1280px */
+  .azrail { right: max(2px, calc((100vw - 1280px) / 2 + 2px)); }
+
+  /* the toast no longer needs to clear the capsule */
+  .toast { bottom: 24px; }
+}
