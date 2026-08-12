@@ -1,5 +1,5 @@
-/* Appearance: honour the system by default; the toggle can pin light or dark. */
-(function(){try{var a=localStorage.getItem('oncamp-appearance');if(a==='light'||a==='dark')document.documentElement.setAttribute('data-theme',a);}catch(e){}})();
+/* Appearance is stamped pre-paint by the inline script in index.html <head>,
+   from the shared 'outdoors-appearance' key. The panel wiring lives below. */
 
 /* ================= parks (embedded for instant load; refreshed from network in the background) ================= */
 let PARKS=[];
@@ -743,7 +743,7 @@ function fmtLen(km){ return (km%1===0?km:km).toString()+' km'; }
 function renderTrails(){
   const box=document.getElementById('trails'); if(!box) return; box.innerHTML='';
   const trails=curPark.trails||[];
-  if(!trails.length){ box.innerHTML='<div class="empty" style="border:1px solid var(--separator);border-radius:var(--r);background:var(--bg-elevated);padding:20px 14px">No trails listed for this park yet.</div>'; return; }
+  if(!trails.length){ box.innerHTML='<div class="empty" style="border:1px solid var(--separator);border-radius:var(--r);background:var(--bg-elevated);padding:20px 14px">No trails listed here yet.</div>'; return; }
   trails.forEach(t=>{
     const k=trailKey(t.name), v=sc('trail',k), col=scoreColor(v), note=!!noteOf('trail',k), photo=photoKeys.has(k);
     const card=document.createElement('button'); card.className='trail'; card.dataset.trail=t.name;
@@ -950,7 +950,7 @@ async function renderGlance(){ const p=curPark; if(!p) return;
   const topSec=document.getElementById('topSection'); if(topSec) topSec.hidden = rated.length===0;
   const wlBox=document.getElementById('wantList'); if(!wlBox) return;
   wlBox.innerHTML=wl.length?wl.map(w=>`<div class="want-item" data-key="${w.k}"><div class="h"><span class="wstar">★</span><b>${w.cg.id}, Site ${w.s}</b>${(w.e.score!=null)?`<span class="tr-rate rated" style="background:${scoreColor(w.e.score)}">${w.e.score}/5</span>`:''}</div><p>${w.e.note&&w.e.note.trim()?w.e.note.replace(/</g,'&lt;'):''}</p><div class="want-thumbs" data-thumbs="${w.k}"></div></div>`).join('')
-    : `<div class="empty">Star sites with “Want this one” to build your booking shortlist.</div>`;
+    : `<div class="empty">Star a site to build your booking shortlist.</div>`;
   wl.forEach(async w=>{ const t=wlBox.querySelector(`[data-thumbs="${CSS.escape(w.k)}"]`); if(!t) return; const ph=await getPhotos(w.k); t.innerHTML=ph.slice(0,6).map(x=>`<img src="${x.data}" alt="">`).join(''); });
   wlBox.querySelectorAll('.want-item').forEach(el=>el.addEventListener('click',(ev)=>{ if(ev.target.tagName!=='IMG'){ const parts=el.dataset.key.split('#'); openSheet('site',el.dataset.key,parts[1],parts.slice(2).join('#')); } }));
   const top=rated.sort((a,b)=>b.e.score-a.e.score).slice(0,5);
@@ -1124,23 +1124,74 @@ function applyTheme(id){
 }
 function currentThemeId(){ var t='forest'; try{ t=localStorage.getItem(THEME_KEY)||'forest'; }catch(e){}
   if(t!=='forest' && (!THEME_BY_ID[t] || !isUnlocked(t))) t='forest'; return t; }
-/* Appearance: honour the system by default; the toggle can pin light or dark. */
-function campAppearance(){ try{ return localStorage.getItem('oncamp-appearance')||'auto'; }catch(e){ return 'auto'; } }
+/* ---- appearance: one shared key for every outdoors app on this origin ----
+   'outdoors-appearance' = { theme, glass, palette, face, size }. Defaults
+   (auto, on, shore, system, m) stamp no attribute; anything else lands on
+   <html> as data-theme / data-glass / data-palette / data-face / data-textsize.
+   The <head> script stamps pre-paint; this block keeps it live from More. */
+var APPEAR_KEY='outdoors-appearance';
+var APPEAR_DEFAULTS={theme:'auto',glass:'on',palette:'shore',face:'system',size:'m'};
+var APPEAR_ALLOWED={theme:['auto','light','dark'],glass:['on','off'],palette:['shore','field','granite'],
+  face:['system','rounded','serif','avenir','mono'],size:['s','m','l','xl']};
+function getAppearance(){
+  var a={}; try{ a=JSON.parse(localStorage.getItem(APPEAR_KEY))||{}; }catch(e){ a={}; }
+  var out={};
+  for(var k in APPEAR_DEFAULTS) out[k]=(APPEAR_ALLOWED[k].indexOf(a[k])>=0)?a[k]:APPEAR_DEFAULTS[k];
+  return out;
+}
+function setAppearance(key,val){
+  if(!APPEAR_ALLOWED[key]||APPEAR_ALLOWED[key].indexOf(val)<0) return;
+  var a=getAppearance(); a[key]=val;
+  try{ localStorage.setItem(APPEAR_KEY,JSON.stringify(a)); }catch(e){}
+  applyAppearance(); renderAppearancePanel();
+}
 function applyAppearance(){
-  var a=campAppearance();
-  if(a==='light'||a==='dark') document.documentElement.setAttribute('data-theme',a);
-  else document.documentElement.removeAttribute('data-theme');
+  var a=getAppearance(), d=document.documentElement;
+  function stamp(attr,val,def){ if(val!==def) d.setAttribute(attr,val); else d.removeAttribute(attr); }
+  stamp('data-theme',a.theme,'auto');
+  stamp('data-glass',a.glass,'on');
+  stamp('data-palette',a.palette,'shore');
+  stamp('data-face',a.face,'system');
+  stamp('data-textsize',a.size,'m');
 }
-function setAppearance(mode){
-  try{ if(mode==='auto') localStorage.removeItem('oncamp-appearance'); else localStorage.setItem('oncamp-appearance',mode); }catch(e){}
-  applyAppearance(); renderThemePicker();
+function apSeg(key,opts,cur,label){
+  return '<div class="segmented ap-seg" role="group" aria-label="'+label+'">'+opts.map(function(o){
+    var on=o[0]===cur;
+    return '<button type="button" class="seg-opt'+(on?' on':'')+'" data-ap="'+key+'" data-val="'+o[0]+'"'
+      +' aria-pressed="'+(on?'true':'false')+'" aria-label="'+(o[2]||o[1])+'">'+o[1]+'</button>'; }).join('')+'</div>';
 }
-function renderThemePicker(){
-  var row=document.getElementById('themeRow'); if(!row) return;
-  var cur=campAppearance();
-  var opts=[['auto','Auto'],['light','Light'],['dark','Dark']];
-  row.innerHTML=opts.map(function(o){ return '<button type="button" class="seg-opt'+(o[0]===cur?' on':'')+'" data-app="'+o[0]+'" aria-pressed="'+(o[0]===cur?'true':'false')+'">'+o[1]+'</button>'; }).join('');
-  row.querySelectorAll('.seg-opt').forEach(function(b){ b.addEventListener('click', function(){ setAppearance(b.dataset.app); buzz(6); }); });
+function renderAppearancePanel(){
+  var box=document.getElementById('appearancePanel'); if(!box) return;
+  var a=getAppearance();
+  var html='';
+  html+='<div class="ios-row ios-row--plain ap-row"><span class="ios-row-body"><span class="ios-row-title">Theme</span></span>'
+    +apSeg('theme',[['auto','Auto'],['light','Light'],['dark','Dark']],a.theme,'Theme')+'</div>';
+  html+='<div class="ios-row ios-row--plain ap-row"><span class="ios-row-body"><span class="ios-row-title">Colours</span></span>'
+    +'<div class="swatches" role="group" aria-label="Colours">'
+    +[['shore','Shore'],['field','Field'],['granite','Granite']].map(function(p){
+      var on=p[0]===a.palette;
+      return '<button type="button" class="swatch swatch--'+p[0]+'" data-ap="palette" data-val="'+p[0]+'"'
+        +' aria-pressed="'+(on?'true':'false')+'" aria-label="'+p[1]+'"><i></i><i></i><i></i></button>'; }).join('')
+    +'</div></div>';
+  html+='<button type="button" class="ios-row ios-row--plain ap-row" id="glassRow" role="switch"'
+    +' aria-checked="'+(a.glass==='on'?'true':'false')+'">'
+    +'<span class="ios-row-body"><span class="ios-row-title">Glass</span>'
+    +'<span class="ios-row-sub">Frosted bars and buttons</span></span>'
+    +'<span class="ios-switch" aria-hidden="true"><i></i></span></button>';
+  html+='<div class="ios-row ios-row--plain ap-row"><span class="ios-row-body"><span class="ios-row-title">Text size</span></span>'
+    +apSeg('size',[['s','S','Small'],['m','M','Medium'],['l','L','Large'],['xl','XL','Extra large']],a.size,'Text size')+'</div>';
+  html+=[['system','System'],['rounded','Rounded'],['serif','Serif'],['avenir','Avenir'],['mono','Mono']].map(function(f){
+    var on=f[0]===a.face;
+    return '<button type="button" class="ios-row ios-row--plain ap-face" data-ap="face" data-val="'+f[0]+'"'
+      +' aria-pressed="'+(on?'true':'false')+'">'
+      +'<span class="ios-row-body"><span class="ios-row-title face-'+f[0]+'">'+f[1]+'</span></span>'
+      +(on?'<span class="ap-check"><svg aria-hidden="true"><use href="assets/icons.svg#check"/></svg></span>':'')
+      +'</button>'; }).join('');
+  box.innerHTML=html;
+  box.querySelectorAll('[data-ap]').forEach(function(b){
+    b.addEventListener('click',function(){ setAppearance(b.dataset.ap,b.dataset.val); buzz(6); }); });
+  var gr=document.getElementById('glassRow');
+  if(gr) gr.addEventListener('click',function(){ setAppearance('glass',a.glass==='on'?'off':'on'); buzz(6); });
 }
 /* ---- one-time migration: single Algonquin -> split campground parks ---- */
 var ALG_CG_MAP={'Tea Lake':'algonquintea','Canisbay Lake':'algonquincanisbay','Mew Lake':'algonquinmew','Lake of Two Rivers':'algonquintworivers','Pog Lake':'algonquinpog','Kearney Lake':'algonquinkearney','Raccoon Lake':'algonquinraccoon','Rock Lake':'algonquinrock','Achray':'algonquinachray'};
@@ -1244,7 +1295,7 @@ function openPhotoTarget(k){ var parts=k.split('#'), pid=parts[0]; if(!PARK_BY_I
 async function renderPhotosScreen(){
   var box=document.getElementById('photosGrid'); if(!box) return; box.innerHTML='';
   var keys=Array.from(photoKeys).sort();
-  if(!keys.length){ box.innerHTML='<div class="empty" style="grid-column:1/-1">No photos yet. Open a site and add one from its rating sheet.</div>'; return; }
+  if(!keys.length){ box.innerHTML='<div class="empty" style="grid-column:1/-1">No photos yet. Add one from a site&#39;s rating sheet.</div>'; return; }
   for(const k of keys){ const list=await getPhotos(k); const label=photoLabel(k);
     list.forEach(function(p){
       var b=document.createElement('button'); b.type='button'; b.className='pcell';
@@ -1302,7 +1353,7 @@ function renderJournal(){ var box=document.getElementById('journalBody'); if(!bo
     box.innerHTML='<div class="jempty">'
       +'<svg aria-hidden="true"><use href="assets/icons.svg#tent"/></svg>'
       +'<h3>Your journal starts here</h3>'
-      +'<p>Open a park, walk a campground, and rate your first site. Every rating, wishlist star, note and photo lands here, park by park.</p>'
+      +'<p>Rate your first site and it lands here, with every note, star and photo.</p>'
       +'<button class="btn-share primary" id="jBrowse" type="button">Browse the parks</button></div>';
     var jb=document.getElementById('jBrowse'); if(jb) jb.addEventListener('click',function(){ buzz(6); showTab('guide'); });
     return; }
@@ -1339,6 +1390,20 @@ var TAB_SECTIONS={guide:'view-parks',map:'view-map',journal:'view-journal',more:
 var ALL_VIEWS=['view-parks','view-park','view-map','view-journal','view-more','view-shared','view-account','view-photos'];
 var learnRendered=false;
 function setHeaderHidden(h){ var el=document.getElementById('iosHeader'); if(el) el.hidden=!!h; }
+/* blended headers: transparent at rest, frosted only once content actually runs
+   underneath. Every header bar on the page gets 'scrolled' past 8px of scroll
+   and loses it back at the top; the appearance layer paints the difference. */
+(function(){
+  function stampScrolled(){
+    var on=(window.scrollY||document.documentElement.scrollTop||0)>8;
+    document.querySelectorAll('.ios-header,.nav,.backbar').forEach(function(el){
+      el.classList.toggle('scrolled',on); });
+  }
+  window.addEventListener('scroll',stampScrolled,{passive:true});
+  window.addEventListener('resize',stampScrolled,{passive:true});
+  stampScrolled();
+  window.sjStampScrolled=stampScrolled;
+})();
 function showTab(tab){
   if(!TAB_SECTIONS[tab]) tab='guide';
   ALL_VIEWS.forEach(function(id){ var el=document.getElementById(id); if(el) el.hidden=true; });
@@ -1350,7 +1415,7 @@ function showTab(tab){
   try{ window.scrollTo(0,0); }catch(e){}
   if(tab==='guide'){ renderParks(); }
   if(tab==='map' && window.initCampMap){ setTimeout(window.initCampMap,30); }
-  if(tab==='more'){ if(typeof renderThemePicker==='function') renderThemePicker(); if(typeof fillAboutStats==='function') fillAboutStats();
+  if(tab==='more'){ if(typeof renderAppearancePanel==='function') renderAppearancePanel(); if(typeof fillAboutStats==='function') fillAboutStats();
     if(!learnRendered){ renderLearn(); learnRendered=true; } }
   if(tab==='journal'){ renderJournal(); }
   if(tab==='account'){ renderAccount(); }
@@ -1422,7 +1487,7 @@ makeSheetSwipe(sheet,closeSheet);
 (async function(){
   applyAppearance();
   buildDots(); load(); migrateAlgonquin(); migrateScale5();
-  loadParksEmbedded(); buildSearchIndex(); wireGlobalSearch(); renderThemePicker(); renderAvatar();
+  loadParksEmbedded(); buildSearchIndex(); wireGlobalSearch(); renderAppearancePanel(); renderAvatar();
   renderParks();                 /* instant first paint, no network wait */
   await loadPhotoIndex();        /* fast local IndexedDB */
   migrateAlgPhotos();

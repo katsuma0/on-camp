@@ -1701,3 +1701,361 @@ svg.leaflet-image-layer.leaflet-interactive path {
 		print-color-adjust: exact;
 		}
 	}
+
+/* =====================================================================
+   ios.css appearance layer: liquid glass, the three tone palettes, five
+   faces, four text sizes, and the blended header.
+   Driven by data attributes on <html>, set pre-paint from the shared
+   'outdoors-appearance' key so every site dresses the same:
+     data-glass="off"          glass chrome off (on is the default)
+     data-palette="shore|field|granite"   (shore is the default)
+     data-face="system|rounded|serif|avenir|mono"
+     data-textsize="s|m|l|xl"  (m is the default)
+   Tone rules: tone 1 is the tint and carries controls, tone 2 supports
+   (chips, secondary highlights), tone 3 is fills and bars only, never
+   small text. Each palette redefines the tint family so every existing
+   component follows without knowing palettes exist.
+   ===================================================================== */
+
+/* ------------------------------------------------ three tone palettes */
+/* shore is the default and matches the system blue already in :root */
+:root { --tone2: #337E80; --tone3: #E8654F; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --tone2: #64D2FF; --tone3: #FF6B52; }
+}
+:root[data-theme="dark"] { --tone2: #64D2FF; --tone3: #FF6B52; }
+
+:root[data-palette="field"] {
+  --tint: #2E7D4F; --tint-press: #256B42; --tint-text: #256B42; --tint-fill: #256B42;
+  --tint-soft: rgba(46, 125, 79, .13);
+  --tone2: #6B7F3E; --tone3: #E8A13D;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="field"]:not([data-theme="light"]) {
+    --tint: #30D158; --tint-press: #6CE28A; --tint-text: #30D158; --tint-fill: #30D158;
+    --tint-soft: rgba(48, 209, 88, .17);
+    --tone2: #ACD98A; --tone3: #FFB340;
+  }
+}
+:root[data-palette="field"][data-theme="dark"] {
+  --tint: #30D158; --tint-press: #6CE28A; --tint-text: #30D158; --tint-fill: #30D158;
+  --tint-soft: rgba(48, 209, 88, .17);
+  --tone2: #ACD98A; --tone3: #FFB340;
+}
+
+:root[data-palette="granite"] {
+  --tint: #5E5CE6; --tint-press: #4B49C4; --tint-text: #4B49C4; --tint-fill: #4B49C4;
+  --tint-soft: rgba(94, 92, 230, .13);
+  --tone2: #6E6E73; --tone3: #F5C400;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="granite"]:not([data-theme="light"]) {
+    --tint: #7D7AFF; --tint-press: #9E9CFF; --tint-text: #7D7AFF; --tint-fill: #7D7AFF;
+    --tint-soft: rgba(125, 122, 255, .19);
+    --tone2: #98989D; --tone3: #FFD60A;
+  }
+}
+:root[data-palette="granite"][data-theme="dark"] {
+  --tint: #7D7AFF; --tint-press: #9E9CFF; --tint-text: #7D7AFF; --tint-fill: #7D7AFF;
+  --tint-soft: rgba(125, 122, 255, .19);
+  --tone2: #98989D; --tone3: #FFD60A;
+}
+
+/* ------------------------------------------------------- five faces */
+/* the four alternates are faces iOS ships natively; elsewhere they fall
+   back gracefully. the system face stays exactly as :root defines it. */
+:root[data-face="rounded"] { --font-sys: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+:root[data-face="serif"] { --font-sys: ui-serif, "New York", Georgia, "Times New Roman", serif; }
+:root[data-face="avenir"] { --font-sys: "Avenir Next", Avenir, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+:root[data-face="mono"] { --font-sys: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+/* serif and mono set their own rhythm; soften the SF tracking for them */
+:root[data-face="serif"], :root[data-face="mono"] {
+  --ls-large-title: 0; --ls-title1: 0; --ls-title2: 0; --ls-title3: 0;
+  --ls-headline: 0; --ls-body: 0; --ls-callout: 0; --ls-subhead: 0; --ls-footnote: 0;
+}
+
+/* -------------------------------------------------- four text sizes */
+/* real Dynamic Type steps from the HIG, not a multiplier */
+:root[data-textsize="s"] {
+  --fs-large-title: 32px; --lh-large-title: 39px;
+  --fs-title1: 26px; --lh-title1: 32px;
+  --fs-title2: 20px; --lh-title2: 25px;
+  --fs-title3: 18px; --lh-title3: 23px;
+  --fs-headline: 15px; --lh-headline: 20px;
+  --fs-body: 15px; --lh-body: 20px;
+  --fs-callout: 14px; --lh-callout: 19px;
+  --fs-subhead: 13px; --lh-subhead: 18px;
+  --fs-footnote: 12px; --lh-footnote: 16px;
+  --fs-caption1: 11px; --lh-caption1: 13px;
+  --fs-caption2: 11px; --lh-caption2: 13px;
+}
+:root[data-textsize="l"] {
+  --fs-large-title: 36px; --lh-large-title: 43px;
+  --fs-title1: 30px; --lh-title1: 37px;
+  --fs-title2: 24px; --lh-title2: 30px;
+  --fs-title3: 22px; --lh-title3: 28px;
+  --fs-headline: 19px; --lh-headline: 24px;
+  --fs-body: 19px; --lh-body: 24px;
+  --fs-callout: 18px; --lh-callout: 23px;
+  --fs-subhead: 17px; --lh-subhead: 22px;
+  --fs-footnote: 15px; --lh-footnote: 20px;
+  --fs-caption1: 13px; --lh-caption1: 17px;
+  --fs-caption2: 12px; --lh-caption2: 14px;
+}
+:root[data-textsize="xl"] {
+  --fs-large-title: 38px; --lh-large-title: 46px;
+  --fs-title1: 32px; --lh-title1: 39px;
+  --fs-title2: 26px; --lh-title2: 32px;
+  --fs-title3: 24px; --lh-title3: 30px;
+  --fs-headline: 21px; --lh-headline: 26px;
+  --fs-body: 21px; --lh-body: 26px;
+  --fs-callout: 20px; --lh-callout: 25px;
+  --fs-subhead: 19px; --lh-subhead: 24px;
+  --fs-footnote: 17px; --lh-footnote: 22px;
+  --fs-caption1: 14px; --lh-caption1: 18px;
+  --fs-caption2: 13px; --lh-caption2: 16px;
+}
+
+/* --------------------------------------------------- blended header */
+/* at rest the header is the page: no chrome wash, no blur. the wash and
+   blur arrive only once content actually runs underneath. JS stamps
+   .is-scrolled on the header past ~8px of scroll. */
+.ios-header, .nav, .backbar {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  transition: background .25s;
+}
+.ios-header.is-scrolled, .ios-header.scrolled, .nav.is-scrolled, .nav.scrolled,
+.backbar.is-scrolled, .backbar.scrolled {
+  background: var(--chrome);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+}
+
+/* ------------------------------------------------------ liquid glass */
+/* On by default; data-glass="off" returns to the flat chrome. The look:
+   deep blur with lifted saturation, a translucent white-to-clear wash,
+   a specular top edge, a soft inner shadow at the base, and a floating
+   drop shadow. Nothing structural changes, so the toggle is pure paint. */
+:root:not([data-glass="off"]) {
+  --glass-wash: linear-gradient(180deg, rgba(255, 255, 255, .46), rgba(255, 255, 255, .18));
+  --glass-edge: rgba(255, 255, 255, .62);
+  --glass-base: rgba(24, 26, 32, .06);
+  --glass-blur: blur(28px) saturate(190%);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-glass="off"]):not([data-theme="light"]) {
+    --glass-wash: linear-gradient(180deg, rgba(94, 98, 110, .34), rgba(44, 46, 54, .22));
+    --glass-edge: rgba(255, 255, 255, .16);
+    --glass-base: rgba(0, 0, 0, .28);
+  }
+}
+:root:not([data-glass="off"])[data-theme="dark"] {
+  --glass-wash: linear-gradient(180deg, rgba(94, 98, 110, .34), rgba(44, 46, 54, .22));
+  --glass-edge: rgba(255, 255, 255, .16);
+  --glass-base: rgba(0, 0, 0, .28);
+}
+
+:root:not([data-glass="off"]) .ios-tabbar,
+:root:not([data-glass="off"]) .ios-glass-btn,
+:root:not([data-glass="off"]) .fab,
+:root:not([data-glass="off"]) .ios-avatar,
+:root:not([data-glass="off"]) .segmented,
+:root:not([data-glass="off"]) .chip,
+:root:not([data-glass="off"]) .fchip:not(.on) {
+  background: var(--glass-wash);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 0.5px solid var(--sep);
+  box-shadow:
+    inset 0 1px 0 var(--glass-edge),
+    inset 0 -1px 0 var(--glass-base),
+    var(--shadow-float);
+}
+/* the floating bar carries the strongest presence */
+:root:not([data-glass="off"]) .ios-tabbar {
+  box-shadow:
+    inset 0 1px 0 var(--glass-edge),
+    inset 0 -1px 0 var(--glass-base),
+    0 12px 32px rgba(0, 0, 0, .16);
+}
+/* small round controls keep a tighter shadow so they read crisp */
+:root:not([data-glass="off"]) .ios-glass-btn,
+:root:not([data-glass="off"]) .ios-avatar,
+:root:not([data-glass="off"]) .fab {
+  box-shadow:
+    inset 0 1px 0 var(--glass-edge),
+    inset 0 -1px 0 var(--glass-base),
+    0 4px 14px rgba(0, 0, 0, .12);
+}
+/* the active tab pill glows in the tint instead of flat grey */
+:root:not([data-glass="off"]) .ios-tab[aria-current="page"],
+:root:not([data-glass="off"]) .ios-tab.on {
+  background: var(--tint-soft);
+  box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+/* filled controls turn to tinted glass but keep AA: the wash sits on the
+   solid AA tint rather than replacing it */
+:root:not([data-glass="off"]) .btn-primary,
+:root:not([data-glass="off"]) .fchip.on,
+:root:not([data-glass="off"]) .seg-opt.on {
+  background-color: var(--tint-fill);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .28), rgba(255, 255, 255, 0) 55%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 4px 14px rgba(0, 0, 0, .14);
+}
+:root:not([data-glass="off"]) .seg-opt.on { color: var(--on-tint); }
+/* segmented track goes glassy, the selected pill stays solid enough to read */
+:root:not([data-glass="off"]) .segmented { padding: 3px; }
+/* sheets rise as glass panes */
+:root:not([data-glass="off"]) .sheet {
+  background: var(--bg);
+  background-image: var(--glass-wash);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: inset 0 1px 0 var(--glass-edge), 0 -8px 32px rgba(0, 0, 0, .18);
+}
+/* scrolled headers pick up the same pane treatment */
+:root:not([data-glass="off"]) .ios-header.is-scrolled,
+:root:not([data-glass="off"]) .ios-header.scrolled,
+:root:not([data-glass="off"]) .nav.is-scrolled,
+:root:not([data-glass="off"]) .nav.scrolled,
+:root:not([data-glass="off"]) .backbar.is-scrolled,
+:root:not([data-glass="off"]) .backbar.scrolled {
+  background: var(--glass-wash);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: inset 0 -1px 0 var(--glass-base);
+}
+/* the letter rail rides the content, so it wears a light glass capsule */
+:root:not([data-glass="off"]) .azrail {
+  background: var(--glass-wash);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 0.5px solid var(--sep);
+  box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 -1px 0 var(--glass-base);
+}
+/* glass off: the switch means it. The bars drop every blur, not just the
+   wash, so the chrome sits truly flat on the page. */
+/* glass off returns to the classic frosted chrome the family shipped with:
+   translucent bar, 24px blur, no wash, no specular edges */
+:root[data-glass="off"] .ios-tabbar,
+:root[data-glass="off"] .ios-header.is-scrolled,
+:root[data-glass="off"] .ios-header.scrolled,
+:root[data-glass="off"] .nav.is-scrolled,
+:root[data-glass="off"] .nav.scrolled,
+:root[data-glass="off"] .backbar.is-scrolled,
+:root[data-glass="off"] .backbar.scrolled {
+  background: var(--chrome);
+  background-image: none;
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+}
+:root[data-glass="off"] .ios-header.is-scrolled,
+:root[data-glass="off"] .ios-header.scrolled,
+:root[data-glass="off"] .nav.is-scrolled,
+:root[data-glass="off"] .nav.scrolled,
+:root[data-glass="off"] .backbar.is-scrolled,
+:root[data-glass="off"] .backbar.scrolled {
+  background: var(--bg);
+  box-shadow: 0 0.5px 0 var(--sep);
+}
+
+/* respect transparency reduction: fall back to the flat chrome */
+@media (prefers-reduced-transparency: reduce) {
+  :root:not([data-glass="off"]) .ios-tabbar,
+  :root:not([data-glass="off"]) .ios-glass-btn,
+  :root:not([data-glass="off"]) .fab,
+  :root:not([data-glass="off"]) .ios-avatar,
+  :root:not([data-glass="off"]) .azrail,
+  :root:not([data-glass="off"]) .sheet,
+  :root:not([data-glass="off"]) .ios-header.is-scrolled,
+  :root:not([data-glass="off"]) .ios-header.scrolled,
+  :root:not([data-glass="off"]) .nav.is-scrolled,
+  :root:not([data-glass="off"]) .nav.scrolled,
+  :root:not([data-glass="off"]) .backbar.is-scrolled,
+  :root:not([data-glass="off"]) .backbar.scrolled {
+    background: var(--card);
+    background-image: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* tone 3 belongs to bars and fills so every palette shows its warmth */
+.riskbar-fill, .clprog-fill, .pprog-fill { background: var(--tone3); }
+/* tone 2 carries secondary highlights */
+.pill-new, .badge-info.on { background: var(--tone2); }
+
+/* ----------------------------------------------- the appearance panel */
+/* the Appearance group in More: Theme, Colours, Glass, Text size, Face.
+   Same markup and copy in every app; everything applies live and lands
+   in the shared 'outdoors-appearance' key. */
+.ap-row { justify-content: space-between; }
+/* the title keeps its word; the control is the part that shrinks */
+.ap-row .ios-row-body { flex: 0 0 auto; }
+.ap-row .ap-seg { flex: 1 1 auto; min-width: 0; max-width: 236px; margin-left: auto; }
+.ap-seg .seg-opt { min-width: 0; padding: 6px 4px; }
+/* colour swatches: 44px capsules, three tone dots each, ring in the tint.
+   The dot colours are the palettes' own token block; they never restyle
+   the page, only preview it. */
+.swatches { display: flex; gap: 8px; margin-left: auto; flex: none; }
+.swatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 54px;
+  min-height: 44px;
+  border-radius: 22px;
+  background: var(--fill);
+  border: 0.5px solid var(--sep);
+  cursor: pointer;
+  transition: box-shadow .15s;
+}
+.swatch--shore { --sw1: #007AFF; --sw2: #337E80; --sw3: #E8654F; }
+.swatch--field { --sw1: #2E7D4F; --sw2: #6B7F3E; --sw3: #E8A13D; }
+.swatch--granite { --sw1: #5E5CE6; --sw2: #6E6E73; --sw3: #F5C400; }
+.swatch i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.swatch i:nth-child(1) { background: var(--sw1); }
+.swatch i:nth-child(2) { background: var(--sw2); }
+.swatch i:nth-child(3) { background: var(--sw3); }
+.swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--tint); }
+/* the iOS switch: a 51x31 track, the knob slides on aria-checked */
+.ios-switch {
+  flex: none;
+  position: relative;
+  width: 51px;
+  height: 31px;
+  border-radius: 16px;
+  background: var(--fill-strong);
+  transition: background .2s;
+}
+.ios-switch i {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: var(--on-tint);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .15), 0 1px 1px rgba(0, 0, 0, .16);
+  transition: left .2s;
+}
+[role="switch"][aria-checked="true"] .ios-switch { background: var(--green); }
+[role="switch"][aria-checked="true"] .ios-switch i { left: 22px; }
+/* face rows: each label wears its own face so the choice previews itself */
+.face-system { font-family: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif; }
+.face-rounded { font-family: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.face-serif { font-family: ui-serif, "New York", Georgia, "Times New Roman", serif; }
+.face-avenir { font-family: "Avenir Next", Avenir, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.face-mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.ap-check { flex: none; margin-left: auto; display: flex; color: var(--tint); }
+.ap-check svg { width: 18px; height: 18px; display: block; }
+
+/* on phone widths a labelled segmented row stacks so every option keeps a
+   comfortable target */
+@media (max-width: 480px) {
+  .field:has(> .segmented), .ap-row:has(.segmented) { flex-wrap: wrap; }
+  .field:has(> .segmented) > .segmented, .ap-row > .segmented { width: 100% !important; margin-top: 6px; }
+}
