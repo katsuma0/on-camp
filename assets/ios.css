@@ -2123,3 +2123,130 @@ h1, h2, h3, h4, .btn { font-family: var(--font-display); }
   .field:has(> .segmented), .ap-row:has(.segmented) { flex-wrap: wrap; }
   .field:has(> .segmented) > .segmented, .ap-row > .segmented { width: 100% !important; margin-top: 6px; }
 }
+
+/* =====================================================================
+   ios.css desktop layer: the responsive arrangement for big screens.
+   Under 700px nothing changes; the phone chrome above is the app.
+   From 700px (tablet) the bottom capsule stays but the column relaxes
+   to 900px and bottom sheets become centered dialogs. From 1100px
+   (desktop) the page reads as a normal website: a solid 60px top bar,
+   the tabs restyled as a 264px left sidebar of labelled rows, and one
+   1016px main column. Plain media queries only, so a window resize
+   reflows live and everything works with JS off.
+   Chrome selectors are scoped with body > because the styleguide nests
+   demo headers and tab bars inside its panels; only the app's real
+   chrome sits directly on body.
+   ===================================================================== */
+
+/* the brand name sits in the header only on big screens */
+.ios-brand { display: none; }
+
+/* ------------------------------------------------------- tablet, 700+ */
+@media (min-width: 700px) {
+  /* the phone column relaxes to 900px */
+  .wrap, .appbar, .screen-title, .screen-sub, footer,
+  .backbar .inner, .ios-header-row { max-width: 900px; }
+
+  /* denser grids so the wide column does not blow the cells up */
+  .grid { grid-template-columns: repeat(10, 1fr); }
+  .pgrid { grid-template-columns: repeat(4, 1fr); }
+
+  /* bottom sheets become centered dialogs. The base sheet centres with
+     left and right plus margin auto, so the transform stays a plain
+     translateY and the pull-down-to-close drag keeps working. Both
+     states are restated so the open and close transitions survive;
+     100vh clears the viewport from the 8vh resting spot. */
+  .sheet {
+    top: 8vh;
+    bottom: auto;
+    width: min(560px, 92vw);
+    max-height: 84vh;
+    border-radius: 16px;
+    transform: translateY(100vh);
+  }
+  .sheet.on { transform: translateY(0); }
+}
+
+/* ------------------------------------------------------ desktop, 1100+ */
+@media (min-width: 1100px) {
+  /* room for the fixed sidebar; no bottom capsule to clear down here */
+  body:has(> .ios-tabbar) { padding-left: 264px; padding-bottom: 0; }
+
+  /* one wide main column, centered in the space right of the sidebar */
+  #views { max-width: 1016px; margin: 0 auto; padding-top: 60px; }
+  .wrap, .appbar, .screen-title, .screen-sub, footer, .backbar .inner { max-width: none; }
+  .grid { grid-template-columns: repeat(12, 1fr); }
+  .pgrid { grid-template-columns: repeat(5, 1fr); }
+
+  /* the top bar: solid, full width, frosted-free in every glass state */
+  body > .ios-header,
+  body > .ios-header.is-scrolled, body > .ios-header.scrolled,
+  :root:not([data-glass="off"]) body > .ios-header.is-scrolled,
+  :root:not([data-glass="off"]) body > .ios-header.scrolled,
+  :root[data-glass="off"] body > .ios-header.is-scrolled,
+  :root[data-glass="off"] body > .ios-header.scrolled {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 60px; padding: 0;
+    background: var(--card);
+    background-image: none;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    border-bottom: 1px solid var(--sep);
+    box-shadow: none;
+    z-index: 40;
+  }
+  /* the park page hides the phone header; on desktop the top bar stays */
+  body > .ios-header[hidden] { display: block; }
+  .ios-header-row { height: 60px; max-width: none; padding: 0 20px; justify-content: flex-start; gap: 12px; }
+  .ios-brand { display: block; font-family: var(--font-display); font-weight: 700; font-size: var(--fs-headline); color: var(--label); }
+  .ios-header-actions { margin-left: auto; }
+
+  /* the tab bar becomes the sidebar */
+  body > .ios-tabbar,
+  :root:not([data-glass="off"]) body > .ios-tabbar,
+  :root[data-glass="off"] body > .ios-tabbar {
+    left: 0; right: auto; top: 60px; bottom: 0;
+    width: 264px; height: auto; max-width: none; margin: 0;
+    border-radius: 0; border: 0; border-right: 1px solid var(--sep);
+    background: var(--bg);
+    background-image: none;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    box-shadow: none;
+    display: flex; flex-direction: column; justify-content: flex-start;
+    gap: 4px; padding: 16px 12px;
+  }
+  body > .ios-tabbar .ios-tab,
+  :root:not([data-glass="off"]) body > .ios-tabbar .ios-tab[aria-current="page"],
+  :root:not([data-glass="off"]) body > .ios-tabbar .ios-tab.on {
+    flex: 0 0 auto; width: 100%; max-width: none;
+    flex-direction: row; justify-content: flex-start; gap: 10px;
+    min-height: 36px; height: 36px; padding: 0 12px;
+    border-radius: 8px; box-shadow: none;
+  }
+  body > .ios-tabbar .ios-tab svg { width: 18px; height: 18px; }
+  body > .ios-tabbar .ios-tab span { font-size: var(--fs-subhead); line-height: 1; }
+  body > .ios-tabbar .ios-tab:hover { background: var(--fill); }
+  body > .ios-tabbar .ios-tab[aria-current="page"],
+  body > .ios-tabbar .ios-tab.active,
+  body > .ios-tabbar .ios-tab.on { background: var(--tint-soft); color: var(--tint-text); }
+
+  /* large titles read as page headings under the fixed bar */
+  .appbar { padding-top: 28px; }
+  .screen-title { padding-top: 28px; }
+
+  /* the park page back bar rides just under the fixed top bar */
+  .backbar { top: 60px; }
+
+  /* desktop pages do not slide sideways; the gentle fade-up stays */
+  #view-park.view-anim { animation: none; }
+  .view-out { animation: none; }
+
+  /* no bottom capsule, so the map fills to the bottom edge */
+  .map-wrap { height: calc(100dvh - 60px); }
+
+  /* the letter rail hugs the main column instead of the window edge;
+     264px sidebar plus the 1016px column is 1280px */
+  .azrail { right: max(2px, calc((100vw - 1280px) / 2 + 2px)); }
+
+  /* the toast no longer needs to clear the capsule */
+  .toast { bottom: 24px; }
+}
