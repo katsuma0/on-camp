@@ -998,6 +998,36 @@ button {
   .acct-back svg{width:24px;height:24px}
   .acct-back:active{opacity:.4}
 
+  /* ---- parks A to Z + letter rail ------------------------------------- */
+  /* sticky letter heads, Contacts style: they pin just below the header */
+  .az-head{position:sticky;top:calc(60px + var(--sa-top));z-index:5;background:var(--bg);
+    font-size:var(--fs-footnote);line-height:var(--lh-footnote);letter-spacing:.4px;font-weight:600;
+    text-transform:uppercase;color:var(--label-2);padding:6px 4px 5px;margin:0}
+  .az-sec .ios-group{margin-bottom:14px}
+  /* the rail: thin, fixed to the right edge; every letter is at least 15px
+     tall (the one deliberate sub 44px target, exactly as iOS ships it) */
+  .azrail{position:fixed;right:2px;top:50%;transform:translateY(-50%);z-index:30;display:flex;
+    flex-direction:column;align-items:center;padding:3px 1px;border-radius:10px;
+    touch-action:none;-webkit-user-select:none;user-select:none}
+  .azrail span{display:block;min-height:15px;line-height:15px;padding:0 5px;font-size:var(--fs-caption2);
+    letter-spacing:var(--ls-caption2);font-weight:600;color:var(--tint-text);text-align:center;cursor:pointer}
+  @media (max-width:359.9px){ .azrail{display:none} }
+
+  /* ---- journal tab ----------------------------------------------------- */
+  #journalBody .acct-stats{margin:6px 0 4px}
+  .jrow .wstar{color:var(--orange);margin-right:5px}
+  .j-glyphs{flex:none;display:flex;gap:7px;margin-left:auto;color:var(--label-2)}
+  .j-glyphs svg{width:15px;height:15px;display:block}
+  .jrow .tr-rate{flex:none;margin-left:auto;min-width:44px;padding:6px 10px;text-align:center}
+  .jrow .j-glyphs+.tr-rate{margin-left:8px}
+  .jempty{text-align:center;padding:34px 22px 30px;background:var(--card);border-radius:var(--r);margin-top:8px}
+  .jempty svg{width:44px;height:44px;color:var(--tint);margin:0 auto}
+  .jempty h3{font-size:var(--fs-title3);letter-spacing:var(--ls-title3);line-height:var(--lh-title3);
+    font-weight:700;margin:12px 0 6px}
+  .jempty p{font-size:var(--fs-subhead);letter-spacing:var(--ls-subhead);line-height:1.45;
+    color:var(--label-2);margin:0 auto 18px;max-width:30em}
+  .jempty .btn-share{max-width:280px;margin:0 auto}
+
   /* ---- saved photos grid ---------------------------------------------- */
   .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
   .pcell{position:relative;aspect-ratio:1;border-radius:var(--r-xs);overflow:hidden;background:var(--fill);
