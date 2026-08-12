@@ -1126,22 +1126,29 @@ function currentThemeId(){ var t='forest'; try{ t=localStorage.getItem(THEME_KEY
   if(t!=='forest' && (!THEME_BY_ID[t] || !isUnlocked(t))) t='forest'; return t; }
 /* ---- appearance: one shared key for every outdoors app on this origin ----
    'outdoors-appearance' = { theme, glass, palette, face, size }. Defaults
-   (auto, on, shore, system, m) stamp no attribute; anything else lands on
+   (auto, on, parks, parks, m) stamp no attribute; anything else lands on
    <html> as data-theme / data-glass / data-palette / data-face / data-textsize.
    The <head> script stamps pre-paint; this block keeps it live from More. */
 var APPEAR_KEY='outdoors-appearance';
-var APPEAR_DEFAULTS={theme:'auto',glass:'on',palette:'shore',face:'system',size:'m'};
-var APPEAR_ALLOWED={theme:['auto','light','dark'],glass:['on','off'],palette:['shore','field','granite'],
-  face:['system','rounded','serif','avenir','mono'],size:['s','m','l','xl']};
+var APPEAR_DEFAULTS={theme:'auto',glass:'on',palette:'parks',face:'parks',size:'m'};
+var APPEAR_ALLOWED={theme:['auto','light','dark'],glass:['on','off'],palette:['parks','field','granite'],
+  face:['parks','system','rounded','serif','avenir','mono'],size:['s','m','l','xl']};
 function getAppearance(){
   var a={}; try{ a=JSON.parse(localStorage.getItem(APPEAR_KEY))||{}; }catch(e){ a={}; }
+  var save=false;
+  /* one time: face "system" saved before the parks round was the old
+     default, not a choice, so it moves to the new default. saves made
+     from the panel write v2, so a real System pick sticks. */
+  if(a.face==='system'&&!a.v2){ delete a.face; a.v2=1; save=true; }
+  if(a.palette==='shore'){ a.palette='parks'; save=true; }
+  if(save){ try{ localStorage.setItem(APPEAR_KEY,JSON.stringify(a)); }catch(e){} }
   var out={};
   for(var k in APPEAR_DEFAULTS) out[k]=(APPEAR_ALLOWED[k].indexOf(a[k])>=0)?a[k]:APPEAR_DEFAULTS[k];
   return out;
 }
 function setAppearance(key,val){
   if(!APPEAR_ALLOWED[key]||APPEAR_ALLOWED[key].indexOf(val)<0) return;
-  var a=getAppearance(); a[key]=val;
+  var a=getAppearance(); a[key]=val; a.v2=1;
   try{ localStorage.setItem(APPEAR_KEY,JSON.stringify(a)); }catch(e){}
   applyAppearance(); renderAppearancePanel();
 }
@@ -1150,8 +1157,8 @@ function applyAppearance(){
   function stamp(attr,val,def){ if(val!==def) d.setAttribute(attr,val); else d.removeAttribute(attr); }
   stamp('data-theme',a.theme,'auto');
   stamp('data-glass',a.glass,'on');
-  stamp('data-palette',a.palette,'shore');
-  stamp('data-face',a.face,'system');
+  stamp('data-palette',a.palette,'parks');
+  stamp('data-face',a.face,'parks');
   stamp('data-textsize',a.size,'m');
 }
 function apSeg(key,opts,cur,label){
@@ -1168,7 +1175,7 @@ function renderAppearancePanel(){
     +apSeg('theme',[['auto','Auto'],['light','Light'],['dark','Dark']],a.theme,'Theme')+'</div>';
   html+='<div class="ios-row ios-row--plain ap-row"><span class="ios-row-body"><span class="ios-row-title">Colours</span></span>'
     +'<div class="swatches" role="group" aria-label="Colours">'
-    +[['shore','Shore'],['field','Field'],['granite','Granite']].map(function(p){
+    +[['parks','Parks'],['field','Field'],['granite','Granite']].map(function(p){
       var on=p[0]===a.palette;
       return '<button type="button" class="swatch swatch--'+p[0]+'" data-ap="palette" data-val="'+p[0]+'"'
         +' aria-pressed="'+(on?'true':'false')+'" aria-label="'+p[1]+'"><i></i><i></i><i></i></button>'; }).join('')
@@ -1180,7 +1187,7 @@ function renderAppearancePanel(){
     +'<span class="ios-switch" aria-hidden="true"><i></i></span></button>';
   html+='<div class="ios-row ios-row--plain ap-row"><span class="ios-row-body"><span class="ios-row-title">Text size</span></span>'
     +apSeg('size',[['s','S','Small'],['m','M','Medium'],['l','L','Large'],['xl','XL','Extra large']],a.size,'Text size')+'</div>';
-  html+=[['system','System'],['rounded','Rounded'],['serif','Serif'],['avenir','Avenir'],['mono','Mono']].map(function(f){
+  html+=[['parks','Parks'],['system','System'],['rounded','Rounded'],['serif','Serif'],['avenir','Avenir'],['mono','Mono']].map(function(f){
     var on=f[0]===a.face;
     return '<button type="button" class="ios-row ios-row--plain ap-face" data-ap="face" data-val="'+f[0]+'"'
       +' aria-pressed="'+(on?'true':'false')+'">'
@@ -1505,7 +1512,7 @@ makeSheetSwipe(sheet,closeSheet);
   window.addEventListener('hashchange',fromHash);
   fromHash();
 })();
-if(window.OnShare) OnShare.config({ app:'on-camp', base:'https://katsuma0.github.io/on-camp/', accent:'#007AFF' });
+if(window.OnShare) OnShare.config({ app:'on-camp', base:'https://katsuma0.github.io/on-camp/', accent:'#284162' });
 (function(){ /* #/shared/<data> receive route */
   function fromSharedHash(){
     var m=(location.hash||'').match(/^#\/shared\/(.+)$/); if(!m) return;

@@ -16,25 +16,31 @@
 <script>
 /* Appearance, stamped before first paint so there is no flash. One JSON key,
    'outdoors-appearance', shared by every outdoors app on this origin:
-   { theme:'auto'|'light'|'dark', glass:'on'|'off', palette:'shore'|'field'|'granite',
-     face:'system'|'rounded'|'serif'|'avenir'|'mono', size:'s'|'m'|'l'|'xl' }.
-   Defaults (auto, on, shore, system, m) stamp nothing. The old per-app
+   { theme:'auto'|'light'|'dark', glass:'on'|'off', palette:'parks'|'field'|'granite',
+     face:'parks'|'system'|'rounded'|'serif'|'avenir'|'mono', size:'s'|'m'|'l'|'xl' }.
+   Defaults (auto, on, parks, parks, m) stamp nothing. The old per-app
    'oncamp-appearance' theme migrates into the key once, then only the key is read. */
 (function(){
   var d=document.documentElement;
   try{
-    var K='outdoors-appearance', a=null;
+    var K='outdoors-appearance', a=null, save=false;
     try{ a=JSON.parse(localStorage.getItem(K)); }catch(x){}
     if(!a||typeof a!=='object') a={};
     var old=localStorage.getItem('oncamp-appearance');
     if(old!=null){
-      if((old==='light'||old==='dark')&&!a.theme){ a.theme=old; localStorage.setItem(K,JSON.stringify(a)); }
+      if((old==='light'||old==='dark')&&!a.theme){ a.theme=old; save=true; }
       localStorage.removeItem('oncamp-appearance');
     }
+    /* one time: face "system" saved before the parks round was the old
+       default, not a choice, so it moves to the new default. a System
+       pick made in the panel now writes v2 alongside, so it sticks. */
+    if(a.face==='system'&&!a.v2){ delete a.face; a.v2=1; save=true; }
+    if(a.palette==='shore'){ a.palette='parks'; save=true; }
+    if(save) localStorage.setItem(K,JSON.stringify(a));
     if(a.theme==='light'||a.theme==='dark') d.setAttribute('data-theme',a.theme);
     if(a.glass==='off') d.setAttribute('data-glass','off');
     if(a.palette==='field'||a.palette==='granite') d.setAttribute('data-palette',a.palette);
-    if(['rounded','serif','avenir','mono'].indexOf(a.face)>=0) d.setAttribute('data-face',a.face);
+    if(['system','rounded','serif','avenir','mono'].indexOf(a.face)>=0) d.setAttribute('data-face',a.face);
     if(['s','l','xl'].indexOf(a.size)>=0) d.setAttribute('data-textsize',a.size);
   }catch(e){}
 })();
@@ -56,7 +62,7 @@
 <main id="views">
 <section id="view-parks">
   <div class="appbar">
-    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.202</button></div>
+    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.203</button></div>
     <div class="sub">Walk a campground, rate the sites, and book the good ones next time.</div>
   </div>
   <div class="wrap">
@@ -203,6 +209,7 @@
 <div class="sheet" id="versionsSheet" role="dialog" aria-modal="true" aria-label="Versions">
   <div class="grabber"></div>
   <div class="kind" style="margin-bottom:12px">Versions</div>
+  <div class="verline"><span class="vv">v0.203</span>The Parks Canada look is the new default: federal blues, a red title rule, and Lato with Noto Sans</div>
   <div class="verline"><span class="vv">v0.202</span>Appearance settings shared across the outdoors apps: theme, colours, glass, text size and face</div>
   <div class="verline"><span class="vv">v0.201</span>Parks in one A to Z list with a letter rail, a Journal tab, and Learn lives in More</div>
   <div class="verline"><span class="vv">v0.200</span>The iOS look: floating tab capsule, one blue tint, and an account page</div>

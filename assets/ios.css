@@ -494,7 +494,7 @@ button {
   .appbar{padding:10px 16px 14px;max-width:640px;margin:0 auto}
   .eyebrow{font-size:13px;font-weight:400;letter-spacing:.4px;text-transform:uppercase;color:var(--label-2)}
   .titlebar{display:flex;align-items:baseline;justify-content:space-between;gap:9px}
-  .appbar h1{font-weight:700;font-size:34px;line-height:41px;letter-spacing:.37px;margin:2px 0 0}
+  .appbar h1{font-weight:700;font-size:34px;line-height:41px;letter-spacing:var(--ls-large-title);margin:2px 0 0}
   .ver{position:relative;appearance:none;border:0;background:none;cursor:pointer;font-family:var(--font-sys);font-weight:600;font-size:15px;
     color:var(--tint-text);white-space:nowrap;padding:6px 4px;margin:0}
   /* Fitts: the label stays small and quiet, the thing you aim at does not. */
@@ -930,7 +930,7 @@ button {
 
   /* tab screens (the bar itself is the core .ios-tabbar) ---------------- */
   .tabscreen[hidden]{ display:none; }
-  .screen-title{ font-size:34px; line-height:41px; font-weight:700; letter-spacing:.37px; margin:0;
+  .screen-title{ font-size:34px; line-height:41px; font-weight:700; letter-spacing:var(--ls-large-title); margin:0;
     padding:8px 16px 6px; max-width:640px; margin-left:auto; margin-right:auto; box-sizing:border-box; }
   .screen-sub{ color:var(--label-2); font-size:15px; margin:0; padding:0 16px 8px; max-width:640px;
     margin-left:auto; margin-right:auto; box-sizing:border-box; }
@@ -1703,13 +1703,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
 	}
 
 /* =====================================================================
-   ios.css appearance layer: liquid glass, the three tone palettes, five
+   ios.css appearance layer: liquid glass, the three tone palettes, six
    faces, four text sizes, and the blended header.
    Driven by data attributes on <html>, set pre-paint from the shared
    'outdoors-appearance' key so every site dresses the same:
      data-glass="off"          glass chrome off (on is the default)
-     data-palette="shore|field|granite"   (shore is the default)
-     data-face="system|rounded|serif|avenir|mono"
+     data-palette="parks|field|granite"   (parks default, no attribute)
+     data-face="parks|system|rounded|serif|avenir|mono"   (parks default, no attribute)
      data-textsize="s|m|l|xl"  (m is the default)
    Tone rules: tone 1 is the tint and carries controls, tone 2 supports
    (chips, secondary highlights), tone 3 is fills and bars only, never
@@ -1717,13 +1717,44 @@ svg.leaflet-image-layer.leaflet-interactive path {
    component follows without knowing palettes exist.
    ===================================================================== */
 
+/* the Parks face ships its own type: Lato for headings and buttons,
+   Noto Sans for text, the same files the Canada.ca theme loads.
+   Both are SIL OFL; see assets/fonts/OFL.txt. */
+@font-face { font-family: "Lato"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/lato-400.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Lato"; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/lato-700.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Noto Sans"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/noto-400.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Noto Sans"; font-style: italic; font-weight: 400; font-display: swap; src: url("fonts/noto-400i.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Noto Sans"; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/noto-700.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
 /* ------------------------------------------------ three tone palettes */
-/* shore is the default and matches the system blue already in :root */
-:root { --tone2: #337E80; --tone3: #E8654F; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --tone2: #64D2FF; --tone3: #FF6B52; }
+/* parks is the default: the palette the Parks Canada site wears.
+   tone 1 #284162 carries links and controls with #26374A on filled
+   buttons, tone 2 #355688 supports, tone 3 is the #A62A1E rule red,
+   fills and bars only. */
+:root {
+  --tint: #284162; --tint-press: #243850; --tint-text: #284162; --tint-fill: #26374A;
+  --tint-soft: rgba(40, 65, 98, .12);
+  --tone2: #355688; --tone3: #A62A1E;
 }
-:root[data-theme="dark"] { --tone2: #64D2FF; --tone3: #FF6B52; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --tint: #8FB0DC; --tint-press: #A3C2EA; --tint-text: #8FB0DC; --tint-fill: #3A5A8C;
+    --tint-soft: rgba(143, 176, 220, .16);
+    --tone2: #4C76B0; --tone3: #E8604C;
+  }
+}
+:root[data-theme="dark"] {
+  --tint: #8FB0DC; --tint-press: #A3C2EA; --tint-text: #8FB0DC; --tint-fill: #3A5A8C;
+  --tint-soft: rgba(143, 176, 220, .16);
+  --tone2: #4C76B0; --tone3: #E8604C;
+}
+/* the explicit Light choice re-lists the tint family above at higher
+   specificity, so parks re-asserts its light values for that case.
+   field and granite still win: their blocks sit later in the file. */
+:root[data-theme="light"] {
+  --tint: #284162; --tint-press: #243850; --tint-text: #284162; --tint-fill: #26374A;
+  --tint-soft: rgba(40, 65, 98, .12);
+}
 
 :root[data-palette="field"] {
   --tint: #2E7D4F; --tint-press: #256B42; --tint-text: #256B42; --tint-fill: #256B42;
@@ -1761,17 +1792,44 @@ svg.leaflet-image-layer.leaflet-interactive path {
   --tone2: #98989D; --tone3: #FFD60A;
 }
 
-/* ------------------------------------------------------- five faces */
-/* the four alternates are faces iOS ships natively; elsewhere they fall
-   back gracefully. the system face stays exactly as :root defines it. */
+/* -------------------------------------------------------- six faces */
+/* parks is the default face: Lato heads it, Noto Sans carries it, as on
+   the Parks Canada site. the five alternates are faces iOS ships
+   natively; elsewhere they fall back gracefully. */
+:root {
+  --font-sys: "Noto Sans", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Lato", "Noto Sans", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+  /* web faces carry their own fitted metrics; SF tracking returns with
+     the SF-family faces below */
+  --ls-large-title: 0; --ls-title1: 0; --ls-title2: 0; --ls-title3: 0;
+  --ls-headline: 0; --ls-body: 0; --ls-callout: 0; --ls-subhead: 0;
+  --ls-footnote: 0; --ls-caption1: 0; --ls-caption2: 0;
+}
+h1, h2, h3, h4, .btn { font-family: var(--font-display); }
+:root[data-face] { --font-display: var(--font-sys); }
+:root[data-face="system"] { --font-sys: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif; }
 :root[data-face="rounded"] { --font-sys: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
 :root[data-face="serif"] { --font-sys: ui-serif, "New York", Georgia, "Times New Roman", serif; }
 :root[data-face="avenir"] { --font-sys: "Avenir Next", Avenir, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
 :root[data-face="mono"] { --font-sys: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-/* serif and mono set their own rhythm; soften the SF tracking for them */
-:root[data-face="serif"], :root[data-face="mono"] {
-  --ls-large-title: 0; --ls-title1: 0; --ls-title2: 0; --ls-title3: 0;
-  --ls-headline: 0; --ls-body: 0; --ls-callout: 0; --ls-subhead: 0; --ls-footnote: 0;
+/* SF-family faces get the HIG tracking back; serif and mono stay zeroed */
+:root[data-face="system"], :root[data-face="rounded"], :root[data-face="avenir"] {
+  --ls-large-title: 0.37px; --ls-title1: 0.36px; --ls-title2: 0.35px; --ls-title3: 0.38px;
+  --ls-headline: -0.41px; --ls-body: -0.41px; --ls-callout: -0.32px; --ls-subhead: -0.24px;
+  --ls-footnote: -0.08px; --ls-caption1: 0; --ls-caption2: 0.07px;
+}
+
+/* the parks palette signs its screens the way canada.ca signs a page:
+   a 72px, 6px-thick rule in the flag red under the main title. only the
+   top of screen large titles carry it, never section heads or sheets. */
+:root:not([data-palette="field"]):not([data-palette="granite"]) .appbar h1::after,
+:root:not([data-palette="field"]):not([data-palette="granite"]) .screen-title::after {
+  content: "";
+  display: block;
+  width: 72px;
+  height: 6px;
+  margin-top: 10px;
+  background: var(--tone3);
 }
 
 /* -------------------------------------------------- four text sizes */
@@ -2013,9 +2071,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
   cursor: pointer;
   transition: box-shadow .15s;
 }
-.swatch--shore { --sw1: #007AFF; --sw2: #337E80; --sw3: #E8654F; }
+.swatch--parks { --sw1: #284162; --sw2: #355688; --sw3: #A62A1E; }
 .swatch--field { --sw1: #2E7D4F; --sw2: #6B7F3E; --sw3: #E8A13D; }
 .swatch--granite { --sw1: #5E5CE6; --sw2: #6E6E73; --sw3: #F5C400; }
+/* the parks dots would sink into a dark card, so they lighten there */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .swatch--parks { --sw1: #8FB0DC; --sw2: #4C76B0; --sw3: #E8604C; }
+}
+:root[data-theme="dark"] .swatch--parks { --sw1: #8FB0DC; --sw2: #4C76B0; --sw3: #E8604C; }
 .swatch i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
 .swatch i:nth-child(1) { background: var(--sw1); }
 .swatch i:nth-child(2) { background: var(--sw2); }
@@ -2045,6 +2108,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 [role="switch"][aria-checked="true"] .ios-switch { background: var(--green); }
 [role="switch"][aria-checked="true"] .ios-switch i { left: 22px; }
 /* face rows: each label wears its own face so the choice previews itself */
+.face-parks { font-family: "Lato", "Noto Sans", sans-serif; }
 .face-system { font-family: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif; }
 .face-rounded { font-family: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
 .face-serif { font-family: ui-serif, "New York", Georgia, "Times New Roman", serif; }

@@ -1,10 +1,15 @@
 /* on-camp, offline service worker */
-const CACHE = 'scout-v203';
+const CACHE = 'scout-v205';
 const CORE = [
   './',
   './index.html',
   './assets/ios.css',
   './assets/icons.svg',
+  './assets/fonts/lato-400.woff2',
+  './assets/fonts/lato-700.woff2',
+  './assets/fonts/noto-400.woff2',
+  './assets/fonts/noto-400i.woff2',
+  './assets/fonts/noto-700.woff2',
   './share.js',
   './app.js',
   './data/parks.js',
