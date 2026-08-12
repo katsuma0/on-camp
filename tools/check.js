@@ -8,7 +8,8 @@
  *   4. Every local file referenced by index.html exists, and share.js loads
  *      before app.js.
  *   5. Every local file precached by the service worker (CORE) exists, the
- *      cache version is declared, and share.js is precached.
+ *      cache version is declared, and share.js and the design system
+ *      (assets/ios.css + assets/icons.svg) are precached.
  *
  * Exit code is non-zero if anything fails.
  */
@@ -88,6 +89,8 @@ try {
   var swMissing = locals.filter(function (p) { return p && !fs.existsSync(rel(p)); });
   if (swMissing.length) bad('precached file missing', swMissing.join(', ')); else ok('all ' + locals.length + ' precached files exist');
   if (/'\.\/share\.js'/.test(sw)) ok('share.js is precached'); else bad('share.js precache', 'not in CORE');
+  if (/'\.\/assets\/ios\.css'/.test(sw) && /'\.\/assets\/icons\.svg'/.test(sw)) ok('design system (ios.css + icons.svg) is precached'); else bad('design system precache', 'assets/ios.css or assets/icons.svg not in CORE');
+  if (!/styles\.css/.test(sw)) ok('retired styles.css is not precached'); else bad('styles.css precache', 'still referenced by CORE');
 } catch (e) { bad('service worker', e.message); }
 
 console.log('\n' + (fails.length ? ('FAILED: ' + fails.length + ' check(s)\n - ' + fails.join('\n - ')) : ('ALL ' + passes + ' CHECKS PASSED')));
