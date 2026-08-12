@@ -47,6 +47,24 @@
   --press-pill: rgba(120, 120, 128, .16);
   --shadow-float: 0 8px 24px rgba(0, 0, 0, .12);
 
+
+  /* Apple type scale (Dynamic Type at the default Large setting).
+     Sizes, line heights and tracking straight from the HIG; every
+     font-size in this file must be one of these. */
+  --font-sys: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+  --fs-large-title: 34px; --lh-large-title: 41px; --ls-large-title: 0.37px;
+  --fs-title1: 28px; --lh-title1: 34px; --ls-title1: 0.36px;
+  --fs-title2: 22px; --lh-title2: 28px; --ls-title2: 0.35px;
+  --fs-title3: 20px; --lh-title3: 25px; --ls-title3: 0.38px;
+  --fs-headline: 17px; --lh-headline: 22px; --ls-headline: -0.41px;
+  --fs-body: 17px; --lh-body: 22px; --ls-body: -0.41px;
+  --fs-callout: 16px; --lh-callout: 21px; --ls-callout: -0.32px;
+  --fs-subhead: 15px; --lh-subhead: 20px; --ls-subhead: -0.24px;
+  --fs-footnote: 13px; --lh-footnote: 18px; --ls-footnote: -0.08px;
+  --fs-caption1: 12px; --lh-caption1: 16px; --ls-caption1: 0;
+  --fs-caption2: 11px; --lh-caption2: 13px; --ls-caption2: 0.07px;
+  --fs-tab: 10px;   /* the one exception: tab bar labels, as on iOS */
+
   /* geometry */
   --r-group: 12px;
   --r-tile: 7px;
@@ -161,9 +179,10 @@ body {
   min-height: 100dvh;
   background: var(--bg);
   color: var(--label);
-  font-family: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
-  font-size: 17px;
-  line-height: 1.4;
+  font-family: var(--font-sys);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
@@ -221,7 +240,7 @@ button {
   justify-content: center;
   background: var(--fill-strong);
   color: var(--label);
-  font-size: 19px;
+  font-size: var(--fs-title3);
   font-weight: 600;
   text-decoration: none;
   overflow: hidden;
@@ -251,10 +270,10 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  font-size: 26px;
+  font-size: var(--fs-title1);
   font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  letter-spacing: var(--ls-title1);
+  line-height: var(--lh-title1);
   color: var(--label);
   margin: 26px 0 8px;
   padding-left: var(--gutter);
@@ -291,7 +310,8 @@ button {
 }
 /* small footnote under a group, outside the card */
 .ios-group-foot {
-  font-size: 13px;
+  font-size: var(--fs-footnote);
+  letter-spacing: var(--ls-footnote);
   color: var(--label-2);
   margin: -24px var(--gutter) 32px;
   padding: 8px 4px 0;
@@ -307,7 +327,8 @@ button {
   padding: 8px 14px;
   gap: 12px;
   color: var(--label);
-  font-size: 17px;
+  font-size: var(--fs-body);
+  letter-spacing: var(--ls-body);
   text-decoration: none;
   text-align: left;
   background: var(--card);
@@ -333,7 +354,9 @@ button {
 .ios-row-body { flex: 1; min-width: 0; }
 .ios-row-title {
   display: block;
-  font-size: 17px;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
   color: var(--label);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -341,7 +364,9 @@ button {
 }
 .ios-row-sub {
   display: block;
-  font-size: 13px;
+  font-size: var(--fs-footnote);
+  line-height: var(--lh-footnote);
+  letter-spacing: var(--ls-footnote);
   color: var(--label-2);
   margin-top: 1px;
   overflow: hidden;
@@ -352,7 +377,8 @@ button {
   flex: none;
   margin-left: auto;
   color: var(--label-2);
-  font-size: 17px;
+  font-size: var(--fs-body);
+  letter-spacing: var(--ls-body);
   font-variant-numeric: tabular-nums;
 }
 .ios-chevron {
@@ -417,7 +443,7 @@ button {
   padding: 0 14px;
   border-radius: 22px;
   color: var(--label-aa);
-  font-size: 10px;
+  font-size: var(--fs-tab);
   font-weight: 500;
   line-height: 1;
   text-decoration: none;
@@ -469,11 +495,11 @@ button {
   .eyebrow{font-size:13px;font-weight:400;letter-spacing:.4px;text-transform:uppercase;color:var(--label-2)}
   .titlebar{display:flex;align-items:baseline;justify-content:space-between;gap:9px}
   .appbar h1{font-weight:700;font-size:34px;line-height:41px;letter-spacing:.37px;margin:2px 0 0}
-  .ver{position:relative;appearance:none;border:0;background:none;cursor:pointer;font-family:inherit;font-weight:600;font-size:15px;
+  .ver{position:relative;appearance:none;border:0;background:none;cursor:pointer;font-family:var(--font-sys);font-weight:600;font-size:15px;
     color:var(--tint-text);white-space:nowrap;padding:6px 4px;margin:0}
   /* Fitts: the label stays small and quiet, the thing you aim at does not. */
   .ver::after{content:"";position:absolute;top:50%;left:-6px;right:-6px;height:44px;transform:translateY(-50%)}
-  .appbar .sub{color:var(--label-aa);font-size:15px;margin-top:5px;line-height:1.4}
+  .appbar .sub{color:var(--label-aa);font-size:15px;margin-top:5px;line-height:var(--lh-subhead)}
 
   /* park page back bar: same chrome as the header, no border ------------ */
   .backbar{position:sticky;top:0;z-index:20;background:var(--chrome);
@@ -490,7 +516,7 @@ button {
   .gsearch{display:flex;align-items:center;gap:8px;background:var(--fill-strong);border-radius:10px;
     padding:0 10px;height:38px;margin:2px 0 12px}
   .gsearch svg{flex:none;color:var(--label-2);width:17px;height:17px}
-  .gsearch input{border:0;background:none;outline:none;font-family:inherit;font-size:17px;width:100%;color:var(--label)}
+  .gsearch input{border:0;background:none;outline:none;font-family:var(--font-sys);font-size:17px;width:100%;color:var(--label)}
   .gsearch input::placeholder{color:var(--label-2)}
   .gsearch .gclear{appearance:none;border:0;background:none;color:var(--label-2);cursor:pointer;font-size:16px;
     line-height:1;padding:2px 4px;display:none}
@@ -501,18 +527,18 @@ button {
     transition:background .12s,transform .12s}
   .gresult:active{background:var(--fill);transform:scale(.99)}
   .gresult .tag{flex:0 0 46px;width:46px;height:22px;min-height:22px;max-height:22px;display:flex;align-items:center;
-    justify-content:center;align-self:center;margin:auto 0;font-size:10px;font-weight:700;letter-spacing:.03em;
+    justify-content:center;align-self:center;margin:auto 0;font-size:11px;font-weight:700;letter-spacing:.03em;
     text-transform:uppercase;line-height:1;padding:0;overflow:hidden;color:var(--on-tint);background:var(--tint);border-radius:99px}
   .gresult .tag.cg{background:var(--tint)} .gresult .tag.site{background:var(--orange)} .gresult .tag.trail{background:var(--purple)}
   .gresult .grow{flex:1;min-width:0}
-  .gresult .gt{display:block;font-weight:400;font-size:17px;letter-spacing:-.2px;color:var(--label)}
+  .gresult .gt{display:block;font-weight:400;font-size:17px;letter-spacing:var(--ls-body);color:var(--label)}
   .gresult .gs{display:block;font-size:13px;color:var(--label-2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .gnone{color:var(--label-2);font-size:15px;padding:20px 8px;text-align:center;background:var(--card);border-radius:10px}
 
   /* filters, chips, pills, segmented ----------------------------------- */
   .filters{display:flex;flex-wrap:wrap;gap:8px;margin:var(--gap-l) 0;justify-content:flex-start}
   .fchip{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;appearance:none;cursor:pointer;
-    border:0;background:var(--fill-strong);color:var(--label);font-family:inherit;font-weight:500;font-size:15px;
+    border:0;background:var(--fill-strong);color:var(--label);font-family:var(--font-sys);font-weight:500;font-size:15px;
     border-radius:18px;padding:8px 15px;min-height:36px;transition:background .12s,transform .1s}
   .fchip.on{background:var(--tint-fill);color:var(--on-tint)}
   .fchip:active{transform:scale(.95)}
@@ -535,14 +561,14 @@ button {
   /* park progress: a real count against a real ceiling, never padded --- */
   .pprog{background:var(--card);border-radius:var(--r-sm);padding:13px 16px 15px;margin:8px 0 4px}
   .pprog-top{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;color:var(--label)}
-  .pprog-n{font-size:14px;color:var(--label-2)}
+  .pprog-n{font-size:13px;color:var(--label-2)}
   .pprog-bar{display:block;margin-top:10px;height:6px;border-radius:3px;background:var(--fill-strong);overflow:hidden}
   .pprog-fill{display:block;height:100%;border-radius:3px;background:var(--tint);transition:width .4s var(--ease)}
 
   /* option rows (sort / group choosers) -------------------------------- */
   .rrow{display:flex;justify-content:space-between;align-items:center;width:100%;appearance:none;cursor:pointer;border:0;
-    background:var(--card);color:var(--label);font-family:inherit;font-weight:400;font-size:17px;
-    border-radius:var(--r-sm);padding:12px 16px;margin-bottom:8px;gap:10px;letter-spacing:-.2px}
+    background:var(--card);color:var(--label);font-family:var(--font-sys);font-weight:400;font-size:17px;
+    border-radius:var(--r-sm);padding:12px 16px;margin-bottom:8px;gap:10px;letter-spacing:var(--ls-body)}
   .rrow .rcount{color:var(--label-2);font-weight:400;font-size:15px}
   .rrow.on{color:var(--tint);box-shadow:inset 0 0 0 2px var(--tint)}
   .rrow:active{background:var(--fill)}
@@ -553,7 +579,7 @@ button {
     border-radius:var(--r);padding:16px;margin-bottom:var(--gap-m);cursor:pointer;transition:transform .14s ease}
   .park-card:active{transform:scale(.982)}
   .pc-top{display:flex;align-items:baseline;justify-content:space-between;gap:var(--gap-l)}
-  .pc-name{font-weight:700;font-size:20px;letter-spacing:-.01em;color:var(--label)}
+  .pc-name{font-weight:700;font-size:20px;letter-spacing:var(--ls-title3);color:var(--label)}
   .pc-pct{background:var(--tint-soft);color:var(--tint);padding:3px 10px;border-radius:99px;font-weight:700;
     font-size:13px;font-variant-numeric:tabular-nums}
   .pc-region{color:var(--label-2);font-size:13px;margin-top:2px}
@@ -568,7 +594,7 @@ button {
   .park-head{padding:16px 0 2px}
   .titlerow{display:flex;align-items:center;justify-content:space-between;gap:10px}
   .titlerow h2{min-width:0}
-  .park-head h2{font-weight:700;font-size:28px;letter-spacing:-.3px;margin:0;line-height:34px}
+  .park-head h2{font-weight:700;font-size:28px;letter-spacing:var(--ls-title1);margin:0;line-height:34px}
   .park-head .region{color:var(--label-2);font-size:13px;margin-top:3px}
   .pinbtn{flex:0 0 44px;width:44px;height:44px;border:0;background:none;color:var(--label-3);display:flex;
     align-items:center;justify-content:center;cursor:pointer;padding:0}
@@ -577,13 +603,13 @@ button {
   .pinbtn.on svg{fill:currentColor}
   .about-toggle{width:100%;min-height:var(--row-h);margin-top:14px;appearance:none;cursor:pointer;background:var(--card);
     border:0;border-radius:var(--r-sm);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;
-    font-weight:600;font-size:17px;letter-spacing:-.01em;color:var(--label)}
+    font-weight:600;font-size:17px;letter-spacing:var(--ls-headline);color:var(--label)}
   .about-toggle .chev{transition:transform .22s;color:var(--label-3)}
   .about-toggle[aria-expanded="true"] .chev{transform:rotate(180deg)}
   .about-toggle[aria-expanded="true"]{border-radius:var(--r-sm) var(--r-sm) 0 0}
   .about-body{background:var(--card);border-radius:0 0 var(--r-sm) var(--r-sm);margin-top:0;padding:0 16px 16px}
   .about-body::before{content:"";display:block;height:.5px;background:var(--sep);margin:0 -16px 2px}
-  .about-body .blurb{font-size:14px;color:var(--label);margin:12px 0 0}
+  .about-body .blurb{font-size:13px;color:var(--label);margin:12px 0 0}
   .about-body .fmz+.fmz,.fmz+a.fmz{margin-left:8px}
   .facils{display:flex;flex-wrap:wrap;gap:var(--gap-s);margin-top:14px}
   .facil{font-size:13px;font-weight:500;color:var(--label);background:var(--fill-strong);border-radius:99px;
@@ -616,11 +642,11 @@ button {
   .list>*+*>.cell::before{content:"";position:absolute;top:0;left:16px;right:0;height:.5px;background:var(--sep)}
   .cell.tap:active{background:var(--fill)}
   .cell-body{flex:1 1 auto;min-width:0}
-  .cell-title{display:block;font-size:17px;letter-spacing:-.2px;color:var(--label)}
+  .cell-title{display:block;font-size:17px;letter-spacing:var(--ls-body);color:var(--label)}
   .cell-title.destructive,.ios-row-title.destructive{color:var(--red)}
   /* a row waiting for its second tap says so in red, not just in words */
   .cell.armed .cell-title,.ios-row.armed .ios-row-title{color:var(--red);font-weight:600}
-  .cell-sub{display:block;font-size:13px;color:var(--label-2);margin-top:1px;line-height:1.35}
+  .cell-sub{display:block;font-size:13px;color:var(--label-2);margin-top:1px;line-height:var(--lh-footnote)}
   .cell-value{flex:none;margin-left:auto;font-size:16px;color:var(--label-2)}
   .chevron{flex:none;margin-left:auto;color:var(--label-3)}
   .cell-value+.chevron{margin-left:8px}
@@ -631,7 +657,7 @@ button {
   .cell-details>summary .ios-chevron svg{transition:transform .22s}
   .cell-details[open]>summary .ios-chevron svg{transform:rotate(180deg)}
   .cell-details+.cell-details>.ios-row::before{content:"";position:absolute;top:0;left:14px;right:0;height:.5px;background:var(--sep)}
-  .cell-details .cell-detail-body{padding:0 16px 16px;font-size:14px;line-height:1.65;color:var(--label)}
+  .cell-details .cell-detail-body{padding:0 16px 16px;font-size:13px;line-height:1.65;color:var(--label)}
   .cell-details .cell-detail-body p{margin:10px 0 0}
 
   /* campgrounds --------------------------------------------------------- */
@@ -640,8 +666,8 @@ button {
   .cg-row{width:100%;appearance:none;border:0;background:none;cursor:pointer;text-align:left;display:flex;gap:var(--gap-l);
     align-items:center;padding:var(--pad-card);min-height:var(--row-h)}
   .cg-left{flex:1;min-width:0}
-  .cg-name{font-weight:600;font-size:17px;letter-spacing:-.01em;color:var(--label)}
-  .cg-sub{color:var(--label-2);font-size:13px;font-weight:400;margin-top:2px;line-height:1.35}
+  .cg-name{font-weight:600;font-size:17px;letter-spacing:var(--ls-headline);color:var(--label)}
+  .cg-sub{color:var(--label-2);font-size:13px;font-weight:400;margin-top:2px;line-height:var(--lh-footnote)}
   .cg-right{flex:none;display:flex;align-items:center;gap:var(--gap-l)}
   .cg-prog{width:78px}
   .cg-prog .bar{height:6px;border-radius:99px;background:var(--fill-strong);overflow:hidden}
@@ -666,7 +692,7 @@ button {
     transition:transform .12s;font-variant-numeric:tabular-nums}
   .site:active{transform:scale(.92)}
   .site.rated{color:var(--on-tint);border-color:transparent}
-  .site .badge{position:absolute;bottom:2px;right:4px;font-size:10px;font-weight:800;opacity:.95}
+  .site .badge{position:absolute;bottom:2px;right:4px;font-size:11px;font-weight:800;opacity:.95}
   .site .star{position:absolute;top:2px;left:4px;font-size:9px;color:var(--orange);line-height:1}
   .site.rated .star{color:var(--yellow)}
   .site .nstar{position:absolute;top:5px;right:7px;font-size:10px;color:var(--label-2);line-height:1}
@@ -687,7 +713,7 @@ button {
     min-height:var(--row-h);transition:transform .12s}
   .trail:active{transform:scale(.99)}
   .tr-left{flex:1;min-width:0}
-  .tr-name{font-weight:600;font-size:16px;letter-spacing:-.01em;color:var(--label)}
+  .tr-name{font-weight:600;font-size:16px;letter-spacing:var(--ls-callout);color:var(--label)}
   .tr-meta{color:var(--label-2);font-size:13px;font-weight:400;margin-top:2px}
   .tr-detail{font-size:13px;color:var(--label-2);margin-top:5px;line-height:1.4}
   .trail .nstar{position:absolute;top:6px;right:9px;font-size:10px;color:var(--label-2);line-height:1}
@@ -701,7 +727,7 @@ button {
   .controls{display:flex;gap:var(--gap-m);align-items:center;margin:16px 0 12px}
   .search{flex:1;display:flex;align-items:center;gap:var(--gap-m);background:var(--fill-strong);border:0;border-radius:10px;
     padding:0 12px;height:38px}
-  .search input{border:0;background:none;outline:none;font-family:inherit;font-size:17px;width:100%;color:var(--label)}
+  .search input{border:0;background:none;outline:none;font-family:var(--font-sys);font-size:17px;width:100%;color:var(--label)}
   .search input::placeholder{color:var(--label-2)}
   .search svg{flex:none;color:var(--label-2)}
   .fbtn{appearance:none;cursor:pointer;font-size:13px;font-weight:600;border:0;background:var(--fill-strong);color:var(--label);
@@ -713,8 +739,8 @@ button {
   .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--gap-m)}
   .stat{background:var(--card);border-radius:var(--r-sm);padding:14px 12px;min-height:var(--row-h);
     display:flex;flex-direction:column;justify-content:center}
-  .stat .v{font-weight:700;font-size:24px;line-height:1;font-variant-numeric:tabular-nums;color:var(--label)}
-  .stat .l{font-size:10px;color:var(--label-2);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-top:6px}
+  .stat .v{font-weight:700;font-size:22px;line-height:1;font-variant-numeric:tabular-nums;color:var(--label)}
+  .stat .l{font-size:11px;color:var(--label-2);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-top:6px}
   .want-item{background:var(--card);border-radius:var(--r-sm);padding:var(--pad-card);margin-bottom:var(--gap-m);
     cursor:pointer;min-height:var(--row-h);display:flex;flex-direction:column;justify-content:center}
   .want-item .h{display:flex;align-items:center;gap:var(--gap-m)}
@@ -734,7 +760,7 @@ button {
   .rank li+li::before{content:"";position:absolute;top:0;left:16px;right:0;height:.5px;background:var(--sep)}
   .rank .sw{width:34px;height:34px;border-radius:var(--r-xs);flex:none;display:flex;align-items:center;justify-content:center;
     font-weight:700;font-size:12px;color:var(--on-tint);font-variant-numeric:tabular-nums}
-  .rank .who{font-weight:600;font-size:14px}
+  .rank .who{font-weight:600;font-size:15px}
   .rank .whr{font-size:12px;color:var(--label-2)}
   .rank .val{margin-left:auto;font-weight:700;font-size:20px}
   .rank li .tr-rate{margin-left:auto}
@@ -754,8 +780,8 @@ button {
   .grabber{width:36px;height:5px;border-radius:3px;background:var(--label-3);margin:8px auto 16px}
   .sheet a{color:var(--tint)}
   .sheet .kind,.kind{font-size:13px;font-weight:400;letter-spacing:.4px;text-transform:uppercase;color:var(--label-2)}
-  .sheet .d-where{color:var(--tint);font-weight:600;font-size:14px;letter-spacing:-.01em;margin-top:2px}
-  .sheet h2.d-title{font-weight:700;font-size:26px;margin:3px 0 2px;letter-spacing:-.3px;line-height:32px}
+  .sheet .d-where{color:var(--tint);font-weight:600;font-size:13px;letter-spacing:var(--ls-footnote);margin-top:2px}
+  .sheet h2.d-title{font-weight:700;font-size:28px;margin:3px 0 2px;letter-spacing:var(--ls-title1);line-height:var(--lh-title1)}
   .sheet .ctx{font-size:13px;color:var(--label-2);margin-bottom:20px}
   .fld{display:flex;align-items:center;gap:var(--gap-m);font-size:13px;font-weight:400;color:var(--label-2);
     margin:18px 0 10px;text-transform:uppercase;letter-spacing:.4px}
@@ -767,7 +793,7 @@ button {
   .want-btn{width:100%;cursor:pointer;font-weight:600;font-size:17px;border:0;background:var(--fill-strong);color:var(--orange);
     border-radius:var(--r-sm);padding:14px;min-height:48px;margin-bottom:0;transition:.15s}
   .want-btn[aria-pressed="true"]{background:var(--orange);color:var(--on-tint)}
-  textarea{width:100%;min-height:106px;resize:none;overflow:hidden;font-family:inherit;font-size:17px;color:var(--label);
+  textarea{width:100%;min-height:106px;resize:none;overflow:hidden;font-family:var(--font-sys);font-size:17px;color:var(--label);
     background:var(--card);border:0;border-radius:var(--r-sm);padding:14px;outline:none}
   textarea:focus{box-shadow:inset 0 0 0 2px var(--tint)}
   .sheet-foot{display:flex;align-items:center;gap:var(--gap-m);margin-top:22px}
@@ -783,7 +809,7 @@ button {
   /* photos -------------------------------------------------------------- */
   .photo-actions{display:flex;gap:var(--gap-m)}
   .pa-btn{flex:1;min-height:48px;display:flex;align-items:center;justify-content:center;gap:var(--gap-s);appearance:none;cursor:pointer;
-    border:0;background:var(--fill-strong);color:var(--tint);font-family:inherit;font-weight:600;font-size:14px;border-radius:var(--r-sm)}
+    border:0;background:var(--fill-strong);color:var(--tint);font-family:var(--font-sys);font-weight:600;font-size:15px;border-radius:var(--r-sm)}
   .pa-btn:active{transform:scale(.98)}
   .pa-btn:disabled{opacity:.5}
   .photos{display:flex;gap:var(--gap-m);overflow-x:auto;padding-bottom:4px;margin:var(--gap-m) 0 0}
@@ -816,7 +842,7 @@ button {
   .stat-empty{color:var(--label-2);font-size:13px;padding:4px 0 8px}
   .stiles{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap-m);margin-bottom:6px}
   .stile{background:var(--fill);border-radius:var(--r-sm);padding:10px 8px;text-align:center}
-  .stile b{display:block;font-size:18px;letter-spacing:-.01em}
+  .stile b{display:block;font-size:22px;letter-spacing:var(--ls-title2)}
   .stile b i{font-style:normal;font-size:12px;color:var(--label-2);font-weight:700}
   .stile span{display:block;font-size:11px;font-weight:600;color:var(--label-2);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
   .glabel{font-size:11px;font-weight:700;color:var(--label-2);text-transform:uppercase;letter-spacing:.08em;margin:16px 0 8px}
@@ -828,8 +854,8 @@ button {
   .dbar .dc,.cgbar .cc{flex:0 0 34px;font-size:12px;font-weight:700;color:var(--label-2)}
   .cgbar .cn{flex:0 0 34%;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* grouped disclosure header used inside the stats sheet */
-  .gsec{display:flex;align-items:center;justify-content:space-between;width:100%;appearance:none;cursor:pointer;font-family:inherit;
-    background:var(--card);border:0;border-radius:var(--r-sm);color:var(--label);font-weight:600;font-size:14px;
+  .gsec{display:flex;align-items:center;justify-content:space-between;width:100%;appearance:none;cursor:pointer;font-family:var(--font-sys);
+    background:var(--card);border:0;border-radius:var(--r-sm);color:var(--label);font-weight:600;font-size:15px;
     padding:12px 14px;margin:4px 0 8px;text-align:left;min-height:46px}
   .gsec .gs-right{display:flex;align-items:center;gap:8px;color:var(--label-2)}
   .gsec .gs-count{font-size:12px;font-weight:600}
@@ -838,7 +864,7 @@ button {
   .gsec:active{transform:scale(.985)}
 
   /* town chooser sheet -------------------------------------------------- */
-  .townq{width:100%;font-size:17px;font-family:inherit;color:var(--label);background:var(--card);border:0;
+  .townq{width:100%;font-size:17px;font-family:var(--font-sys);color:var(--label);background:var(--card);border:0;
     border-radius:var(--r-sm);padding:12px 14px;outline:none;margin:2px 0 10px}
   .townlist{max-height:46vh;overflow-y:auto;-webkit-overflow-scrolling:touch;margin-top:2px}
   #townSheet{height:min(88vh,760px);height:min(88dvh,760px);display:flex;flex-direction:column}
@@ -853,32 +879,32 @@ button {
   .dbg .drow:last-child{border-bottom:none}
   .dbg .dk{color:var(--label-2)}
   .dbg .dv{color:var(--label);font-weight:700;text-align:right;word-break:break-word;font-variant-numeric:tabular-nums}
-  .dummybtn{display:block;width:100%;margin-top:12px;appearance:none;border:0;cursor:pointer;font-family:inherit;
+  .dummybtn{display:block;width:100%;margin-top:12px;appearance:none;border:0;cursor:pointer;font-family:var(--font-sys);
     background:var(--tint);color:var(--on-tint);font-weight:600;font-size:13px;border-radius:var(--r-sm);padding:12px;min-height:44px}
   .dummybtn:active{transform:scale(.98)}
   .dedic{background:var(--card);border-radius:var(--r);padding:34px 24px;margin-bottom:14px;text-align:center;
-    font-family:Georgia,'Times New Roman',serif;font-style:italic;color:var(--label)}
+    font-family:var(--font-sys);font-style:italic;color:var(--label)}
   .dedic .d-for{font-size:17px;margin-bottom:16px}
   .dedic p{font-size:15px;line-height:1.8;margin:0 auto 12px;max-width:28em}
-  .dedic .d-sign{margin-top:18px;font-size:14px}
+  .dedic .d-sign{margin-top:18px;font-size:13px}
   .ded-close{min-height:44px}
 
   /* footer, version lines, text links ---------------------------------- */
   .parkfoot{margin:26px 0 6px;text-align:center}
   .verline{font-size:13px;color:var(--label-2);margin:7px 0;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .verline .vv{font-weight:700;color:var(--label);margin-right:9px;font-variant-numeric:tabular-nums}
-  .resetlink{position:relative;appearance:none;border:0;background:none;padding:0;cursor:pointer;font-family:inherit;
+  .resetlink{position:relative;appearance:none;border:0;background:none;padding:0;cursor:pointer;font-family:var(--font-sys);
     font-size:13px;line-height:1.55;color:var(--red);text-decoration:underline;text-underline-offset:2px;font-weight:600}
   .resetlink.armed{font-weight:800}
   .resetlink::after{content:"";position:absolute;left:-16px;right:-16px;top:-12px;bottom:-12px}
-  .footlink{position:relative;appearance:none;border:0;background:none;cursor:pointer;font-family:inherit;font-size:12px;
+  .footlink{position:relative;appearance:none;border:0;background:none;cursor:pointer;font-family:var(--font-sys);font-size:12px;
     font-weight:600;color:var(--label-2);text-decoration:underline;padding:8px 12px;margin:-4px 0 2px}
   footer{max-width:640px;margin:0 auto;padding:20px 16px 40px;color:var(--label-2);font-size:13px;line-height:1.55}
   footer a{color:var(--label-2);text-decoration:underline;text-underline-offset:2px}
 
   /* toast (dark translucent pill, both modes on purpose) ---------------- */
   .toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translate(-50%,90px);
-    appearance:none;border:0;background:rgba(30,30,30,.92);color:var(--on-tint);padding:13px 20px;border-radius:14px;font-family:inherit;
+    appearance:none;border:0;background:rgba(30,30,30,.92);color:var(--on-tint);padding:13px 20px;border-radius:14px;font-family:var(--font-sys);
     font-size:15px;font-weight:500;z-index:70;opacity:0;max-width:92vw;text-align:center;cursor:pointer;
     -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);transition:opacity .3s,transform .35s var(--ease)}
   .toast.on{opacity:1;transform:translate(-50%,0)}
@@ -928,8 +954,8 @@ button {
     box-shadow:0 2px 6px rgba(0,0,0,.4); display:grid; place-items:center; background:var(--tint); }
   .pin-i{ transform:rotate(45deg); font-size:15px; line-height:1; }
   .pin-park{ background:var(--green); }
-  .leaflet-container{ font-family:inherit; }
-  .leaflet-popup-content{ font:14px -apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+  .leaflet-container{ font-family:var(--font-sys); }
+  .leaflet-popup-content{ font:13px var(--font-sys); }
   .leaflet-popup-content b{ font-weight:600; }
   .leaflet-popup-content a{ color:var(--tint); font-weight:600; }
   .leaflet-popup-content-wrapper,.leaflet-popup-tip{ background:var(--card); color:var(--label); }
@@ -956,16 +982,16 @@ button {
   /* ---- account view --------------------------------------------------- */
   .acct-hero{display:flex;flex-direction:column;align-items:center;gap:8px;margin:14px 0 6px}
   .acct-avatar{width:84px;height:84px;border-radius:50%;background:var(--fill-strong);color:var(--label);
-    display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:600;overflow:hidden}
+    display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:600;overflow:hidden}
   .acct-avatar svg{width:40px;height:40px;color:var(--label-2)}
-  .acct-name{font-size:20px;font-weight:700;letter-spacing:-.01em}
+  .acct-name{font-size:20px;font-weight:700;letter-spacing:var(--ls-title3)}
   .acct-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 4px}
   .acct-stat{background:var(--card);border-radius:var(--r-sm);padding:12px 8px;text-align:center}
   .acct-stat b{display:block;font-size:22px;font-variant-numeric:tabular-nums;color:var(--label)}
-  .acct-stat span{display:block;font-size:10px;font-weight:600;color:var(--label-2);text-transform:uppercase;
+  .acct-stat span{display:block;font-size:11px;font-weight:600;color:var(--label-2);text-transform:uppercase;
     letter-spacing:.05em;margin-top:3px}
   .acct-input{flex:1;min-width:0;border:0;background:none;outline:none;font-size:17px;color:var(--label);
-    text-align:right;font-family:inherit;padding:0}
+    text-align:right;font-family:var(--font-sys);padding:0}
   .acct-input::placeholder{color:var(--label-3)}
   .acct-back{display:inline-flex;align-items:center;gap:0;min-height:44px;padding:0 10px 0 0;margin-left:-6px;
     color:var(--tint);font-size:17px;background:none;border:0;cursor:pointer}
@@ -978,7 +1004,7 @@ button {
     border:0;padding:0;cursor:pointer}
   .pcell:active{opacity:.75}
   .pcell img{width:100%;height:100%;object-fit:cover;display:block}
-  .pcell .plabel{position:absolute;left:0;right:0;bottom:0;padding:14px 6px 4px;font-size:10px;font-weight:600;
+  .pcell .plabel{position:absolute;left:0;right:0;bottom:0;padding:14px 6px 4px;font-size:11px;font-weight:600;
     color:rgba(255,255,255,.95);text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
     background:linear-gradient(to top,rgba(0,0,0,.6),rgba(0,0,0,0))}
 
@@ -1261,9 +1287,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 /* general typography */
 .leaflet-container {
-	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-family: var(--font-sys);
 	font-size: 12px;
-	font-size: 0.75rem;
 	line-height: 1.5;
 	}
 
@@ -1328,7 +1353,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 .leaflet-control-zoom-in,
 .leaflet-control-zoom-out {
-	font: bold 18px 'Lucida Console', Monaco, monospace;
+	font: bold 18px var(--font-sys);
 	text-indent: 1px;
 	}
 
@@ -1383,7 +1408,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .leaflet-control-layers label {
 	display: block;
 	font-size: 13px;
-	font-size: 1.08333em;
 	}
 .leaflet-control-layers-separator {
 	height: 0;
@@ -1477,7 +1501,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
 	margin: 13px 24px 13px 20px;
 	line-height: 1.3;
 	font-size: 13px;
-	font-size: 1.08333em;
 	min-height: 1px;
 	}
 .leaflet-popup-content p {
@@ -1521,7 +1544,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 	text-align: center;
 	width: 24px;
 	height: 24px;
-	font: 16px/24px Tahoma, Verdana, sans-serif;
+	font: 16px/24px var(--font-sys);
 	color: #757575;
 	text-decoration: none;
 	background: transparent;
