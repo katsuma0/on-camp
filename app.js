@@ -217,7 +217,7 @@ function renderZeroCard(msg){
   plist.hidden=true; rbox.hidden=false;
   rbox.innerHTML='<div class="dbg"><div class="dhead">&gt; -dummyhundop</div>'
     +'<div class="drow"><span class="dk">status</span><span class="dv">'+esc(msg||'ready, the worst season imaginable')+'</span></div>'
-    +'<button class="dummybtn" id="zeroGo" style="background:#B3261E">'+(msg?'Run again':'Zero everything')+'</button></div>';
+    +'<button class="dummybtn" id="zeroGo" style="background:var(--red)">'+(msg?'Run again':'Zero everything')+'</button></div>';
   const go=document.getElementById('zeroGo');
   if(go) go.addEventListener('click',()=>{ buzz(12); const m=plantZero(); renderZeroCard(m); });
 }
@@ -594,6 +594,7 @@ function openPark(pid){
   renderCgs(); renderTrails(); wireParkControls(); updatePark(); renderGlance();
   document.getElementById('parkTitle').addEventListener('click',function(){ onParkNameTap(p); });
   homeScrollY=window.scrollY||document.documentElement.scrollTop||0;
+  setHeaderHidden(true);
   document.getElementById('view-parks').hidden=true; const vp=document.getElementById('view-park'); vp.hidden=false;
   vp.classList.remove('view-anim'); void vp.offsetWidth; vp.classList.add('view-anim'); window.scrollTo(0,0);
   if(window.parkResetSync) parkResetSync();
@@ -602,6 +603,7 @@ function openPark(pid){
 function goHome(){ const vp=document.getElementById('view-park');
   vp.classList.add('view-out');
   setTimeout(function(){ vp.classList.remove('view-out'); vp.hidden=true;
+    setHeaderHidden(false);
     const vh=document.getElementById('view-parks'); vh.hidden=false;
     vh.classList.remove('view-anim'); void vh.offsetWidth; vh.classList.add('view-anim');
     clearGSearch(); renderParks(); window.scrollTo(0,homeScrollY); if(window.parkResetSync) parkResetSync(); },150); }
@@ -610,9 +612,9 @@ document.getElementById('backBtn').addEventListener('click',function(){
   if(window.sjExitPark){ window.sjExitPark(); } else { goHome(); } });
 (function(){
   const rb=document.getElementById('resetBtn');
-  /* the row is a .cell now, so the confirm copy goes in the title span, not on the button
-     itself, or writing textContent would wipe the chevron out of the row */
-  const rbT=rb&&(rb.querySelector('.cell-title')||rb);
+  /* the row is an .ios-row, so the confirm copy goes in the title span, not on the
+     button itself, or writing textContent would wipe the tile and chevron out */
+  const rbT=rb&&(rb.querySelector('.ios-row-title')||rb);
   if(rb){ let armed=false, t=null;
     rb.addEventListener('click',function(){
       if(!armed){ armed=true; rb.classList.add('armed'); rbT.textContent='Tap again to erase everything';
@@ -639,6 +641,9 @@ document.getElementById('backBtn').addEventListener('click',function(){
   var BK_KEYS=['ontario-scout-v2','site-journal-theme','site-journal-theme-vars','site-journal-unlocks','site-journal-sort','site-journal-group','site-journal-origin'];
   var eb=document.getElementById('exportBtn'), ib=document.getElementById('importBtn'), fi=document.getElementById('importInput');
   if(!eb||!ib||!fi) return;
+  /* the Account view carries a second pair of rows wired to the same actions */
+  var exportRows=[eb,document.getElementById('acctExportBtn')].filter(Boolean);
+  var importRows=[ib,document.getElementById('acctImportBtn')].filter(Boolean);
   function allPhotos(){ return openDB().then(function(db){ return new Promise(function(res){ var tx=db.transaction(STORE,'readonly');
     var rq=tx.objectStore(STORE).getAll(); rq.onsuccess=function(){ res(rq.result||[]); }; rq.onerror=function(){ res([]); }; }); }).catch(function(){ return []; }); }
   function buildBackup(){ return allPhotos().then(function(rows){
@@ -655,24 +660,29 @@ document.getElementById('backBtn').addEventListener('click',function(){
     if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
       return navigator.share({files:[file]}).then(exportDone).catch(function(err){ if(err&&err.name==='AbortError') return; downloadFile(file); }); }
     downloadFile(file); return Promise.resolve(); }
-  eb.addEventListener('click',function(){ if(eb.disabled) return; eb.disabled=true;
+  var exBusy=false;
+  function doExport(){ if(exBusy) return; exBusy=true;
     buildBackup().then(function(payload){ var file=new File([JSON.stringify(payload)],backupName(),{type:'application/json'}); return deliver(file); })
       .catch(function(){ showThemeToast('Could not build the backup. Try again.'); })
-      .then(function(){ eb.disabled=false; }); });
+      .then(function(){ exBusy=false; }); }
+  exportRows.forEach(function(b){ b.addEventListener('click',doExport); });
   var pendingPayload=null, armT=null;
-  var ibT=ib.querySelector('.cell-title')||ib;   /* keep the chevron, write into the title only */
-  function disarmImport(){ pendingPayload=null; clearTimeout(armT); ib.classList.remove('armed'); ibT.textContent='Import a backup'; }
-  ib.addEventListener('click',function(){
+  /* keep the tile and chevron, write into the title span only */
+  function importTitles(){ return importRows.map(function(b){ return b.querySelector('.ios-row-title')||b; }); }
+  function setImportLabel(t){ importTitles().forEach(function(el){ el.textContent=t; }); }
+  function disarmImport(){ pendingPayload=null; clearTimeout(armT);
+    importRows.forEach(function(b){ b.classList.remove('armed'); }); setImportLabel('Import a backup'); }
+  importRows.forEach(function(b){ b.addEventListener('click',function(){
     if(pendingPayload){ clearTimeout(armT); applyBackup(pendingPayload); pendingPayload=null; return; }
-    fi.value=''; fi.click(); });
+    fi.value=''; fi.click(); }); });
   fi.addEventListener('change',function(){
     var f=fi.files&&fi.files[0]; if(!f) return;
     f.text().then(function(txt){ var p=null; try{ p=JSON.parse(txt); }catch(e){}
       if(!p||p.app!=='site-journal'||!p.data||typeof p.data['ontario-scout-v2']!=='string'){ showThemeToast('That file is not a Site Journal backup.'); return; }
       var n=0; try{ var s=JSON.parse(p.data['ontario-scout-v2']);
         ['site','campground','trail'].forEach(function(t){ var m=s&&s[t]||{}; for(var k in m){ if(m[k]&&typeof m[k].score==='number') n++; } }); }catch(e){}
-      pendingPayload=p; ib.classList.add('armed');
-      ibT.textContent='Tap again to restore '+n+(n===1?' rating':' ratings');
+      pendingPayload=p; importRows.forEach(function(b){ b.classList.add('armed'); });
+      setImportLabel('Tap again to restore '+n+(n===1?' rating':' ratings'));
       armT=setTimeout(disarmImport,6000); })
       .catch(function(){ showThemeToast('Could not read that file.'); }); });
   function applyBackup(p){
@@ -696,6 +706,7 @@ document.getElementById('backBtn').addEventListener('click',function(){
   function complete(){ buzz(9);
     vp.style.transition='transform .26s cubic-bezier(.32,.72,.35,1)'; vp.style.transform='translateX(105%)';
     setTimeout(function(){ vp.style.transition=''; vp.style.transform=''; vp.style.top=''; vp.classList.remove('dragback'); vp.hidden=true;
+      setHeaderHidden(false);
       clearGSearch(); renderParks(); window.scrollTo(0,homeScrollY); if(window.parkResetSync) parkResetSync(); },190); }
   /* the back button uses this same single slide, so it never animates twice */
   window.sjExitPark=function(){ if(vp.hidden) return;
@@ -737,8 +748,8 @@ function renderCgs(){ const box=document.getElementById('cgs'); box.innerHTML=''
 function fillGrid(card){ if(card.dataset.filled) return; const cg=CG_BY_ID(card.dataset.cg); const grid=card.querySelector('.grid');
   const frag=document.createDocumentFragment(); cgSites(cg).forEach(s=>frag.appendChild(makeChip(cg,s))); grid.appendChild(frag); card.dataset.filled='1'; }
 const MEDAL_SVG='<svg class="medal" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M12 1a11 11 0 1 0 .01 0z M12 4.4 13.88 9.41 19.23 9.65 15.04 12.99 16.47 18.15 12 15.2 7.53 18.15 8.96 12.99 4.77 9.65 10.12 9.41z"/></svg>';
-/* the trailing disclosure chevron on a grouped-list row; same glyph the More screen uses in index.html */
-const CHEV_RIGHT='<span class="chevron"><svg viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg></span>';
+/* the trailing disclosure chevron on a grouped-list row; same sprite glyph the More screen uses */
+const CHEV_RIGHT='<span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>';
 function chipInner(cg,s){ const k=keyOf(curPark.id,cg.id,s), v=sc('site',k), c=scoreColor(v), note=!!noteOf('site',k), want=wantOf(k), photo=photoKeys.has(k);
   return `${s}`; }
 function makeChip(cg,s){ const k=keyOf(curPark.id,cg.id,s), c=scoreColor(sc('site',k));
@@ -899,11 +910,11 @@ function shareReview(){
 
 /* ---- receive a shared review (#/shared/<data>) ---- */
 function showShared(item){
-  ['view-parks','view-park','view-search','view-map','view-learn','view-more'].forEach(function(id){ var el=document.getElementById(id); if(el) el.hidden=true; });
+  ['view-parks','view-park','view-search','view-map','view-learn','view-more','view-account','view-photos'].forEach(function(id){ var el=document.getElementById(id); if(el) el.hidden=true; });
   var sec=document.getElementById('view-shared'); if(!sec) return;
   sec.hidden=false;
   var tb=document.getElementById('tabbar');
-  if(tb) tb.querySelectorAll('.tab').forEach(function(b){ b.classList.remove('active'); b.setAttribute('aria-current','false'); });
+  if(tb) tb.querySelectorAll('.tab').forEach(function(b){ b.classList.remove('active'); b.removeAttribute('aria-current'); });
   var body=document.getElementById('sharedBody');
   if(!item || item.t!=='camp-review'){
     body.innerHTML='<p class="empty">This shared link could not be opened. It may be from a newer version of the app.</p>';
@@ -1154,7 +1165,7 @@ function applyTheme(id){
   if(id!=='forest' && !THEME_BY_ID[id]) id='forest';
   if(id==='forest'){
     THEME_VAR_NAMES.forEach(function(n){ d.style.removeProperty(n); });
-    if(meta) meta.setAttribute('content','#12572F');
+    if(meta) meta.setAttribute('content','#F2F2F7');
     try{ localStorage.setItem(THEME_KEY,'forest'); localStorage.removeItem(VARS_KEY); }catch(e){}
   } else {
     var t=THEME_BY_ID[id], v=buildVars(t), tc=t.dark?t.paper:mixhex(t.primary,'#000000',.35);
@@ -1220,31 +1231,109 @@ function fillAboutStats(){
   var el=document.getElementById('aboutStats'); if(!el) return;
   var parks=PARKS.length, cgs=0, sites=0;
   PARKS.forEach(function(p){ (p.campgrounds||[]).forEach(function(c){ cgs++; sites+=cgSites(c).length; }); });
-  function row(k,v){ return '<div class="cell"><span class="cell-body"><span class="cell-title">'+k+'</span></span>'+
-    '<span class="cell-value tnum">'+v+'</span></div>'; }
+  function row(k,v){ return '<div class="ios-row ios-row--plain"><span class="ios-row-body"><span class="ios-row-title">'+k+'</span></span>'+
+    '<span class="ios-row-value tnum">'+v+'</span></div>'; }
   var ver=document.getElementById('verBtn');
   el.innerHTML=row('Parks in guide',parks)+row('Campgrounds',cgs)+row('Sites',sites.toLocaleString())+
-    '<button class="cell tap" id="aboutVerBtn" type="button"><span class="cell-body"><span class="cell-title">Version</span></span>'+
-    '<span class="cell-value tnum">'+(ver?ver.textContent:'')+'</span></button>'+
-    '<a class="cell tap" href="https://katsuma0.github.io" target="_blank" rel="noopener">'+
-    '<span class="cell-body"><span class="cell-title">Made by Katsuma Onishi</span></span>'+CHEV_RIGHT+'</a>';
+    '<button class="ios-row ios-row--plain" id="aboutVerBtn" type="button"><span class="ios-row-body"><span class="ios-row-title">Version</span></span>'+
+    '<span class="ios-row-value tnum">'+(ver?ver.textContent:'')+'</span></button>'+
+    '<a class="ios-row ios-row--plain" href="https://katsuma0.github.io" target="_blank" rel="noopener">'+
+    '<span class="ios-row-body"><span class="ios-row-title">Made by Katsuma Onishi</span></span>'+CHEV_RIGHT+'</a>';
   var vb=document.getElementById('aboutVerBtn');
   if(vb) vb.addEventListener('click',function(){ buzz(6); openVersions(); });
 }
+/* ---- account + saved photos ---- */
+var NAME_KEY='oncamp-name';
+function displayName(){ try{ return (localStorage.getItem(NAME_KEY)||'').trim(); }catch(e){ return ''; } }
+function avatarGlyph(){ var n=displayName();
+  return n?esc(n[0].toUpperCase()):'<svg aria-hidden="true"><use href="assets/icons.svg#user"/></svg>'; }
+function renderAvatar(){
+  var el=document.getElementById('avatarBtn'); if(el) el.innerHTML=avatarGlyph();
+  var big=document.getElementById('acctAvatar'); if(big) big.innerHTML=avatarGlyph();
+  var lbl=document.getElementById('acctNameLabel'); if(lbl) lbl.textContent=displayName()||'Camper';
+}
+(function(){ var inp=document.getElementById('displayName'); if(!inp) return;
+  inp.value=displayName();
+  inp.addEventListener('input',function(){
+    try{ var v=inp.value.trim(); if(v) localStorage.setItem(NAME_KEY,v); else localStorage.removeItem(NAME_KEY); }catch(e){}
+    renderAvatar(); });
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter') inp.blur(); });
+})();
+function accountStats(){ var parks=new Set(), sites=0;
+  ['site','campground','trail'].forEach(function(b){ var o=state[b]||{};
+    for(var k in o){ var e=o[k]; if(e&&typeof e.score==='number'){ parks.add(k.split('#')[0]); if(b==='site') sites++; } } });
+  return {parks:parks.size,sites:sites}; }
+function countPhotosSaved(){ return openDB().then(function(db){ return new Promise(function(res){
+    var tx=db.transaction(STORE,'readonly'); var rq=tx.objectStore(STORE).getAll();
+    rq.onsuccess=function(){ var n=0; (rq.result||[]).forEach(function(r){ if(r&&Array.isArray(r.list)) n+=r.list.length; }); res(n); };
+    rq.onerror=function(){ res(0); }; }); }).catch(function(){ return 0; }); }
+function renderAccount(){
+  renderAvatar();
+  var st=accountStats();
+  var e1=document.getElementById('stParks'); if(e1) e1.textContent=st.parks;
+  var e2=document.getElementById('stSites'); if(e2) e2.textContent=st.sites;
+  var vb=document.getElementById('verBtn'), av=document.getElementById('acctVersion');
+  if(av&&vb) av.textContent=vb.textContent;
+  countPhotosSaved().then(function(n){
+    var e3=document.getElementById('stPhotos'); if(e3) e3.textContent=n;
+    var pc=document.getElementById('acctPhotoCount'); if(pc) pc.textContent=n||''; });
+}
+function photoLabel(k){ var parts=k.split('#'), p=PARK_BY_ID[parts[0]];
+  if(parts.length>=3) return 'Site '+parts.slice(2).join('#')+', '+(p?p.name:parts[0]);
+  var name=parts.slice(1).join('#');
+  return name+(p&&p.name!==name?', '+p.name:''); }
+function openPhotoTarget(k){ var parts=k.split('#'), pid=parts[0]; if(!PARK_BY_ID[pid]) return;
+  showTab('guide'); openPark(pid);
+  if(parts.length>=3){ var cgId=parts[1], site=parts.slice(2).join('#');
+    expandCg(cgId); openSheet('site',k,cgId,site); }
+  else{ var name=parts.slice(1).join('#');
+    if((curPark.trails||[]).some(function(t){ return t.name===name; })) openSheet('trail',k,name);
+    else openSheet('campground',k,name); } }
+async function renderPhotosScreen(){
+  var box=document.getElementById('photosGrid'); if(!box) return; box.innerHTML='';
+  var keys=Array.from(photoKeys).sort();
+  if(!keys.length){ box.innerHTML='<div class="empty" style="grid-column:1/-1">No photos yet. Open a site and add one from its rating sheet.</div>'; return; }
+  for(const k of keys){ const list=await getPhotos(k); const label=photoLabel(k);
+    list.forEach(function(p){
+      var b=document.createElement('button'); b.type='button'; b.className='pcell';
+      b.setAttribute('aria-label','Open '+label);
+      var img=document.createElement('img'); img.src=p.data; img.alt='';
+      var cap=document.createElement('span'); cap.className='plabel'; cap.textContent=label;
+      b.appendChild(img); b.appendChild(cap);
+      b.addEventListener('click',function(){ buzz(6); openPhotoTarget(k); });
+      box.appendChild(b); }); } }
+(function(){
+  var ab=document.getElementById('avatarBtn'), rb=document.getElementById('rateSiteBtn'), sb=document.getElementById('searchBtn');
+  function toSearch(){ showTab('search'); var q=document.getElementById('gq'); if(q){ try{ q.focus(); }catch(e){} } }
+  if(ab) ab.addEventListener('click',function(){ buzz(6); showTab('account'); });
+  if(rb) rb.addEventListener('click',function(){ buzz(6); toSearch(); });
+  if(sb) sb.addEventListener('click',function(){ buzz(6); toSearch(); });
+  var pb=document.getElementById('acctPhotosBtn');
+  if(pb) pb.addEventListener('click',function(){ buzz(6); showTab('photos'); });
+  var bk=document.getElementById('photosBack');
+  if(bk) bk.addEventListener('click',function(){ buzz(6); showTab('account'); });
+})();
+
 /* ---- shared footer tab bar ---- */
-var TAB_SECTIONS={guide:'view-parks',search:'view-search',map:'view-map',learn:'view-learn',more:'view-more'};
+var TAB_SECTIONS={guide:'view-parks',search:'view-search',map:'view-map',learn:'view-learn',more:'view-more',account:'view-account',photos:'view-photos'};
+var ALL_VIEWS=['view-parks','view-park','view-search','view-map','view-learn','view-more','view-shared','view-account','view-photos'];
 var learnRendered=false;
+function setHeaderHidden(h){ var el=document.getElementById('iosHeader'); if(el) el.hidden=!!h; }
 function showTab(tab){
   if(!TAB_SECTIONS[tab]) tab='guide';
-  ['view-parks','view-park','view-search','view-map','view-learn','view-more','view-shared'].forEach(function(id){ var el=document.getElementById(id); if(el) el.hidden=true; });
+  ALL_VIEWS.forEach(function(id){ var el=document.getElementById(id); if(el) el.hidden=true; });
   var target=document.getElementById(tab==='guide'?'view-parks':TAB_SECTIONS[tab]); if(target) target.hidden=false;
+  setHeaderHidden(false);
   var tb=document.getElementById('tabbar');
-  if(tb) tb.querySelectorAll('.tab').forEach(function(b){ var on=b.dataset.tab===tab; b.classList.toggle('active',on); b.setAttribute('aria-current',on?'page':'false'); });
+  if(tb) tb.querySelectorAll('.tab').forEach(function(b){ var on=b.dataset.tab===tab; b.classList.toggle('active',on);
+    if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
   try{ window.scrollTo(0,0); }catch(e){}
   if(tab==='map' && window.initCampMap){ setTimeout(window.initCampMap,30); }
   if(tab==='more'){ if(typeof renderThemePicker==='function') renderThemePicker(); if(typeof fillAboutStats==='function') fillAboutStats(); }
   if(tab==='learn' && !learnRendered){ renderLearn(); learnRendered=true; }
   if(tab==='search'){ var q=document.getElementById('gq'); if(q) try{ q.focus(); }catch(e){} }
+  if(tab==='account'){ renderAccount(); }
+  if(tab==='photos'){ renderPhotosScreen(); }
 }
 window.openParkFromMap=function(id){ showTab('guide'); if(typeof openPark==='function') openPark(id); };
 function openSettings(){ showTab('more'); }
@@ -1257,7 +1346,7 @@ settingsBackdrop.addEventListener('click',closeSettings);
 /* ---- learn and safety ---- */
 function renderLearn(){
   var el=document.getElementById('learnBody'); if(!el) return;
-  var CHEV='<span class="chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span>';
+  var CHEV='<span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-down"/></svg></span>';
   var A=[
     {t:'Bear safety and food storage', b:`<p>Black bears live across cottage country and the north, and most trouble comes down to food. A bear that finds a meal at a campsite comes back, and a bear that keeps coming back usually ends up dead, so a clean site protects the bear as much as you.</p><p>Store all food, garbage, coolers, and anything scented in your vehicle or a bear locker, never in the tent. Cook and eat away from where you sleep, and pack out every scrap. If you meet a bear, do not run. Make yourself look big, speak firmly, back away slowly, and give it a clear exit. Report a bear hanging around a campground to park staff or Bear Wise at 1-866-514-2327.</p>`},
     {t:'Ticks and Lyme disease', b:`<p>Blacklegged ticks carry Lyme disease and are now common across much of southern and eastern Ontario. They wait in long grass and leaf litter and latch on as you brush past.</p><p>Wear light long sleeves and pants, tuck your pants into your socks on trails, and use a repellent with DEET or icaridin. Check yourself, kids, and dogs after every walk, especially the hairline, waist, and behind the knees. If you find one, pull it straight out with fine tweezers close to the skin and do not twist. See a doctor if you cannot remove it cleanly, if a spreading rash appears, or if you feel flu-like in the weeks after.</p>`},
@@ -1267,9 +1356,9 @@ function renderLearn(){
     {t:'Cold water and weather', b:`<p>Cold water is the real risk on Ontario lakes, even in summer. It saps your strength fast, so wear a lifejacket in any boat or canoe and keep one on children at the shore.</p><p>Watch the sky. Afternoon thunderstorms build quickly, and open water is no place to be when one arrives. If you hear thunder, get off the water and away from tall lone trees. Tell someone your route and when you will be back before a longer paddle or hike.</p>`},
     {t:'Report a bear or a hazard', b:`<p>Seeing a bear, a road hazard, or wildlife on a road? on-wildlife has a quick report that drops it on a shared map for the area, with sensitive spots coarsened for privacy.</p><p><a href="https://katsuma0.github.io/on-wildlife/#/more" target="_blank" rel="noopener">Open on-wildlife to report</a></p>`}
   ];
-  el.innerHTML='<div class="group"><div class="list">'+A.map(function(a){
-    return '<details class="cell-details"><summary class="cell tap"><span class="cell-body"><span class="cell-title">'+a.t+'</span></span>'+CHEV+'</summary>'+
-      '<div class="cell-detail-body">'+a.b+'</div></details>'; }).join('')+'</div></div>';
+  el.innerHTML='<div class="ios-group">'+A.map(function(a){
+    return '<details class="cell-details"><summary class="ios-row ios-row--plain"><span class="ios-row-body"><span class="ios-row-title">'+a.t+'</span></span>'+CHEV+'</summary>'+
+      '<div class="cell-detail-body">'+a.b+'</div></details>'; }).join('')+'</div>';
 }
 /* shared: body scroll lock while a sheet is open */
 var _lockY=0,_locks=0;
@@ -1323,7 +1412,7 @@ makeSheetSwipe(sheet,closeSheet);
 (async function(){
   applyAppearance();
   buildDots(); load(); migrateAlgonquin(); migrateScale5();
-  loadParksEmbedded(); renderFilters(); buildSearchIndex(); wireGlobalSearch(); renderThemePicker();
+  loadParksEmbedded(); renderFilters(); buildSearchIndex(); wireGlobalSearch(); renderThemePicker(); renderAvatar();
   renderParks();                 /* instant first paint, no network wait */
   await loadPhotoIndex();        /* fast local IndexedDB */
   migrateAlgPhotos();
@@ -1340,7 +1429,7 @@ makeSheetSwipe(sheet,closeSheet);
   window.addEventListener('hashchange',fromHash);
   fromHash();
 })();
-if(window.OnShare) OnShare.config({ app:'on-camp', base:'https://katsuma0.github.io/on-camp/', accent:'#14804a' });
+if(window.OnShare) OnShare.config({ app:'on-camp', base:'https://katsuma0.github.io/on-camp/', accent:'#007AFF' });
 (function(){ /* #/shared/<data> receive route */
   function fromSharedHash(){
     var m=(location.hash||'').match(/^#\/shared\/(.+)$/); if(!m) return;

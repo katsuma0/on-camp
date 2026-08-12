@@ -2,31 +2,41 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Ontario Parks, Site Journal</title>
 <link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#f9f9f9" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1e1e1e" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Site Journal">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="icon" type="image/png" href="./icon-192.png">
-<link rel="stylesheet" href="vendor/leaflet/leaflet.css"/>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="assets/ios.css">
 </head>
 <body>
 
+<header class="ios-header" id="iosHeader">
+  <div class="ios-header-row">
+    <button class="ios-avatar" id="avatarBtn" type="button" aria-label="Account"><svg aria-hidden="true"><use href="assets/icons.svg#user"/></svg></button>
+    <div class="ios-header-actions">
+      <button class="ios-glass-btn" id="rateSiteBtn" type="button" aria-label="Rate a campsite"><svg aria-hidden="true"><use href="assets/icons.svg#plus"/></svg></button>
+      <button class="ios-glass-btn" id="searchBtn" type="button" aria-label="Search"><svg aria-hidden="true"><use href="assets/icons.svg#search"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<main id="views">
 <section id="view-parks">
   <div class="appbar">
-    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.199</button></div>
+    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.200</button></div>
     <div class="sub">Ontario Parks campsites. Walk a campground, rate the sites, and remember which ones to book next time.</div>
   </div>
   <div class="wrap">
     <div class="filters"><button class="fchip" id="regionPill" aria-haspopup="dialog"></button><button class="fchip" id="sortPill" aria-haspopup="dialog"></button><button class="fchip" id="groupPill" aria-haspopup="dialog"></button></div>
     <div id="parkList"></div>
-    
+
   </div>
   <footer>
     Ratings and photos are saved to this device only. Manage your data in More.<br>
@@ -79,12 +89,81 @@
   <div class="wrap" id="sharedBody"></div>
 </section>
 
+<section id="view-account" class="tabscreen" hidden>
+  <div class="wrap">
+    <div class="acct-hero">
+      <div class="acct-avatar" id="acctAvatar" aria-hidden="true"><svg aria-hidden="true"><use href="assets/icons.svg#user"/></svg></div>
+      <div class="acct-name" id="acctNameLabel">Camper</div>
+    </div>
+    <div class="acct-stats">
+      <div class="acct-stat"><b id="stParks" class="tnum">0</b><span>Parks rated</span></div>
+      <div class="acct-stat"><b id="stSites" class="tnum">0</b><span>Sites rated</span></div>
+      <div class="acct-stat"><b id="stPhotos" class="tnum">0</b><span>Photos saved</span></div>
+    </div>
+
+    <h2 class="ios-section-title">Profile</h2>
+    <div class="ios-group">
+      <label class="ios-row ios-row--plain" for="displayName">
+        <span class="ios-row-body"><span class="ios-row-title">Name</span></span>
+        <input class="acct-input" id="displayName" type="text" placeholder="Your name" autocomplete="name" enterkeyhint="done">
+      </label>
+    </div>
+    <p class="ios-group-foot">Your name only sets the initial on the avatar. It never leaves this phone.</p>
+
+    <h2 class="ios-section-title">Your journal</h2>
+    <div class="ios-group">
+      <button class="ios-row" id="acctPhotosBtn" type="button">
+        <span class="ios-tile ios-tile--orange"><svg aria-hidden="true"><use href="assets/icons.svg#image"/></svg></span>
+        <span class="ios-row-body"><span class="ios-row-title">Photos</span></span>
+        <span class="ios-row-value tnum" id="acctPhotoCount"></span>
+        <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
+      </button>
+      <div class="ios-row">
+        <span class="ios-tile ios-tile--grey"><svg aria-hidden="true"><use href="assets/icons.svg#lock"/></svg></span>
+        <span class="ios-row-body"><span class="ios-row-title">Visibility</span><span class="ios-row-sub">Everything stays on this phone</span></span>
+        <span class="ios-row-value">Private</span>
+      </div>
+    </div>
+
+    <h2 class="ios-section-title">Backups</h2>
+    <div class="ios-group">
+      <button class="ios-row" id="acctExportBtn" type="button">
+        <span class="ios-tile ios-tile--blue"><svg aria-hidden="true"><use href="assets/icons.svg#download"/></svg></span>
+        <span class="ios-row-body"><span class="ios-row-title">Export a backup</span></span>
+        <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
+      </button>
+      <button class="ios-row" id="acctImportBtn" type="button">
+        <span class="ios-tile ios-tile--green"><svg aria-hidden="true"><use href="assets/icons.svg#upload"/></svg></span>
+        <span class="ios-row-body"><span class="ios-row-title">Import a backup</span></span>
+        <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
+      </button>
+    </div>
+    <p class="ios-group-foot">One file carries your ratings, notes, photos and settings to another phone.</p>
+
+    <div class="ios-group">
+      <div class="ios-row ios-row--plain">
+        <span class="ios-row-body"><span class="ios-row-title">Version</span></span>
+        <span class="ios-row-value tnum" id="acctVersion"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="view-photos" class="tabscreen" hidden>
+  <div class="wrap">
+    <button class="acct-back" id="photosBack" type="button"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-left"/></svg>Account</button>
+  </div>
+  <h1 class="screen-title">Photos</h1>
+  <p class="screen-sub">Every photo you have saved. Tap one to open its site.</p>
+  <div class="wrap"><div class="pgrid" id="photosGrid"></div></div>
+</section>
+
 <div class="backdrop" id="backdrop"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Rate">
   <div class="grabber"></div>
   <div class="kind" id="d-kind">Site</div>
   <div class="d-where" id="d-where"></div>
-  <h3 id="d-title">,</h3>
+  <h2 class="d-title" id="d-title">,</h2>
   <div class="ctx" id="d-ctx"></div>
   <label class="fld">Rating</label>
   <div class="dots" id="dots"></div>
@@ -133,6 +212,7 @@
 <div class="sheet" id="versionsSheet" role="dialog" aria-modal="true" aria-label="Versions">
   <div class="grabber"></div>
   <div class="kind" style="margin-bottom:12px">Versions</div>
+  <div class="verline"><span class="vv">v0.200</span>The iOS look: floating tab capsule, one blue tint, and an account page</div>
   <div class="verline"><span class="vv">v0.198</span>Bigger tap targets, and a park now shows how many of its sites you have rated</div>
   <div class="verline"><span class="vv">v0.197</span>More and Learn are proper Settings style lists, with the chevrons out at the right edge</div>
   <div class="verline"><span class="vv">v0.196</span>Share a park, campsite or trail review straight to Messages, with a card and a link that opens it</div>
@@ -185,57 +265,72 @@
 <section id="view-more" class="tabscreen" hidden>
   <h1 class="screen-title">More</h1>
   <div class="wrap">
-  <div class="group">
-    <div class="group-header">Your data</div>
-    <div class="list">
-      <button class="cell tap" id="exportBtn" type="button"><span class="cell-body"><span class="cell-title">Export a backup</span></span><span class="chevron"><svg viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg></span></button>
-      <button class="cell tap" id="importBtn" type="button"><span class="cell-body"><span class="cell-title">Import a backup</span></span><span class="chevron"><svg viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg></span></button>
-      <button class="cell tap" id="resetBtn" type="button"><span class="cell-body"><span class="cell-title destructive">Reset all data</span></span><span class="chevron"><svg viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg></span></button>
-    </div>
-    <div class="group-footer">Everything is saved on this device. Export a backup to move it to another phone.</div>
+
+  <h2 class="ios-section-title">Your data</h2>
+  <div class="ios-group">
+    <button class="ios-row" id="exportBtn" type="button">
+      <span class="ios-tile ios-tile--blue"><svg aria-hidden="true"><use href="assets/icons.svg#download"/></svg></span>
+      <span class="ios-row-body"><span class="ios-row-title">Export a backup</span></span>
+      <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
+    </button>
+    <button class="ios-row" id="importBtn" type="button">
+      <span class="ios-tile ios-tile--green"><svg aria-hidden="true"><use href="assets/icons.svg#upload"/></svg></span>
+      <span class="ios-row-body"><span class="ios-row-title">Import a backup</span></span>
+      <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
+    </button>
+    <button class="ios-row" id="resetBtn" type="button">
+      <span class="ios-tile ios-tile--red"><svg aria-hidden="true"><use href="assets/icons.svg#trash"/></svg></span>
+      <span class="ios-row-body"><span class="ios-row-title destructive">Reset all data</span></span>
+      <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
+    </button>
   </div>
+  <p class="ios-group-foot">Everything is saved on this device. Export a backup to move it to another phone.</p>
   <input type="file" id="importInput" accept=".json,application/json" hidden>
 
-  <div class="group">
-    <div class="group-header">Appearance</div>
+  <h2 class="ios-section-title">Appearance</h2>
+  <div class="ios-group">
     <div class="segmented" id="themeRow"></div>
   </div>
 
-  <div class="group">
-    <div class="group-header">More from the Ontario outdoors</div>
-    <div class="list">
-      <a class="cell tap" href="https://katsuma0.github.io/on-wildlife/" target="_blank" rel="noopener"><span class="cell-body"><span class="cell-title">on-wildlife</span></span><span class="chevron"><svg viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg></span></a>
-      <a class="cell tap" id="fishLink" href="https://katsuma0.github.io/on-fishing/" target="_blank" rel="noopener"><span class="cell-body"><span class="cell-title">on-fishing</span></span><span class="chevron"><svg viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg></span></a>
-    </div>
-    <div class="group-footer">Three field guides for Ontario, one look. Take all three.</div>
+  <h2 class="ios-section-title">More from the Ontario outdoors</h2>
+  <div class="ios-group">
+    <a class="ios-row" href="https://katsuma0.github.io/on-wildlife/" target="_blank" rel="noopener">
+      <span class="ios-tile ios-tile--green"><svg aria-hidden="true"><use href="assets/icons.svg#paw"/></svg></span>
+      <span class="ios-row-body"><span class="ios-row-title">on-wildlife</span></span>
+      <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
+    </a>
+    <a class="ios-row" id="fishLink" href="https://katsuma0.github.io/on-fishing/" target="_blank" rel="noopener">
+      <span class="ios-tile ios-tile--blue"><svg aria-hidden="true"><use href="assets/icons.svg#fish"/></svg></span>
+      <span class="ios-row-body"><span class="ios-row-title">on-fishing</span></span>
+      <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
+    </a>
   </div>
+  <p class="ios-group-foot">Three field guides for Ontario, one look. Take all three.</p>
 
-  <div class="group">
-    <div class="group-header">About</div>
-    <div class="aboutbody">
-      <p>on-camp is a private journal for Ontario Parks campsites. Walk a campground, rate each site out of five, add a note or a photo, and mark the ones worth booking again. It covers every reservable Ontario Park, down to the campgrounds, the individual sites, and the trails.</p>
-      <p>I book the camping trips for my friends and family, and choosing a site you have never seen is a gamble. Some are good and some are not, and a year later you cannot remember which was which. This is the notebook I wanted for that.</p>
-      <p>Everything you save stays on this device. There is no account, no server, and nothing is tracked. Ratings and notes live in the browser and photos in local storage, and you can export a backup to a file and load it on another phone. Please do not photograph occupied sites, and leave a site the way you would want to find it.</p>
-    </div>
-    <div class="list" id="aboutStats"></div>
+  <h2 class="ios-section-title">About</h2>
+  <div class="aboutbody">
+    <p>on-camp is a private journal for Ontario Parks campsites. Walk a campground, rate each site out of five, add a note or a photo, and mark the ones worth booking again. It covers every reservable Ontario Park, down to the campgrounds, the individual sites, and the trails.</p>
+    <p>I book the camping trips for my friends and family, and choosing a site you have never seen is a gamble. Some are good and some are not, and a year later you cannot remember which was which. This is the notebook I wanted for that.</p>
+    <p>Everything you save stays on this device. There is no account, no server, and nothing is tracked. Ratings and notes live in the browser and photos in local storage, and you can export a backup to a file and load it on another phone. Please do not photograph occupied sites, and leave a site the way you would want to find it.</p>
   </div>
+  <div class="ios-group" id="aboutStats" style="margin-top:16px"></div>
   </div>
 </section>
+</main>
 
-<nav class="tabbar" id="tabbar">
-  <button class="tab active" data-tab="guide" type="button" aria-label="Guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z"/></svg><span>Guide</span></button>
-  <button class="tab" data-tab="search" type="button" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Search</span></button>
-  <button class="tab" data-tab="map" type="button" aria-label="Map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="m9 4-6 2v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>Map</span></button>
-  <button class="tab" data-tab="learn" type="button" aria-label="Learn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H18a2 2 0 0 1 2 2v13H6a2 2 0 0 0-2 2z"/><path d="M20 19a2 2 0 0 0-2 2H6"/></svg><span>Learn</span></button>
-  <button class="tab" data-tab="more" type="button" aria-label="More"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span>More</span></button>
+<nav class="ios-tabbar" id="tabbar" aria-label="Sections">
+  <button class="ios-tab tab active" data-tab="guide" type="button" aria-current="page"><svg aria-hidden="true"><use href="assets/icons.svg#tent"/></svg><span>Parks</span></button>
+  <button class="ios-tab tab" data-tab="map" type="button"><svg aria-hidden="true"><use href="assets/icons.svg#map"/></svg><span>Map</span></button>
+  <button class="ios-tab tab" data-tab="learn" type="button"><svg aria-hidden="true"><use href="assets/icons.svg#book"/></svg><span>Learn</span></button>
+  <button class="ios-tab tab" data-tab="more" type="button"><svg aria-hidden="true"><use href="assets/icons.svg#ellipsis"/></svg><span>More</span></button>
 </nav>
 
-<script src="vendor/leaflet/leaflet.js"></script>
-<script src="data/parks.js"></script>
-<script src="data/park-pins.js"></script>
-<script src="data/ecosystem.js"></script>
-<script src="share.js"></script>
-<script src="app.js"></script>
-<script src="map.js"></script>
+<script defer src="vendor/leaflet/leaflet.js"></script>
+<script defer src="data/parks.js"></script>
+<script defer src="data/park-pins.js"></script>
+<script defer src="data/ecosystem.js"></script>
+<script defer src="share.js"></script>
+<script defer src="app.js"></script>
+<script defer src="map.js"></script>
 </body>
 </html>
