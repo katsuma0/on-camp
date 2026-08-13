@@ -270,10 +270,12 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  font-size: var(--fs-title1);
-  font-weight: 700;
-  letter-spacing: var(--ls-title1);
-  line-height: var(--lh-title1);
+  /* the github app sizes its section names (My Work, Favorites) like
+     headline text, not like page titles */
+  font-size: var(--fs-headline);
+  font-weight: 600;
+  letter-spacing: var(--ls-headline);
+  line-height: var(--lh-headline);
   color: var(--label);
   margin: 26px 0 8px;
   padding-left: var(--gutter);
@@ -499,7 +501,6 @@ button {
     color:var(--tint-text);white-space:nowrap;padding:6px 4px;margin:0}
   /* Fitts: the label stays small and quiet, the thing you aim at does not. */
   .ver::after{content:"";position:absolute;top:50%;left:-6px;right:-6px;height:44px;transform:translateY(-50%)}
-  .appbar .sub{color:var(--label-aa);font-size:15px;margin-top:5px;line-height:var(--lh-subhead)}
 
   /* park page back bar: same chrome as the header, no border ------------ */
   .backbar{position:sticky;top:0;z-index:20;background:var(--chrome);
@@ -1819,19 +1820,6 @@ h1, h2, h3, h4, .btn { font-family: var(--font-display); }
   --ls-footnote: -0.08px; --ls-caption1: 0; --ls-caption2: 0.07px;
 }
 
-/* the parks palette signs its screens the way canada.ca signs a page:
-   a 72px, 6px-thick rule in the flag red under the main title. only the
-   top of screen large titles carry it, never section heads or sheets. */
-:root:not([data-palette="field"]):not([data-palette="granite"]) .appbar h1::after,
-:root:not([data-palette="field"]):not([data-palette="granite"]) .screen-title::after {
-  content: "";
-  display: block;
-  width: 72px;
-  height: 6px;
-  margin-top: 10px;
-  background: var(--tone3);
-}
-
 /* -------------------------------------------------- four text sizes */
 /* real Dynamic Type steps from the HIG, not a multiplier */
 :root[data-textsize="s"] {
@@ -2046,44 +2034,15 @@ h1, h2, h3, h4, .btn { font-family: var(--font-display); }
 .pill-new, .badge-info.on { background: var(--tone2); }
 
 /* ----------------------------------------------- the appearance panel */
-/* the Appearance group in More: Theme, Colours, Glass, Text size, Face.
-   Same markup and copy in every app; everything applies live and lands
-   in the shared 'outdoors-appearance' key. */
+/* the Appearance group in More: Theme, Glass, Text size, nothing else.
+   The look itself is not a choice here; this app simply wears its own
+   colours and type. Everything applies live and lands in the shared
+   'outdoors-appearance' key. */
 .ap-row { justify-content: space-between; }
 /* the title keeps its word; the control is the part that shrinks */
 .ap-row .ios-row-body { flex: 0 0 auto; }
 .ap-row .ap-seg { flex: 1 1 auto; min-width: 0; max-width: 236px; margin-left: auto; }
 .ap-seg .seg-opt { min-width: 0; padding: 6px 4px; }
-/* colour swatches: 44px capsules, three tone dots each, ring in the tint.
-   The dot colours are the palettes' own token block; they never restyle
-   the page, only preview it. */
-.swatches { display: flex; gap: 8px; margin-left: auto; flex: none; }
-.swatch {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-width: 54px;
-  min-height: 44px;
-  border-radius: 22px;
-  background: var(--fill);
-  border: 0.5px solid var(--sep);
-  cursor: pointer;
-  transition: box-shadow .15s;
-}
-.swatch--parks { --sw1: #284162; --sw2: #355688; --sw3: #A62A1E; }
-.swatch--field { --sw1: #2E7D4F; --sw2: #6B7F3E; --sw3: #E8A13D; }
-.swatch--granite { --sw1: #5E5CE6; --sw2: #6E6E73; --sw3: #F5C400; }
-/* the parks dots would sink into a dark card, so they lighten there */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .swatch--parks { --sw1: #8FB0DC; --sw2: #4C76B0; --sw3: #E8604C; }
-}
-:root[data-theme="dark"] .swatch--parks { --sw1: #8FB0DC; --sw2: #4C76B0; --sw3: #E8604C; }
-.swatch i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
-.swatch i:nth-child(1) { background: var(--sw1); }
-.swatch i:nth-child(2) { background: var(--sw2); }
-.swatch i:nth-child(3) { background: var(--sw3); }
-.swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--tint); }
 /* the iOS switch: a 51x31 track, the knob slides on aria-checked */
 .ios-switch {
   flex: none;
@@ -2107,15 +2066,6 @@ h1, h2, h3, h4, .btn { font-family: var(--font-display); }
 }
 [role="switch"][aria-checked="true"] .ios-switch { background: var(--green); }
 [role="switch"][aria-checked="true"] .ios-switch i { left: 22px; }
-/* face rows: each label wears its own face so the choice previews itself */
-.face-parks { font-family: "Lato", "Noto Sans", sans-serif; }
-.face-system { font-family: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif; }
-.face-rounded { font-family: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
-.face-serif { font-family: ui-serif, "New York", Georgia, "Times New Roman", serif; }
-.face-avenir { font-family: "Avenir Next", Avenir, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
-.face-mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-.ap-check { flex: none; margin-left: auto; display: flex; color: var(--tint); }
-.ap-check svg { width: 18px; height: 18px; display: block; }
 
 /* on phone widths a labelled segmented row stacks so every option keeps a
    comfortable target */
@@ -2250,3 +2200,234 @@ h1, h2, h3, h4, .btn { font-family: var(--font-display); }
   /* the toast no longer needs to clear the capsule */
   .toast { bottom: 24px; }
 }
+
+/* =====================================================================
+   ios.css github round, ported from on-wildlife: the app carries itself
+   like the GitHub app. Flat controls with no gradient washes, the exact
+   tab capsule, a top bar that fades in instead of switching on, glass
+   kept only for the moment one tab hands over to the next, and GitHub's
+   own dark room for the untouched default. Chrome selectors keep the
+   body > scope so the styleguide's nested demos stay untouched.
+   ===================================================================== */
+
+/* -------------------------------------------------- flat, like github */
+/* the circular header buttons are plain filled circles now */
+.ios-glass-btn, .ios-avatar,
+:root:not([data-glass="off"]) .ios-glass-btn,
+:root:not([data-glass="off"]) .ios-avatar {
+  background: var(--fill);
+  background-image: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 0;
+  box-shadow: none;
+}
+/* filled controls lose the wash and the lift: one flat colour */
+:root:not([data-glass="off"]) .btn-primary,
+:root:not([data-glass="off"]) .fchip.on,
+:root:not([data-glass="off"]) .seg-opt.on {
+  background-image: none;
+  box-shadow: none;
+}
+/* chips, segments and the fab sit flat too */
+.segmented, .chip, .fchip:not(.on), .fab,
+:root:not([data-glass="off"]) .segmented,
+:root:not([data-glass="off"]) .chip,
+:root:not([data-glass="off"]) .fchip:not(.on),
+:root:not([data-glass="off"]) .fab {
+  background: var(--fill);
+  background-image: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 0;
+  box-shadow: none;
+}
+/* sheets keep their frost but not the wash */
+:root:not([data-glass="off"]) .sheet {
+  background-image: none;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, .18);
+}
+/* the letter rail rode a glass capsule; it sits plain on the page now */
+.azrail,
+:root:not([data-glass="off"]) .azrail {
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 0;
+  box-shadow: none;
+}
+:root:not([data-glass="off"]) .ios-tab[aria-current="page"],
+:root:not([data-glass="off"]) .ios-tab.on {
+  box-shadow: none;
+}
+
+@media (max-width: 1099.98px) {
+  /* ------------------------------------------- the tab capsule, exact */
+  /* github's bar: 22px in from the sides, 10px off the bottom, 64px
+     tall, fully rounded, frosted, one soft shadow. the active pill
+     hugs its icon and label with 6px of air above and below. */
+  body > .ios-tabbar,
+  :root:not([data-glass="off"]) body > .ios-tabbar,
+  :root[data-glass="off"] body > .ios-tabbar {
+    left: 22px;
+    right: 22px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    height: 64px;
+    max-width: 560px;
+    border-radius: 32px;
+    padding: 0 8px;
+    background: var(--chrome);
+    background-image: none;
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border: 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+  }
+  body > .ios-tabbar .ios-tab {
+    height: 52px;
+    border-radius: 26px;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--label);
+  }
+  body > .ios-tabbar .ios-tab[aria-current="page"],
+  body > .ios-tabbar .ios-tab.on,
+  :root:not([data-glass="off"]) body > .ios-tabbar .ios-tab[aria-current="page"],
+  :root:not([data-glass="off"]) body > .ios-tabbar .ios-tab.on {
+    background: var(--press-pill);
+    color: var(--tint);
+    box-shadow: none;
+  }
+
+  /* --------------------------------------- the top bar fades, quietly */
+  /* the frost lives on a pseudo layer whose opacity animates, so the
+     bar arrives like the github app's: gradually, without a hard edge
+     switching on. content stays above the layer. camp's two top bars
+     are the shared header and the park page's backbar. */
+  body > .ios-header, body > .ios-header.scrolled, body > .ios-header.is-scrolled,
+  .backbar, .backbar.scrolled, .backbar.is-scrolled,
+  :root:not([data-glass="off"]) body > .ios-header.scrolled,
+  :root:not([data-glass="off"]) body > .ios-header.is-scrolled,
+  :root:not([data-glass="off"]) .backbar.scrolled,
+  :root:not([data-glass="off"]) .backbar.is-scrolled,
+  :root[data-glass="off"] body > .ios-header.scrolled,
+  :root[data-glass="off"] body > .ios-header.is-scrolled,
+  :root[data-glass="off"] .backbar.scrolled,
+  :root[data-glass="off"] .backbar.is-scrolled {
+    background: transparent;
+    background-image: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+  body > .ios-header::before, .backbar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--chrome);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    box-shadow: 0 0.5px 0 var(--sep);
+    opacity: 0;
+    transition: opacity .3s ease;
+    pointer-events: none;
+  }
+  body > .ios-header.scrolled::before, body > .ios-header.is-scrolled::before,
+  .backbar.scrolled::before, .backbar.is-scrolled::before { opacity: 1; }
+
+  /* ------------------------------- glass, kept for the handover only */
+  /* switching tabs: the incoming screen resolves out of a soft blur.
+     glass off or reduced motion keeps the plain entry. */
+  /* only tab switches: the park push, pop and drag-back keep their own
+     slides (.view-anim, .view-out, and the no-anim ride below) */
+  :root:not([data-glass="off"]) #views > section:not(.view-anim):not(.view-out):not(.dragback) {
+    animation: glass-in .22s var(--ease);
+  }
+  @keyframes glass-in {
+    from { opacity: 0; filter: blur(10px); transform: scale(.985); }
+    to { opacity: 1; filter: blur(0); transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #views > section,
+    :root:not([data-glass="off"]) #views > section:not(.view-anim):not(.view-out) { animation: none; }
+  }
+
+  /* the accessibility fallback stays honest against everything above */
+  @media (prefers-reduced-transparency: reduce) {
+    body > .ios-tabbar,
+    :root:not([data-glass="off"]) body > .ios-tabbar,
+    :root[data-glass="off"] body > .ios-tabbar {
+      background: var(--card);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+    body > .ios-header::before, .backbar::before {
+      background: var(--card);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+}
+
+/* --------------------------------------- github's dark room, default */
+/* the untouched default wears github's own dark: their canvas, their
+   blue, their system type. this app is locked to the parks look, so a
+   palette or face stored by a sibling app is read but never worn. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-palette]) {
+    --bg: #010409;
+    --card: #151B23;
+    --chrome: rgba(1, 4, 9, .78);
+    --fill: rgba(101, 108, 118, .24);
+    --press-pill: rgba(101, 108, 118, .28);
+    --sep: rgba(61, 68, 77, .72);
+    --label: #F0F6FC;
+    --label-2: #9198A1;
+    --label-3: rgba(145, 152, 161, .5);
+    --label-aa: #B7BDC8;
+    --tint: #4493F8; --tint-press: #316DCA; --tint-text: #4493F8; --tint-fill: #1F6FEB;
+    --tint-soft: rgba(68, 147, 248, .15);
+    --tone2: #316DCA; --tone3: #F85149;
+  }
+  :root:not([data-theme="light"]):not([data-face]) {
+    --font-sys: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+    --font-display: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+    --ls-large-title: 0.37px; --ls-title1: 0.36px; --ls-title2: 0.35px; --ls-title3: 0.38px;
+    --ls-headline: -0.41px; --ls-body: -0.41px; --ls-callout: -0.32px; --ls-subhead: -0.24px;
+    --ls-footnote: -0.08px; --ls-caption1: 0; --ls-caption2: 0.07px;
+  }
+}
+:root[data-theme="dark"]:not([data-palette]) {
+  --bg: #010409;
+  --card: #151B23;
+  --chrome: rgba(1, 4, 9, .78);
+  --fill: rgba(101, 108, 118, .24);
+  --press-pill: rgba(101, 108, 118, .28);
+  --sep: rgba(61, 68, 77, .72);
+  --label: #F0F6FC;
+  --label-2: #9198A1;
+  --label-3: rgba(145, 152, 161, .5);
+  --label-aa: #B7BDC8;
+  --tint: #4493F8; --tint-press: #316DCA; --tint-text: #4493F8; --tint-fill: #1F6FEB;
+  --tint-soft: rgba(68, 147, 248, .15);
+  --tone2: #316DCA; --tone3: #F85149;
+}
+:root[data-theme="dark"]:not([data-face]) {
+  --font-sys: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+  --ls-large-title: 0.37px; --ls-title1: 0.36px; --ls-title2: 0.35px; --ls-title3: 0.38px;
+  --ls-headline: -0.41px; --ls-body: -0.41px; --ls-callout: -0.32px; --ls-subhead: -0.24px;
+  --ls-footnote: -0.08px; --ls-caption1: 0; --ls-caption2: 0.07px;
+}
+
+/* =====================================================================
+   ios.css polish round, ported from on-wildlife: settings taps that
+   re-render in place must never replay the entry animation.
+   ===================================================================== */
+
+/* the class rides the mounted screen itself so removing it can never
+   restart the entry animation; the next tab switch clears it */
+#views > section.no-anim,
+:root:not([data-glass="off"]) #views > section.no-anim:not(.view-anim):not(.view-out) { animation: none; }

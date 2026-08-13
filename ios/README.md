@@ -1,4 +1,4 @@
-# on-camp for iPhone
+# on-site for iPhone
 
 A native iOS app around your Ontario Parks campsite journal. The web app in this repo is bundled in at
 build time, so it works offline, keeps its log on the phone, and the share

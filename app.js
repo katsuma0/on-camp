@@ -596,7 +596,7 @@ document.getElementById('backBtn').addEventListener('click',function(){
   function buildBackup(){ return allPhotos().then(function(rows){
     var photos={}; rows.forEach(function(r){ if(r&&r.siteId&&Array.isArray(r.list)&&r.list.length) photos[r.siteId]=r.list; });
     var data={}; BK_KEYS.forEach(function(k){ try{ var v=localStorage.getItem(k); if(v!=null) data[k]=v; }catch(e){} });
-    return {app:'site-journal',format:1,appVersion:'0.179',exported:new Date().toISOString(),data:data,photos:photos}; }); }
+    return {app:'site-journal',format:1,appVersion:'0.205',exported:new Date().toISOString(),data:data,photos:photos}; }); }
   function backupName(){ var d=new Date(); function p(n){ return (n<10?'0':'')+n; }
     return 'site-journal-backup-'+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'.json'; }
   function exportDone(){ showThemeToast('Backup exported. Keep it somewhere safe.'); }
@@ -646,6 +646,9 @@ document.getElementById('backBtn').addEventListener('click',function(){
   var sx=0, sy=0, dx=0, lastX=0, lastT=0, vel=0, deciding=false, dragging=false, parkScrollY=0;
   function prep(){ parkScrollY=window.scrollY||document.documentElement.scrollTop||0;
     vp.classList.remove('view-anim'); vp.classList.add('dragback'); vp.style.top=(-parkScrollY)+'px';
+    /* a pop reveal, not a tab switch: no glass-in under the finger. the
+       class rides the view until the next tab switch clears it. */
+    vh.classList.add('no-anim');
     vh.hidden=false; window.scrollTo(0,homeScrollY); }
   function cancel(){ vp.style.transition='transform .32s cubic-bezier(.22,1.28,.36,1)'; vp.style.transform='translateX(0)';
     setTimeout(function(){ window.scrollTo(0,parkScrollY); vh.hidden=true;
@@ -840,7 +843,7 @@ function campCard(it){
   if(it.score!=null){ var s=Math.max(0,Math.min(5,it.score|0)); chips.push({label:'★'.repeat(s)+'☆'.repeat(5-s)}); }
   if(it.want) chips.push({label:'Wishlist'});
   var sub=(it.sub&&it.sub!==it.title)?it.sub:'';
-  return { eyebrow:'on-camp', kicker:kicker, emoji:emoji, title:it.title, subtitle:sub,
+  return { eyebrow:'on-site', kicker:kicker, emoji:emoji, title:it.title, subtitle:sub,
     chips:chips.slice(0,4), meta:(it.when?('Reviewed '+fmtMonthYear(it.when)):'') };
 }
 function shareReview(){
@@ -850,7 +853,7 @@ function shareReview(){
   if(!window.OnShare){ if(typeof showThemeToast==='function') showThemeToast('Sharing is not available'); return; }
   var item=reviewShareItem();
   OnShare.share({ card:campCard(item), item:item,
-    text:'My review of '+item.title+((item.sub&&item.sub!==item.title)?(' ('+item.sub+')'):'')+' on on-camp.' })
+    text:'My review of '+item.title+((item.sub&&item.sub!==item.title)?(' ('+item.sub+')'):'')+' on on-site.' })
     .then(function(r){ if(r==='fallback' && typeof showThemeToast==='function') showThemeToast('Link copied, card saved'); });
 }
 (function(){ var b=document.getElementById('shareReviewBtn'); if(b) b.addEventListener('click',function(){ if(typeof buzz==='function') buzz(6); shareReview(); }); })();
@@ -1125,9 +1128,10 @@ function applyTheme(id){
 function currentThemeId(){ var t='forest'; try{ t=localStorage.getItem(THEME_KEY)||'forest'; }catch(e){}
   if(t!=='forest' && (!THEME_BY_ID[t] || !isUnlocked(t))) t='forest'; return t; }
 /* ---- appearance: one shared key for every outdoors app on this origin ----
-   'outdoors-appearance' = { theme, glass, palette, face, size }. Defaults
-   (auto, on, parks, parks, m) stamp no attribute; anything else lands on
-   <html> as data-theme / data-glass / data-palette / data-face / data-textsize.
+   'outdoors-appearance' = { theme, glass, palette, face, size }. Theme, glass
+   and text size land on <html> as data-theme / data-glass / data-textsize;
+   this app wears the parks look only, so palette and face are read (and
+   preserved for the sibling apps) but never stamped here.
    The <head> script stamps pre-paint; this block keeps it live from More. */
 var APPEAR_KEY='outdoors-appearance';
 var APPEAR_DEFAULTS={theme:'auto',glass:'on',palette:'parks',face:'parks',size:'m'};
@@ -1150,6 +1154,9 @@ function setAppearance(key,val){
   if(!APPEAR_ALLOWED[key]||APPEAR_ALLOWED[key].indexOf(val)<0) return;
   var a=getAppearance(); a[key]=val; a.v2=1;
   try{ localStorage.setItem(APPEAR_KEY,JSON.stringify(a)); }catch(e){}
+  /* a settings tap re-renders in place: the class rides the mounted view so
+     the entry animation never replays; the next tab switch clears it */
+  document.querySelectorAll('#views > section:not([hidden])').forEach(function(el){ el.classList.add('no-anim'); });
   applyAppearance(); renderAppearancePanel();
 }
 function applyAppearance(){
@@ -1157,8 +1164,10 @@ function applyAppearance(){
   function stamp(attr,val,def){ if(val!==def) d.setAttribute(attr,val); else d.removeAttribute(attr); }
   stamp('data-theme',a.theme,'auto');
   stamp('data-glass',a.glass,'on');
-  stamp('data-palette',a.palette,'parks');
-  stamp('data-face',a.face,'parks');
+  /* this app wears the parks look only: stored palettes and faces from
+     the sibling apps are read but never stamped here */
+  d.removeAttribute('data-palette');
+  d.removeAttribute('data-face');
   stamp('data-textsize',a.size,'m');
 }
 function apSeg(key,opts,cur,label){
@@ -1170,16 +1179,11 @@ function apSeg(key,opts,cur,label){
 function renderAppearancePanel(){
   var box=document.getElementById('appearancePanel'); if(!box) return;
   var a=getAppearance();
+  /* theme, glass and text size, nothing else: the look itself is not a
+     choice here, this app simply wears its own colours and type */
   var html='';
   html+='<div class="ios-row ios-row--plain ap-row"><span class="ios-row-body"><span class="ios-row-title">Theme</span></span>'
     +apSeg('theme',[['auto','Auto'],['light','Light'],['dark','Dark']],a.theme,'Theme')+'</div>';
-  html+='<div class="ios-row ios-row--plain ap-row"><span class="ios-row-body"><span class="ios-row-title">Colours</span></span>'
-    +'<div class="swatches" role="group" aria-label="Colours">'
-    +[['parks','Parks'],['field','Field'],['granite','Granite']].map(function(p){
-      var on=p[0]===a.palette;
-      return '<button type="button" class="swatch swatch--'+p[0]+'" data-ap="palette" data-val="'+p[0]+'"'
-        +' aria-pressed="'+(on?'true':'false')+'" aria-label="'+p[1]+'"><i></i><i></i><i></i></button>'; }).join('')
-    +'</div></div>';
   html+='<button type="button" class="ios-row ios-row--plain ap-row" id="glassRow" role="switch"'
     +' aria-checked="'+(a.glass==='on'?'true':'false')+'">'
     +'<span class="ios-row-body"><span class="ios-row-title">Glass</span>'
@@ -1187,13 +1191,6 @@ function renderAppearancePanel(){
     +'<span class="ios-switch" aria-hidden="true"><i></i></span></button>';
   html+='<div class="ios-row ios-row--plain ap-row"><span class="ios-row-body"><span class="ios-row-title">Text size</span></span>'
     +apSeg('size',[['s','S','Small'],['m','M','Medium'],['l','L','Large'],['xl','XL','Extra large']],a.size,'Text size')+'</div>';
-  html+=[['parks','Parks'],['system','System'],['rounded','Rounded'],['serif','Serif'],['avenir','Avenir'],['mono','Mono']].map(function(f){
-    var on=f[0]===a.face;
-    return '<button type="button" class="ios-row ios-row--plain ap-face" data-ap="face" data-val="'+f[0]+'"'
-      +' aria-pressed="'+(on?'true':'false')+'">'
-      +'<span class="ios-row-body"><span class="ios-row-title face-'+f[0]+'">'+f[1]+'</span></span>'
-      +(on?'<span class="ap-check"><svg aria-hidden="true"><use href="assets/icons.svg#check"/></svg></span>':'')
-      +'</button>'; }).join('');
   box.innerHTML=html;
   box.querySelectorAll('[data-ap]').forEach(function(b){
     b.addEventListener('click',function(){ setAppearance(b.dataset.ap,b.dataset.val); buzz(6); }); });
@@ -1414,12 +1411,20 @@ function setHeaderHidden(h){ var el=document.getElementById('iosHeader'); if(el)
 function showTab(tab){
   if(!TAB_SECTIONS[tab]) tab='guide';
   ALL_VIEWS.forEach(function(id){ var el=document.getElementById(id); if(el) el.hidden=true; });
-  var target=document.getElementById(tab==='guide'?'view-parks':TAB_SECTIONS[tab]); if(target) target.hidden=false;
+  var target=document.getElementById(tab==='guide'?'view-parks':TAB_SECTIONS[tab]);
+  if(target){
+    /* a tab switch is a fresh mount: shed any push, pop or no-anim class a
+       previous visit left behind so the glass-in entry can play */
+    target.classList.remove('view-anim','view-out','no-anim');
+    target.hidden=false;
+  }
   setHeaderHidden(false);
   var tb=document.getElementById('tabbar');
   if(tb) tb.querySelectorAll('.tab').forEach(function(b){ var on=b.dataset.tab===tab; b.classList.toggle('active',on);
     if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
+  /* always land at the top; the second call catches a browser that scrolls late */
   try{ window.scrollTo(0,0); }catch(e){}
+  requestAnimationFrame(function(){ try{ window.scrollTo(0,0); }catch(e){} });
   if(tab==='guide'){ renderParks(); }
   if(tab==='map' && window.initCampMap){ setTimeout(window.initCampMap,30); }
   if(tab==='more'){ if(typeof renderAppearancePanel==='function') renderAppearancePanel(); if(typeof fillAboutStats==='function') fillAboutStats();
