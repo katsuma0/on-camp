@@ -3,23 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Ontario Parks, Site Journal</title>
+<title>on-site, an Ontario Parks site journal</title>
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Site Journal">
+<meta name="apple-mobile-web-app-title" content="on-site">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="icon" type="image/png" href="./icon-192.png">
 <script>
 /* Appearance, stamped before first paint so there is no flash. One JSON key,
    'outdoors-appearance', shared by every outdoors app on this origin:
-   { theme:'auto'|'light'|'dark', glass:'on'|'off', palette:'parks'|'field'|'granite',
-     face:'parks'|'system'|'rounded'|'serif'|'avenir'|'mono', size:'s'|'m'|'l'|'xl' }.
-   Defaults (auto, on, parks, parks, m) stamp nothing. The old per-app
-   'oncamp-appearance' theme migrates into the key once, then only the key is read. */
+   { theme:'auto'|'light'|'dark', glass:'on'|'off', palette, face, size:'s'|'m'|'l'|'xl' }.
+   Defaults (auto, on, m) stamp nothing. This app wears the parks look only:
+   palettes and faces stored by the sibling apps are read but never stamped
+   here. The old per-app 'oncamp-appearance' theme migrates into the key
+   once, then only the key is read. */
 (function(){
   var d=document.documentElement;
   try{
@@ -39,8 +40,8 @@
     if(save) localStorage.setItem(K,JSON.stringify(a));
     if(a.theme==='light'||a.theme==='dark') d.setAttribute('data-theme',a.theme);
     if(a.glass==='off') d.setAttribute('data-glass','off');
-    if(a.palette==='field'||a.palette==='granite') d.setAttribute('data-palette',a.palette);
-    if(['system','rounded','serif','avenir','mono'].indexOf(a.face)>=0) d.setAttribute('data-face',a.face);
+    /* this app wears the parks look only: stored palettes and faces from
+       the sibling apps are read but never stamped here */
     if(['s','l','xl'].indexOf(a.size)>=0) d.setAttribute('data-textsize',a.size);
   }catch(e){}
 })();
@@ -52,7 +53,7 @@
 <header class="ios-header" id="iosHeader">
   <div class="ios-header-row">
     <button class="ios-avatar" id="avatarBtn" type="button" aria-label="Account"><svg aria-hidden="true"><use href="assets/icons.svg#user"/></svg></button>
-    <span class="ios-brand">on-camp</span>
+    <span class="ios-brand">on-site</span>
     <div class="ios-header-actions">
       <button class="ios-glass-btn" id="rateSiteBtn" type="button" aria-label="Rate a campsite"><svg aria-hidden="true"><use href="assets/icons.svg#plus"/></svg></button>
       <button class="ios-glass-btn" id="searchBtn" type="button" aria-label="Search"><svg aria-hidden="true"><use href="assets/icons.svg#search"/></svg></button>
@@ -63,8 +64,7 @@
 <main id="views">
 <section id="view-parks">
   <div class="appbar">
-    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-camp</h1><button class="ver" id="verBtn">v0.204</button></div>
-    <div class="sub">Walk a campground, rate the sites, and book the good ones next time.</div>
+    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-site</h1><button class="ver" id="verBtn">v0.205</button></div>
   </div>
   <div class="wrap">
     <div class="gsearch" id="gsearch">
@@ -210,6 +210,7 @@
 <div class="sheet" id="versionsSheet" role="dialog" aria-modal="true" aria-label="Versions">
   <div class="grabber"></div>
   <div class="kind" style="margin-bottom:12px">Versions</div>
+  <div class="verline"><span class="vv">v0.205</span>on-camp is now on-site, and the app carries itself like the GitHub app: flat controls, the floating tab capsule, a top bar that fades in, and GitHub's own dark</div>
   <div class="verline"><span class="vv">v0.204</span>On a laptop it reads as a website: top bar, sidebar tabs, and sheets become dialogs</div>
   <div class="verline"><span class="vv">v0.203</span>The Parks Canada look is the new default: federal blues, a red title rule, and Lato with Noto Sans</div>
   <div class="verline"><span class="vv">v0.202</span>Appearance settings shared across the outdoors apps: theme, colours, glass, text size and face</div>
@@ -307,7 +308,8 @@
 
   <h2 class="ios-section-title">About</h2>
   <div class="aboutbody">
-    <p>on-camp is a private journal for Ontario Parks campsites. Walk a campground, rate each site out of five, add a note or a photo, and mark the ones worth booking again. It covers every reservable Ontario Park, down to the campgrounds, the individual sites, and the trails.</p>
+    <p>on-site is a private journal for Ontario Parks campsites. Walk a campground, rate each site out of five, add a note or a photo, and mark the ones worth booking again. It covers every reservable Ontario Park, down to the campgrounds, the individual sites, and the trails.</p>
+    <p>on-camp is now on-site. Same app, new name, since CampOn is already taken.</p>
     <p>I book the camping trips for my friends and family, and choosing a site you have never seen is a gamble. Some are good and some are not, and a year later you cannot remember which was which. This is the notebook I wanted for that.</p>
     <p>Everything you save stays on this device. There is no account, no server, and nothing is tracked. Ratings and notes live in the browser and photos in local storage, and you can export a backup to a file and load it on another phone. Please do not photograph occupied sites, and leave a site the way you would want to find it.</p>
   </div>

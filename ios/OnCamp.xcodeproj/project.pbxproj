@@ -292,7 +292,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "on-camp";
+				INFOPLIST_KEY_CFBundleDisplayName = "on-site";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Add photos of a campsite to your journal.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your location is used to show where you are on the parks map.";
@@ -324,7 +324,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "on-camp";
+				INFOPLIST_KEY_CFBundleDisplayName = "on-site";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Add photos of a campsite to your journal.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your location is used to show where you are on the parks map.";
