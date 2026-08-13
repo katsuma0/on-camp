@@ -736,7 +736,7 @@ async function wipeParkData(pid){
     const rq=st.getAllKeys(); rq.onsuccess=()=>{ (rq.result||[]).forEach(k=>{ if(String(k).indexOf(pid+'#')===0) st.delete(k); }); };
     tx.oncomplete=()=>res(); tx.onerror=()=>res(); }); }catch(e){}
   await loadPhotoIndex();
-  showThemeToast('Cleared. Fresh start for this park.');
+  showThemeToast('Park data cleared.');
   openPark(pid); renderParks(); }
 
 /* ================= sheet ================= */
@@ -798,7 +798,7 @@ function afterChange(){ touchPark(cur.k.split('#')[0]); persist();
   else { refreshCgHeader(cur.cg); refreshParkRate(); } }
 function setScore(v){ const e=ensure(); e.score=(e.score===v?null:v); buzz(9); paintDots(); flashSaved(); afterChange(); }
 document.getElementById('wantBtn').addEventListener('click',function(){ const e=ensure(); e.want=!e.want; buzz(9);
-  this.setAttribute('aria-pressed',e.want); this.textContent=(e.want?'★ ':'☆ ')+'Wishlist'; if(e.want&&e.score===0) showThemeToast("That doesn't make sense... noted anyways."); flashSaved(); touchPark(cur.k.split('#')[0]); persist(); if(cur.site) refreshChip(cur.k); renderGlance(); });
+  this.setAttribute('aria-pressed',e.want); this.textContent=(e.want?'★ ':'☆ ')+'Wishlist'; if(e.want&&e.score===0) showThemeToast("Added to your wishlist."); flashSaved(); touchPark(cur.k.split('#')[0]); persist(); if(cur.site) refreshChip(cur.k); renderGlance(); });
 function autoGrowNotes(el){ el.style.height='auto'; el.style.height=Math.max(106,el.scrollHeight)+'px'; }
 document.getElementById('d-notes').addEventListener('input',e=>{ autoGrowNotes(e.target); const en=ensure(); en.note=e.target.value; flashSaved(); touchPark(cur.k.split('#')[0]); persist(); if(cur.site) refreshChip(cur.k); else if(cur.type==='trail') refreshTrailCard(cur.trailName); });
 (function(){
