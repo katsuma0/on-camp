@@ -6,6 +6,9 @@
    This file only defines window.initCampMap; it does nothing else at load. */
 (function () {
 
+  /* the host owns the dictionary; untranslated text simply stays English */
+  function T(s) { return (window.TL ? window.TL(s) : s); }
+
   /* Official Ontario zone boundaries, same service the fishing app draws from. */
   var SERVICE = "https://ws.lioservices.lrc.gov.on.ca/arcgis2/rest/services/LIO_OPEN_DATA/LIO_Open07/MapServer/14";
   var ZONE_FIELD = "FISHERIES_MANAGEMENT_ZONE_ID";
@@ -27,13 +30,35 @@
   /* module level state, so a second call reuses the one map */
   var map = null;
   var inited = false;
+  var baseLayer = null;      // the basemap tiles, swapped when the scheme flips
+  var labelLayer = null;     // place names, swapped with the basemap
+  var isDark = null;         // the scheme the current tiles were built for
+  var pinLayer = null;       // park pins, only while their chip is on
+  var zoneLayer = null;      // zone polygons, only while their chip is on
+  var zoneData = null;       // the fetched GeoJSON, kept so a re-toggle is free
+  var zoneLoading = false;
 
+  /* What the map draws is the reader's choice and starts empty: an opening
+     map with no layers is instant, and the zone boundaries (a large fetch
+     and thousands of points to paint) never load until they are asked for. */
+  var SHOW_KEY = 'oncamp-map-show';
+  var show = { parks: false, zones: false };
+  try {
+    var saved = JSON.parse(localStorage.getItem(SHOW_KEY) || 'null');
+    if (saved && typeof saved === 'object') {
+      show.parks = !!saved.parks;
+      show.zones = !!saved.zones;
+    }
+  } catch (e) {}
+  function saveShow() {
+    try { localStorage.setItem(SHOW_KEY, JSON.stringify(show)); } catch (e) {}
+  }
+
+  /* The scheme in effect right now. The stamped attribute is the app's own
+     choice and wins; with no choice stamped the system decides. This is read
+     again every time the map is shown, so a theme change never leaves a dark
+     map sitting on a light page. */
   function prefersDark() {
-    try {
-      var a = localStorage.getItem('oncamp-appearance');
-      if (a === 'dark') return true;
-      if (a === 'light') return false;
-    } catch (e) {}
     var t = document.documentElement.getAttribute('data-theme');
     if (t === 'dark') return true;
     if (t === 'light') return false;
@@ -102,9 +127,11 @@
   }
 
   function addPins() {
+    if (pinLayer || !map) return;
     var pins = window.PARK_PINS;
     if (!pins || !pins.length) return;
     var icon = pinIcon();
+    pinLayer = L.layerGroup();
     pins.forEach(function (p) {
       if (!p || typeof p.lat !== 'number' || typeof p.lng !== 'number') return;
       var m = L.marker([p.lat, p.lng], { icon: icon, title: p.name });
@@ -116,37 +143,117 @@
         }
         openParkPopup(p);
       });
-      m.addTo(map);
+      pinLayer.addLayer(m);
     });
+    pinLayer.addTo(map);
+  }
+  function removePins() {
+    if (!pinLayer) return;
+    try { map.removeLayer(pinLayer); } catch (e) {}
+    pinLayer = null;
   }
 
-  var NOTE_DEFAULT = 'Ontario parks over the fishing zones. Tap a pin to open a park.';
-  var NOTE_OFFLINE = 'Map tiles are offline. The park pins still work, tap one to open it.';
+  function NOTE_EMPTY() { return T('Choose what to show.'); }
+  function NOTE_PARKS() { return T('Tap a pin to open a park.'); }
+  function NOTE_OFFLINE() { return T('Map tiles are offline. The park pins still work, tap one to open it.'); }
+  var noteOffline = false;
   function setNote(text) {
     var n = document.getElementById('campMapNote');
-    if (n) n.textContent = text;
+    if (!n) return;
+    n.innerHTML = '';
+    n.appendChild(document.createTextNode(text));
+    n.hidden = !text;
+  }
+  /* the eight blade iOS spinner, in the note, while something is fetching */
+  function setNoteLoading(text) {
+    var n = document.getElementById('campMapNote');
+    if (!n) return;
+    n.hidden = false;
+    var s = '<span class="ios-spinner" aria-hidden="true">';
+    for (var i = 0; i < 8; i++) {
+      s += '<span style="transform:rotate(' + (i * 45) + 'deg);animation-delay:' + (-0.8 + i * 0.1).toFixed(1) + 's"></span>';
+    }
+    n.innerHTML = s + '</span><span>' + text + '</span>';
+  }
+  function restNote() {
+    if (noteOffline) { setNote(NOTE_OFFLINE()); return; }
+    setNote(show.parks ? NOTE_PARKS() : (show.zones ? '' : NOTE_EMPTY()));
   }
 
-  /* fetch the zone boundaries once and draw them on a canvas below the pins */
-  function loadZones() {
-    if (!map) return;
-    var renderer = null;
-    try { renderer = L.canvas({ padding: 0.4, pane: 'campZones' }); } catch (e) {}
-    setNote('Loading parks');
+  /* The boundaries are a big fetch and a lot of points to paint, so they
+     load the first time they are asked for and are kept afterwards: a second
+     toggle just re-adds the layer. */
+  function addZones() {
+    if (!map || zoneLayer) return;
+    function draw(gj) {
+      var renderer = null;
+      try { renderer = L.canvas({ padding: 0.4, pane: 'campZones' }); } catch (e) {}
+      var opts = { pane: 'campZones', smoothFactor: 1.4, style: zoneStyle };
+      if (renderer) opts.renderer = renderer;
+      try { zoneLayer = L.geoJSON(gj, opts).addTo(map); } catch (e) {}
+      restNote();
+    }
+    if (zoneData) { draw(zoneData); return; }
+    if (zoneLoading) return;
+    zoneLoading = true;
+    setNoteLoading(T('Loading zones'));
     try {
       fetch(BOUNDS_URL).then(function (r) {
         return r.json();
       }).then(function (gj) {
-        if (!map || !gj || !gj.features) { setNote(NOTE_DEFAULT); return; }
-        var opts = { pane: 'campZones', smoothFactor: 1.4, style: zoneStyle };
-        if (renderer) opts.renderer = renderer;
-        try { L.geoJSON(gj, opts).addTo(map); } catch (e) {}
-        setNote(NOTE_DEFAULT);
+        zoneLoading = false;
+        if (!map || !gj || !gj.features) { restNote(); return; }
+        zoneData = gj;
+        if (show.zones) draw(gj); else restNote();
       }).catch(function () {
-        /* offline: leave the pins on the plain basemap */
-        setNote(NOTE_DEFAULT);
+        /* offline: the rest of the map still works */
+        zoneLoading = false;
+        setNote(T('Zone boundaries need a connection.'));
       });
-    } catch (e) { setNote(NOTE_DEFAULT); }
+    } catch (e) { zoneLoading = false; restNote(); }
+  }
+  function removeZones() {
+    if (!zoneLayer) return;
+    try { map.removeLayer(zoneLayer); } catch (e) {}
+    zoneLayer = null;
+  }
+
+  /* one solid card of toggles over the map. solid, not frosted: blurring
+     live tiles behind a bar is what costs frames while panning. */
+  function renderChips() {
+    var card = document.getElementById('campMapChips');
+    if (!card) return;
+    card.innerHTML =
+      chipHtml('parks', '\u{1F3D5} ' + T('Parks'), show.parks) +
+      chipHtml('zones', '\u{1F3A3} ' + T('Fishing zones'), show.zones);
+  }
+  function chipHtml(key, label, on) {
+    return '<button type="button" class="chip' + (on ? ' on' : '') + '" data-show="' + key + '"' +
+      ' aria-pressed="' + (on ? 'true' : 'false') + '">' + label + '</button>';
+  }
+  function applyShow() {
+    if (show.parks) addPins(); else removePins();
+    if (show.zones) addZones(); else removeZones();
+    restNote();
+  }
+  function wireChips() {
+    var card = document.getElementById('campMapChips');
+    if (!card || card._wired) return;
+    card._wired = true;
+    card.addEventListener('click', function (ev) {
+      var b = ev.target.closest ? ev.target.closest('[data-show]') : null;
+      if (!b) return;
+      var k = b.getAttribute('data-show');
+      show[k] = !show[k];
+      saveShow();
+      renderChips();
+      applyShow();
+      if (window.buzz) { try { window.buzz(6); } catch (e) {} }
+    });
+    try {
+      L.DomEvent.disableClickPropagation(card);
+      L.DomEvent.disableScrollPropagation(card);
+    } catch (e) {}
   }
 
   /* find my location, quietly */
@@ -167,7 +274,7 @@
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'fab';
-    btn.setAttribute('aria-label', 'Find my location');
+    btn.setAttribute('aria-label', T('Find my location'));
     btn.innerHTML =
       '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
         'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
@@ -187,10 +294,60 @@
     el.appendChild(wrap);
   }
 
+  /* Swap the tiles when the scheme changes. The map itself is built once and
+     lives in a hidden tab, so without this a theme change left a dark map on
+     a light page (and the reverse) until a reload. */
+  function applyScheme() {
+    if (!map) return;
+    var dark = prefersDark();
+    if (dark === isDark) return;
+    isDark = dark;
+    var baseSet = dark ? 'dark_nolabels' : 'voyager_nolabels';
+    var labelSet = dark ? 'dark_only_labels' : 'voyager_only_labels';
+    if (baseLayer) { try { map.removeLayer(baseLayer); } catch (e) {} }
+    if (labelLayer) { try { map.removeLayer(labelLayer); } catch (e) {} }
+    baseLayer = L.tileLayer(CARTO + baseSet + '/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap, &copy; CARTO',
+      subdomains: 'abcd',
+      updateWhenIdle: true,
+      updateWhenZooming: false,
+      keepBuffer: 2
+    }).addTo(map);
+    baseLayer.on('tileerror', function () {
+      if (noteOffline) return;
+      noteOffline = true;
+      restNote();
+    });
+    labelLayer = L.tileLayer(CARTO + labelSet + '/{z}/{x}/{y}{r}.png', {
+      pane: 'campLabels',
+      subdomains: 'abcd',
+      minZoom: 8,
+      updateWhenIdle: true,
+      updateWhenZooming: false,
+      keepBuffer: 2
+    }).addTo(map);
+  }
+  /* the host calls this after an appearance change; the media query covers a
+     system flip while the app sits open */
+  window.refreshCampMapTheme = applyScheme;
+  try {
+    if (window.matchMedia) {
+      var mq = window.matchMedia('(prefers-color-scheme: dark)');
+      if (mq.addEventListener) mq.addEventListener('change', applyScheme);
+      else if (mq.addListener) mq.addListener(applyScheme);
+    }
+  } catch (e) {}
+
+  window.renderCampMapChips = function () { renderChips(); restNote(); };
+
   window.initCampMap = function () {
-    /* the map lives in a tab that shows and hides. On a repeat call just resize. */
+    /* the map lives in a tab that shows and hides. On a repeat call resize and
+       re-check the scheme, so the tiles always match the page. */
     if (inited) {
-      if (map) { try { map.invalidateSize(); } catch (e) {} }
+      if (map) {
+        applyScheme();
+        try { map.invalidateSize(); } catch (e) {}
+      }
       return;
     }
     /* fail quietly if the libraries or the container are missing */
@@ -199,33 +356,17 @@
     if (!el) return;
 
     try {
-      var dark = prefersDark();
-      var baseSet = dark ? 'dark_nolabels' : 'voyager_nolabels';
-      var labelSet = dark ? 'dark_only_labels' : 'voyager_only_labels';
-
       map = L.map(el, {
         minZoom: 4,
         maxZoom: 16,
         zoomControl: false,
-        doubleClickZoom: false
+        doubleClickZoom: false,
+        /* one canvas beats a DOM node per shape while panning a phone */
+        preferCanvas: true
       }).setView([49, -85], 5);
 
       /* loosely fenced to Ontario and its edges */
       map.setMaxBounds([[40, -97], [58, -72]]);
-
-      /* base tiles */
-      var baseLayer = L.tileLayer(CARTO + baseSet + '/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap, &copy; CARTO',
-        subdomains: 'abcd',
-        updateWhenIdle: true,
-        updateWhenZooming: false,
-        keepBuffer: 4
-      }).addTo(map);
-      /* if the basemap cannot load (no connection), say so plainly once. */
-      var toldOffline = false;
-      baseLayer.on('tileerror', function () {
-        if (toldOffline) return; toldOffline = true; setNote(NOTE_OFFLINE);
-      });
 
       /* zone fill pane sits above the base tiles and below the pins */
       map.createPane('campZones');
@@ -235,20 +376,14 @@
       map.createPane('campLabels');
       map.getPane('campLabels').style.zIndex = 450;
       map.getPane('campLabels').style.pointerEvents = 'none';
-      L.tileLayer(CARTO + labelSet + '/{z}/{x}/{y}{r}.png', {
-        pane: 'campLabels',
-        subdomains: 'abcd',
-        minZoom: 8,
-        updateWhenIdle: true,
-        updateWhenZooming: false,
-        keepBuffer: 2
-      }).addTo(map);
 
-      /* the 20 zone boundaries, fetched as GeoJSON and drawn under the pins */
-      loadZones();
+      /* base and label tiles, picked for the scheme in effect */
+      applyScheme();
 
-      /* park pins, in the default marker pane above everything */
-      addPins();
+      /* nothing else draws until a chip asks for it */
+      renderChips();
+      wireChips();
+      applyShow();
 
       /* find my location control */
       addFabs(el);
