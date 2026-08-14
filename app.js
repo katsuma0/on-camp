@@ -30,7 +30,7 @@ function cidOf(pid,cgId){ return pid+'#'+cgId; }
 /* ================= state ================= */
 let state={site:{},campground:{},trail:{}};
 const KEY='ontario-scout-v2';
-var APP_VERSION='0.207';
+var APP_VERSION='0.208';
 
 /* ================= language =================
    English is the default; French is a choice in More. The dictionary is
@@ -46,10 +46,7 @@ var FR={
   'Guide':'Guide','Map':'Carte','Journal':'Journal','More':'Plus','Account':'Compte','Photos':'Photos',
   'Parks':'Parcs','Shared with you':'Partagé avec vous',
   /* map */
-  'Choose what to show.':'Choisissez quoi afficher.','Tap a pin to open a park.':'Touchez une épingle pour ouvrir un parc.',
-  'Fishing zones':'Zones de pêche','Loading zones':'Chargement des zones',
-  'Zone boundaries need a connection.':'Les limites des zones nécessitent une connexion.',
-  'Map tiles are offline. The park pins still work, tap one to open it.':'Les tuiles de la carte sont hors ligne. Les épingles fonctionnent toujours, touchez-en une pour l’ouvrir.',
+  'Fishing zones':'Zones de pêche',
   'Find my location':'Trouver ma position',
   /* search */
   'Search':'Recherche','Search parks, campgrounds and sites':'Chercher parcs, terrains et emplacements',
@@ -59,7 +56,6 @@ var FR={
   'Parks visited':'Parcs visités','Ratings':'Évaluations','Average rating':'Note moyenne',
   'Favourites':'Favoris','Visited':'Visités','Name':'Nom','Your name':'Votre nom',
   'Parks in guide':'Parcs dans le guide','Version':'Version',
-  'Everything you have rated, park by park.':'Tout ce que vous avez évalué, parc par parc.',
   'Browse the parks':'Parcourir les parcs',
   'Rate your first site and it lands here, with every note, star and photo.':'Évaluez votre premier emplacement et il apparaîtra ici, avec chaque note, étoile et photo.',
   /* settings */
@@ -67,6 +63,7 @@ var FR={
   'Text size':'Taille du texte','Small':'Petit','Medium':'Moyen','Large':'Grand','Extra large':'Très grand',
   'Language':'Langue','English':'English','Français':'Français',
   'Add a favourite':'Ajouter aux favoris','Remove from favourites':'Retirer des favoris',
+  'Favourite':'Favori','Favourited':'En favori',
   'Loading':'Chargement',
   'of':'sur','sites rated':'emplacements évalués','average':'de moyenne',
   'Saved to your journal':'Enregistré dans votre journal','Saved to your favourites':'Ajouté à vos favoris',
@@ -117,15 +114,15 @@ function applyLang(){
 const FISHREG_BASE='https://katsuma0.github.io/on-fishing/';
 try{ history.scrollRestoration='manual'; }catch(e){} /* every open starts at the top */
 function load(){ try{ const v=localStorage.getItem(KEY); if(v) state=Object.assign({site:{},campground:{},trail:{}},JSON.parse(v)); }catch(e){}
+  /* pins are no longer shown anywhere, but the list a reader built is theirs
+     and stays in the record; the stats console still counts it */
   if(!Array.isArray(state.pins)) state.pins=[];
   if(!state.touched||typeof state.touched!=='object'||Array.isArray(state.touched)) state.touched={}; }
-function isPinned(pid){ return Array.isArray(state.pins)&&state.pins.indexOf(pid)>=0; }
 const EGG_ID='queenelizabethii';
 function eggFound(){ return !!state.eggQE2; }
 function parkVisible(p){ return p.id!==EGG_ID||eggFound(); }
 function revealEgg(){ if(eggFound()) return; state.eggQE2=true; persist(); buildSearchIndex(); renderParks(); buzz(12);
   showThemeToast('Hidden park revealed. Welcome to the Wildlands.'); }
-function togglePin(pid){ if(!Array.isArray(state.pins)) state.pins=[]; const i=state.pins.indexOf(pid); if(i>=0) state.pins.splice(i,1); else state.pins.push(pid); persist(); }
 let saveTimer=null;
 function persist(){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} },250); }
 
@@ -561,6 +558,16 @@ function toggleFav(kind,id){
   saveFavs();
   return isFav(kind,id);
 }
+/* Favourites took the place pins used to hold, so a park pinned before this
+   round arrives as a favourite instead of quietly disappearing. Once only,
+   and the pin list itself is left where it is. */
+var PIN_FAV_KEY='oncamp-pins-to-favs';
+function migratePinsToFavs(){
+  try{ if(localStorage.getItem(PIN_FAV_KEY)) return; }catch(e){ return; }
+  if(Array.isArray(state.pins)) state.pins.forEach(function(pid){ if(!FAVS.parks[pid]) FAVS.parks[pid]=1; });
+  saveFavs();
+  try{ localStorage.setItem(PIN_FAV_KEY,'1'); }catch(e){}
+}
 /* the heart itself: a real button, 44px of target, filled when it is on */
 function favBtnHtml(kind,id){
   var on=isFav(kind,id);
@@ -569,6 +576,15 @@ function favBtnHtml(kind,id){
     ' aria-pressed="'+(on?'true':'false')+'"'+
     ' aria-label="'+(on?TL('Remove from favourites'):TL('Add a favourite'))+'">'+
     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 4.6 13.3a4.6 4.6 0 1 1 6.5-6.5l.9.9.9-.9a4.6 4.6 0 1 1 6.5 6.5z"/></svg></span>';
+}
+/* The park page is the only place a park can be favourited, so the control
+   says so in words rather than leaving a bare glyph to be read. It carries
+   no data-fav hook: it is wired on its own, in wireParkControls. */
+function parkFavHtml(pid){
+  var on=isFav('parks',pid);
+  return '<button class="favpill'+(on?' on':'')+'" id="favBtn" type="button" aria-pressed="'+(on?'true':'false')+'">'+
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 4.6 13.3a4.6 4.6 0 1 1 6.5-6.5l.9.9.9-.9a4.6 4.6 0 1 1 6.5 6.5z"/></svg>'+
+    '<span class="favpill-t">'+(on?TL('Favourited'):TL('Favourite'))+'</span></button>';
 }
 /* one delegated listener: hearts live inside rows that are themselves buttons */
 document.addEventListener('click',function(ev){
@@ -605,11 +621,13 @@ function favSiteRows(visible){
   return rows;
 }
 
+/* No heart on a park row: the list is a long scroll and the target sat right
+   under a scrolling thumb. A park is favourited on its own page. */
 function parkRowHtml(p,st,sub,value){
   return '<button class="ios-row ios-row--plain" type="button" data-park="'+p.id+'">'+
     '<span class="ios-row-body"><span class="ios-row-title">'+p.name+'</span>'+
     (sub?'<span class="ios-row-sub">'+sub+'</span>':'')+'</span>'+
-    (value?'<span class="ios-row-value tnum">'+value+'</span>':'')+favBtnHtml('parks',p.id)+CHEV_RIGHT+'</button>';
+    (value?'<span class="ios-row-value tnum">'+value+'</span>':'')+CHEV_RIGHT+'</button>';
 }
 function renderParks(){ const box=document.getElementById('parkList'); if(!box) return; box.innerHTML='';
   if(!PARKS.length){ box.innerHTML=`<div class="empty" style="border:1px solid var(--separator);border-radius:var(--r);background:var(--bg-elevated);padding:26px 18px">Park data could not be loaded.<br>Check your connection and reopen the app.</div>`; renderAzRail([]); return; }
@@ -689,7 +707,7 @@ function facilChip(name){ return `<span class="facil"><svg width="12" height="12
 function openPark(pid){
   curPark=PARK_BY_ID[pid]; const p=curPark; const st=parkStats(p);
   document.getElementById('parkBody').innerHTML=`
-    <div class="park-head"><div class="titlerow"><h2 id="parkTitle" style="cursor:pointer">${(p.region||'').indexOf('Algonquin')===0?p.name+', Algonquin':p.name}</h2><button class="pinbtn${isPinned(p.id)?' on':''}" id="pinBtn" aria-label="Pin park"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M12 16v6"/><path d="M9 3h6v4l2 5H7l2-5z"/></svg></button></div>
+    <div class="park-head"><div class="titlerow"><h2 id="parkTitle" style="cursor:pointer">${(p.region||'').indexOf('Algonquin')===0?p.name+', Algonquin':p.name}</h2>${parkFavHtml(p.id)}</div>
       <button class="about-toggle" id="aboutToggle" aria-expanded="false">About ${p.name}<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></button>
       <div class="about-body" id="aboutBody" hidden>
         <div class="blurb">${p.blurb}</div>
@@ -897,8 +915,11 @@ function wireParkControls(){
   document.getElementById('aboutToggle').addEventListener('click',function(){ const b=document.getElementById('aboutBody'); const open=b.hidden; b.hidden=!open; this.setAttribute('aria-expanded',open); });
   const pr=document.getElementById('parkRate');
   if(pr){ pr.addEventListener('click',()=>openSheet('campground',cidOf(curPark.id,curPark.name),curPark.name,null)); refreshParkRate(); }
-  const pb=document.getElementById('pinBtn');
-  if(pb){ pb.addEventListener('click',()=>{ togglePin(curPark.id); pb.classList.toggle('on',isPinned(curPark.id)); buzz(9); renderParks(); }); }
+  const fb=document.getElementById('favBtn');
+  if(fb){ fb.addEventListener('click',()=>{ const on=toggleFav('parks',curPark.id);
+    fb.classList.toggle('on',on); fb.setAttribute('aria-pressed',on?'true':'false');
+    const lbl=fb.querySelector('.favpill-t'); if(lbl) lbl.textContent=on?TL('Favourited'):TL('Favourite');
+    buzz(9); renderParks(); }); }
 }
 async function wipeParkData(pid){
   ['site','campground','trail'].forEach(b=>{ if(!state[b]) return;
@@ -1679,7 +1700,7 @@ makeSheetSwipe(sheet,closeSheet);
 /* ================= boot ================= */
 (async function(){
   applyAppearance(); applyLang();
-  buildDots(); load(); migrateAlgonquin(); migrateScale5();
+  buildDots(); load(); migrateAlgonquin(); migrateScale5(); migratePinsToFavs();
   loadParksEmbedded(); buildSearchIndex(); wireGlobalSearch(); renderAppearancePanel(); renderAvatar();
   renderParks();                 /* instant first paint, no network wait */
   await loadPhotoIndex();        /* fast local IndexedDB */

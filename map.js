@@ -153,33 +153,6 @@
     pinLayer = null;
   }
 
-  function NOTE_EMPTY() { return T('Choose what to show.'); }
-  function NOTE_PARKS() { return T('Tap a pin to open a park.'); }
-  function NOTE_OFFLINE() { return T('Map tiles are offline. The park pins still work, tap one to open it.'); }
-  var noteOffline = false;
-  function setNote(text) {
-    var n = document.getElementById('campMapNote');
-    if (!n) return;
-    n.innerHTML = '';
-    n.appendChild(document.createTextNode(text));
-    n.hidden = !text;
-  }
-  /* the eight blade iOS spinner, in the note, while something is fetching */
-  function setNoteLoading(text) {
-    var n = document.getElementById('campMapNote');
-    if (!n) return;
-    n.hidden = false;
-    var s = '<span class="ios-spinner" aria-hidden="true">';
-    for (var i = 0; i < 8; i++) {
-      s += '<span style="transform:rotate(' + (i * 45) + 'deg);animation-delay:' + (-0.8 + i * 0.1).toFixed(1) + 's"></span>';
-    }
-    n.innerHTML = s + '</span><span>' + text + '</span>';
-  }
-  function restNote() {
-    if (noteOffline) { setNote(NOTE_OFFLINE()); return; }
-    setNote(show.parks ? NOTE_PARKS() : (show.zones ? '' : NOTE_EMPTY()));
-  }
-
   /* The boundaries are a big fetch and a lot of points to paint, so they
      load the first time they are asked for and are kept afterwards: a second
      toggle just re-adds the layer. */
@@ -191,26 +164,25 @@
       var opts = { pane: 'campZones', smoothFactor: 1.4, style: zoneStyle };
       if (renderer) opts.renderer = renderer;
       try { zoneLayer = L.geoJSON(gj, opts).addTo(map); } catch (e) {}
-      restNote();
     }
     if (zoneData) { draw(zoneData); return; }
     if (zoneLoading) return;
     zoneLoading = true;
-    setNoteLoading(T('Loading zones'));
+    renderChips();
+    function done() { zoneLoading = false; renderChips(); }
     try {
       fetch(BOUNDS_URL).then(function (r) {
         return r.json();
       }).then(function (gj) {
-        zoneLoading = false;
-        if (!map || !gj || !gj.features) { restNote(); return; }
+        done();
+        if (!map || !gj || !gj.features) return;
         zoneData = gj;
-        if (show.zones) draw(gj); else restNote();
+        if (show.zones) draw(gj);
       }).catch(function () {
-        /* offline: the rest of the map still works */
-        zoneLoading = false;
-        setNote(T('Zone boundaries need a connection.'));
+        /* offline: the boundaries stay away and the rest of the map works */
+        done();
       });
-    } catch (e) { zoneLoading = false; restNote(); }
+    } catch (e) { done(); }
   }
   function removeZones() {
     if (!zoneLayer) return;
@@ -224,17 +196,27 @@
     var card = document.getElementById('campMapChips');
     if (!card) return;
     card.innerHTML =
-      chipHtml('parks', '\u{1F3D5} ' + T('Parks'), show.parks) +
-      chipHtml('zones', '\u{1F3A3} ' + T('Fishing zones'), show.zones);
+      chipHtml('parks', '\u{1F3D5}', T('Parks'), show.parks, false) +
+      chipHtml('zones', '\u{1F3A3}', T('Fishing zones'), show.zones, zoneLoading);
   }
-  function chipHtml(key, label, on) {
+  /* the eight blade iOS spinner, standing in for a chip's own glyph while
+     that layer is fetching, so the wait shows where the tap happened */
+  function spinnerHtml() {
+    var s = '<span class="ios-spinner" aria-hidden="true">';
+    for (var i = 0; i < 8; i++) {
+      s += '<span style="transform:rotate(' + (i * 45) + 'deg);animation-delay:' + (-0.8 + i * 0.1).toFixed(1) + 's"></span>';
+    }
+    return s + '</span>';
+  }
+  function chipHtml(key, glyph, label, on, busy) {
     return '<button type="button" class="chip' + (on ? ' on' : '') + '" data-show="' + key + '"' +
-      ' aria-pressed="' + (on ? 'true' : 'false') + '">' + label + '</button>';
+      ' aria-pressed="' + (on ? 'true' : 'false') + '"' + (busy ? ' aria-busy="true"' : '') + '>' +
+      (busy ? spinnerHtml() : '<span aria-hidden="true">' + glyph + '</span>') +
+      '<span>' + label + '</span></button>';
   }
   function applyShow() {
     if (show.parks) addPins(); else removePins();
     if (show.zones) addZones(); else removeZones();
-    restNote();
   }
   function wireChips() {
     var card = document.getElementById('campMapChips');
@@ -313,11 +295,6 @@
       updateWhenZooming: false,
       keepBuffer: 2
     }).addTo(map);
-    baseLayer.on('tileerror', function () {
-      if (noteOffline) return;
-      noteOffline = true;
-      restNote();
-    });
     labelLayer = L.tileLayer(CARTO + labelSet + '/{z}/{x}/{y}{r}.png', {
       pane: 'campLabels',
       subdomains: 'abcd',
@@ -338,7 +315,7 @@
     }
   } catch (e) {}
 
-  window.renderCampMapChips = function () { renderChips(); restNote(); };
+  window.renderCampMapChips = function () { renderChips(); };
 
   window.initCampMap = function () {
     /* the map lives in a tab that shows and hides. On a repeat call resize and

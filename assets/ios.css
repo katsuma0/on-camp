@@ -597,11 +597,6 @@ button {
   .titlerow h2{min-width:0}
   .park-head h2{font-weight:700;font-size:28px;letter-spacing:var(--ls-title1);margin:0;line-height:34px}
   .park-head .region{color:var(--label-2);font-size:13px;margin-top:3px}
-  .pinbtn{flex:0 0 44px;width:44px;height:44px;border:0;background:none;color:var(--label-3);display:flex;
-    align-items:center;justify-content:center;cursor:pointer;padding:0}
-  .pinbtn svg{width:22px;height:22px;fill:none}
-  .pinbtn.on{color:var(--tint)}
-  .pinbtn.on svg{fill:currentColor}
   .about-toggle{width:100%;min-height:var(--row-h);margin-top:14px;appearance:none;cursor:pointer;background:var(--card);
     border:0;border-radius:var(--r-sm);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;
     font-weight:600;font-size:17px;letter-spacing:var(--ls-headline);color:var(--label)}
@@ -947,9 +942,6 @@ button {
     cursor:pointer; transition:transform .08s; }
   .fab:active{ transform:scale(.92); }
   .fab svg{ width:24px; height:24px; color:var(--tint); }
-  .map-note{ position:absolute; left:12px; right:76px; top:12px; z-index:500;
-    background:rgba(28,28,30,.92); color:var(--on-tint); padding:8px 12px; border-radius:10px; font-size:13px; line-height:1.35;
-    -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); }
   .pin-wrap{ background:none; border:0; }
   .pin{ width:34px; height:34px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); border:2px solid var(--on-tint);
     box-shadow:0 2px 6px rgba(0,0,0,.4); display:grid; place-items:center; background:var(--tint); }
@@ -2456,47 +2448,12 @@ h1, h2, h3, h4, .btn { font-family: var(--font-display); }
 }
 .map-wrap .map-card::-webkit-scrollbar { display: none; }
 .map-card .chip { flex: 0 0 auto; }
-.map-note,
-:root:not([data-glass="off"]) .map-note {
-  top: 66px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--card);
-  color: var(--label);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, .14);
-}
-.map-note[hidden] { display: none; }
 .map-fabs .fab,
 :root:not([data-glass="off"]) .map-fabs .fab {
   background: var(--card);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
-
-/* the iOS activity spinner: eight blades fading in turn */
-.ios-spinner {
-  position: relative;
-  width: 20px;
-  height: 20px;
-  display: inline-block;
-  flex: none;
-}
-.ios-spinner span {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 2.5px;
-  height: 6px;
-  margin-left: -1.25px;
-  border-radius: 2px;
-  background: var(--label-2);
-  transform-origin: 50% 10px;
-  animation: spinner-fade 0.8s linear infinite;
-}
-@keyframes spinner-fade { from { opacity: 1; } to { opacity: 0.15; } }
 
 /* the account avatar breathes before the name card, and the stat row
    breathes before the rows under it */
@@ -2528,6 +2485,32 @@ h1, h2, h3, h4, .btn { font-family: var(--font-display); }
 .favbtn.on { color: var(--tone3); }
 .favbtn.on svg { fill: currentColor; stroke: currentColor; }
 .favbtn:active { background: var(--fill); }
+
+/* the same heart on the park page, where it is the only way to favourite a
+   park: a labelled pill, so the state is read rather than guessed */
+.favpill {
+  flex: none;
+  min-height: 44px;
+  padding: 10px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-s);
+  border: 0;
+  border-radius: 99px;
+  background: var(--fill);
+  color: var(--label);
+  font-family: var(--font-sys);
+  font-size: var(--fs-subhead);
+  letter-spacing: var(--ls-subhead);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform .1s;
+}
+.favpill svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.favpill.on { color: var(--tone3); }
+.favpill.on svg { fill: currentColor; }
+.favpill:active { transform: scale(.96); }
 
 /* the search screen: a title line with Cancel, then the field */
 .search-head { display: flex; align-items: baseline; gap: 12px; }
@@ -2580,6 +2563,32 @@ h1, h2, h3, h4, .btn { font-family: var(--font-display); }
 }
 .map-card .chip.on { background: var(--tint); color: var(--on-tint); }
 .map-card .chip:active { opacity: .7; }
+
+/* the iOS activity spinner: eight blades fading in turn. It takes a chip's
+   glyph slot while that layer is fetching, so it is sized to the glyph. */
+.ios-spinner {
+  position: relative;
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  flex: none;
+}
+.ios-spinner span {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 4.5px;
+  margin-left: -1px;
+  border-radius: 2px;
+  background: currentColor;
+  transform-origin: 50% 7.5px;
+  animation: spinner-fade 0.8s linear infinite;
+}
+@keyframes spinner-fade { from { opacity: 1; } to { opacity: 0.15; } }
+@media (prefers-reduced-motion: reduce) {
+  .ios-spinner span { animation-duration: 2.4s; }
+}
 
 /* the footer link is a real target, not a line of fine print */
 .footlink {
