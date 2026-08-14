@@ -70,7 +70,20 @@ var FR={
   'Loading':'Chargement',
   'of':'sur','sites rated':'emplacements évalués','average':'de moyenne',
   'Saved to your journal':'Enregistré dans votre journal','Saved to your favourites':'Ajouté à vos favoris',
-  'Site':'Emplacement','Every park, campground, site and trail in the guide.':'Chaque parc, terrain, emplacement et sentier du guide.'
+  'Site':'Emplacement','Every park, campground, site and trail in the guide.':'Chaque parc, terrain, emplacement et sentier du guide.',
+  /* guide and park screens */
+  'All parks A to Z':'Tous les parcs de A à Z','All regions':'Toutes les régions',
+  'Wishlist':'Liste de souhaits','Top sites':'Meilleurs emplacements','Stats':'Statistiques',
+  'Campground review':'Avis sur le terrain','Campground':'Terrain de camping',
+  'North':'Nord','Central':'Centre','South':'Sud','East':'Est','West':'Ouest',
+  /* messages */
+  'Backup exported. Keep it somewhere safe.':'Sauvegarde exportée. Gardez-la en lieu sûr.',
+  'Backup restored. Welcome back.':'Sauvegarde restaurée. Bon retour.',
+  'Add a rating or a note first':'Ajoutez d’abord une note ou un commentaire',
+  'Park data could not be loaded.':'Les données des parcs n’ont pas pu être chargées.',
+  /* learn */
+  'Bear safety and food storage':'Sécurité avec les ours et rangement des aliments',
+  'Campfire safety':'Sécurité des feux de camp'
 };
 function TL(s){ return (LANG==='fr'&&FR[s])||s; }
 window.TL=TL;
@@ -628,7 +641,7 @@ function renderParks(){ const box=document.getElementById('parkList'); if(!box) 
         return parkRowHtml(p,st,sub,''); }).join('')+'</div>';
   }
   /* all parks, one flat alphabetical list split by first letter */
-  html+='<div class="seclabel">All parks A to Z</div>'+regionChipsHtml();
+  html+='<div class="seclabel">'+TL('All parks A to Z')+'</div>'+regionChipsHtml();
   const shown=((regionFilter==='All')?visible:visible.filter(p=>broadOf(p)===regionFilter))
     .slice().sort((a,b)=>a.name.localeCompare(b.name));
   const letters=[], byLetter={};
@@ -689,13 +702,13 @@ function openPark(pid){
     <div class="seclabel">${p.dayuse?'Rating':'Park rating'}</div>
     <button class="trail" id="parkRate"><div class="tr-left"><div class="tr-name">Rate this park</div></div><span class="tr-rate" id="prVal" hidden></span></button>
     <div id="parkProg"></div>
-    ${p.dayuse?'':'<div class="seclabel">Campgrounds</div>'}
+    ${p.dayuse?'':'<div class="seclabel">'+TL('Campgrounds')+'</div>'}
     <div id="cgs"></div>
 
-    ${(p.trails&&p.trails.length)?'<div class="seclabel">Trails</div><div id="trails"></div>':''}
-    <div id="wantSection" hidden><div class="seclabel">Wishlist</div><div id="wantList"></div></div>
-    <div id="topSection" hidden><div class="seclabel">Top sites</div><ul class="rank" id="topSites"></ul></div>
-    ${p.dayuse?'':`<div id="statsWrap" hidden><div class="seclabel">Stats</div>
+    ${(p.trails&&p.trails.length)?'<div class="seclabel">'+TL('Trails')+'</div><div id="trails"></div>':''}
+    <div id="wantSection" hidden><div class="seclabel">'+TL('Wishlist')+'</div><div id="wantList"></div></div>
+    <div id="topSection" hidden><div class="seclabel">'+TL('Top sites')+'</div><ul class="rank" id="topSites"></ul></div>
+    ${p.dayuse?'':`<div id="statsWrap" hidden><div class="seclabel">'+TL('Stats')+'</div>
     <details class="statscard"><summary>Park stats<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></summary><div class="statsbody" id="statsBody"></div></details></div>`}
 `;
   renderCgs(); renderTrails(); wireParkControls(); updatePark(); renderGlance();
@@ -759,7 +772,7 @@ document.getElementById('backBtn').addEventListener('click',function(){
     return {app:'site-journal',format:1,appVersion:'0.205',exported:new Date().toISOString(),data:data,photos:photos}; }); }
   function backupName(){ var d=new Date(); function p(n){ return (n<10?'0':'')+n; }
     return 'site-journal-backup-'+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'.json'; }
-  function exportDone(){ showThemeToast('Backup exported. Keep it somewhere safe.'); }
+  function exportDone(){ showThemeToast(TL('Backup exported. Keep it somewhere safe.')); }
   function downloadFile(file){ if(window.Capacitor){ showThemeToast('Sharing is not available right now. Try again.'); return; }
     var url=URL.createObjectURL(file); var a=document.createElement('a'); a.href=url; a.download=file.name;
     document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); },1200); exportDone(); }
@@ -799,7 +812,7 @@ document.getElementById('backBtn').addEventListener('click',function(){
     openDB().then(function(db){ return new Promise(function(res){ var tx=db.transaction(STORE,'readwrite'); var st=tx.objectStore(STORE); st.clear();
       Object.keys(photos).forEach(function(k){ var list=photos[k]; if(Array.isArray(list)&&list.length) st.put({siteId:k,list:list}); });
       tx.oncomplete=function(){ res(); }; tx.onerror=function(){ res(); }; }); }).catch(function(){})
-      .then(function(){ showThemeToast('Backup restored. Welcome back.'); setTimeout(function(){ location.reload(); },900); }); }
+      .then(function(){ showThemeToast(TL('Backup restored. Welcome back.')); setTimeout(function(){ location.reload(); },900); }); }
 })();
 (function(){ /* interactive drag-back: the park page follows your finger and reveals home underneath */
   var vp=document.getElementById('view-park'), vh=document.getElementById('view-parks');
@@ -1009,7 +1022,7 @@ function campCard(it){
 function shareReview(){
   if(!cur.type||!cur.k) return;
   var score=sc(cur.type,cur.k), note=noteOf(cur.type,cur.k), want=(cur.type==='site'&&wantOf(cur.k));
-  if(score==null && !note && !want){ if(typeof showThemeToast==='function') showThemeToast('Add a rating or a note first'); return; }
+  if(score==null && !note && !want){ if(typeof showThemeToast==='function') showThemeToast(TL('Add a rating or a note first')); return; }
   if(!window.OnShare){ if(typeof showThemeToast==='function') showThemeToast('Sharing is not available'); return; }
   var item=reviewShareItem();
   OnShare.share({ card:campCard(item), item:item,
@@ -1620,7 +1633,7 @@ function renderLearn(){
     {t:'Leave no trace', b:`<p>The idea is simple: leave the site the way you would want to find it. Pack out all your trash, including food scraps and dog waste. Use the outhouse, or bury human waste well away from water.</p><p>Keep to the trails and the tent pads so the ground around the site can recover. Do not feed wildlife, and do not carve or nail into trees. Keep the noise down after quiet hours, since sound carries a long way over water at night. A good campsite is one the next person cannot tell you used.</p>`},
     {t:'Wildlife on the roads', b:`<p>Moose and deer are most active at dawn and dusk, and a collision with a moose is dangerous because the body comes through the windshield. Slow down at night in wildlife areas and watch the shoulders for eye-shine.</p><p>If an animal is crossing, brake in a straight line rather than swerving. Turtles cross roads to nest in June, and you can move one across in the direction it was already headed, well clear of traffic. Never pick a snapping turtle up by the tail, which injures its spine.</p>`},
     {t:'Cold water and weather', b:`<p>Cold water is the real risk on Ontario lakes, even in summer. It saps your strength fast, so wear a lifejacket in any boat or canoe and keep one on children at the shore.</p><p>Watch the sky. Afternoon thunderstorms build quickly, and open water is no place to be when one arrives. If you hear thunder, get off the water and away from tall lone trees. Tell someone your route and when you will be back before a longer paddle or hike.</p>`},
-    {t:'Report a bear or a hazard', b:`<p>Seeing a bear, a road hazard, or wildlife on a road? on-wildlife has a quick report that drops it on a shared map for the area, with sensitive spots coarsened for privacy.</p><p><a href="https://katsuma0.github.io/on-wildlife/#/more" target="_blank" rel="noopener">Open on-wildlife to report</a></p>`}
+    {t:'Report a bear or a hazard', b:`<p>Seeing a bear, a road hazard, or wildlife on a road? on-wildlife has a quick report that drops it on a shared map for the area, with sensitive spots coarsened for privacy.</p><p><a class="footlink" href="https://katsuma0.github.io/on-wildlife/#/more" target="_blank" rel="noopener">Open on-wildlife to report</a></p>`}
   ];
   el.innerHTML='<div class="ios-group">'+A.map(function(a){
     return '<details class="cell-details"><summary class="ios-row ios-row--plain"><span class="ios-row-body"><span class="ios-row-title">'+a.t+'</span></span>'+CHEV+'</summary>'+

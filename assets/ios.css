@@ -2550,3 +2550,42 @@ h1, h2, h3, h4, .btn { font-family: var(--font-display); }
   font-size: var(--fs-footnote);
   line-height: var(--lh-footnote);
 }
+
+/* the map toggles are real thumb targets, not label-sized pills */
+.map-card .chip {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 7px 13px;
+  border-radius: 17px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-subhead);
+  line-height: 1;
+  font-weight: 600;
+  color: var(--label);
+  background: var(--fill);
+  border: 0;
+  position: relative;
+  cursor: pointer;
+}
+.map-card .chip::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 44px;
+  transform: translateY(-50%);
+}
+.map-card .chip.on { background: var(--tint); color: var(--on-tint); }
+.map-card .chip:active { opacity: .7; }
+
+/* the footer link is a real target, not a line of fine print */
+.footlink {
+  display: inline-block;
+  padding: 7px 2px;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
