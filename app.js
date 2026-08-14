@@ -30,6 +30,88 @@ function cidOf(pid,cgId){ return pid+'#'+cgId; }
 /* ================= state ================= */
 let state={site:{},campground:{},trail:{}};
 const KEY='ontario-scout-v2';
+var APP_VERSION='0.207';
+
+/* ================= language =================
+   English is the default; French is a choice in More. The dictionary is
+   keyed by the English string, so TL('Journal') is the whole API: a string
+   with no entry simply stays as written. Park and campground names are
+   data, never translated. Static markup carries data-i18n="<english>" and
+   is walked by applyLang() at boot and on every change. */
+var LANG_KEY='oncamp-lang';
+var LANG='en';
+try{ var _lg=localStorage.getItem(LANG_KEY); if(_lg==='fr'||_lg==='en') LANG=_lg; }catch(e){}
+var FR={
+  /* tabs and screens */
+  'Guide':'Guide','Map':'Carte','Journal':'Journal','More':'Plus','Account':'Compte','Photos':'Photos',
+  'Parks':'Parcs','Shared with you':'Partagé avec vous',
+  /* map */
+  'Choose what to show.':'Choisissez quoi afficher.','Tap a pin to open a park.':'Touchez une épingle pour ouvrir un parc.',
+  'Fishing zones':'Zones de pêche','Loading zones':'Chargement des zones',
+  'Zone boundaries need a connection.':'Les limites des zones nécessitent une connexion.',
+  'Map tiles are offline. The park pins still work, tap one to open it.':'Les tuiles de la carte sont hors ligne. Les épingles fonctionnent toujours, touchez-en une pour l’ouvrir.',
+  'Find my location':'Trouver ma position',
+  /* search */
+  'Search':'Recherche','Search parks, campgrounds and sites':'Chercher parcs, terrains et emplacements',
+  'No matches. Try a park, a campground, or Hemlock 112.':'Aucun résultat. Essayez un parc, un terrain ou Hemlock 112.',
+  'Campgrounds':'Terrains de camping','Sites':'Emplacements','Trails':'Sentiers','Cancel':'Annuler',
+  /* account and journal */
+  'Parks visited':'Parcs visités','Ratings':'Évaluations','Average rating':'Note moyenne',
+  'Favourites':'Favoris','Visited':'Visités','Name':'Nom','Your name':'Votre nom',
+  'Parks in guide':'Parcs dans le guide','Version':'Version',
+  'Everything you have rated, park by park.':'Tout ce que vous avez évalué, parc par parc.',
+  'Browse the parks':'Parcourir les parcs',
+  'Rate your first site and it lands here, with every note, star and photo.':'Évaluez votre premier emplacement et il apparaîtra ici, avec chaque note, étoile et photo.',
+  /* settings */
+  'Appearance':'Apparence','Theme':'Thème','Auto':'Auto','Light':'Clair','Dark':'Sombre',
+  'Text size':'Taille du texte','Small':'Petit','Medium':'Moyen','Large':'Grand','Extra large':'Très grand',
+  'Language':'Langue','English':'English','Français':'Français',
+  'Add a favourite':'Ajouter aux favoris','Remove from favourites':'Retirer des favoris',
+  'Loading':'Chargement',
+  'of':'sur','sites rated':'emplacements évalués','average':'de moyenne',
+  'Saved to your journal':'Enregistré dans votre journal','Saved to your favourites':'Ajouté à vos favoris',
+  'Site':'Emplacement','Every park, campground, site and trail in the guide.':'Chaque parc, terrain, emplacement et sentier du guide.',
+  /* guide and park screens */
+  'All parks A to Z':'Tous les parcs de A à Z','All regions':'Toutes les régions',
+  'Wishlist':'Liste de souhaits','Top sites':'Meilleurs emplacements','Stats':'Statistiques',
+  'Campground review':'Avis sur le terrain','Campground':'Terrain de camping',
+  'North':'Nord','Central':'Centre','South':'Sud','East':'Est','West':'Ouest',
+  /* messages */
+  'Backup exported. Keep it somewhere safe.':'Sauvegarde exportée. Gardez-la en lieu sûr.',
+  'Backup restored. Welcome back.':'Sauvegarde restaurée. Bon retour.',
+  'Add a rating or a note first':'Ajoutez d’abord une note ou un commentaire',
+  'Park data could not be loaded.':'Les données des parcs n’ont pas pu être chargées.',
+  /* learn */
+  'Bear safety and food storage':'Sécurité avec les ours et rangement des aliments',
+  'Campfire safety':'Sécurité des feux de camp'
+};
+function TL(s){ return (LANG==='fr'&&FR[s])||s; }
+window.TL=TL;
+function setLang(v){
+  if(v!=='en'&&v!=='fr') return;
+  LANG=v;
+  try{ localStorage.setItem(LANG_KEY,v); }catch(e){}
+  applyLang();
+  renderAppearancePanel();
+  /* redraw whatever is on screen, in place */
+  try{ if(typeof renderAccount==='function') renderAccount(); }catch(e){}
+  try{ if(typeof renderJournal==='function') renderJournal(); }catch(e){}
+  try{ if(typeof fillAboutStats==='function') fillAboutStats(); }catch(e){}
+  try{ if(window.renderCampMapChips) window.renderCampMapChips(); }catch(e){}
+}
+/* translate every tagged node in the static markup */
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    el.textContent=TL(el.getAttribute('data-i18n'));
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el){
+    el.setAttribute('placeholder',TL(el.getAttribute('data-i18n-ph')));
+  });
+  document.querySelectorAll('[data-i18n-aria]').forEach(function(el){
+    el.setAttribute('aria-label',TL(el.getAttribute('data-i18n-aria')));
+  });
+}
 /* fishing regulations live in the sibling on-fishing app; from the iOS shell
    the link opens in Safari (the old bundled fishing/ copy no longer ships) */
 const FISHREG_BASE='https://katsuma0.github.io/on-fishing/';
@@ -150,23 +232,39 @@ function onGSearch(){ const gq=document.getElementById('gq'), q=gq.value;
   // stray keystroke. The functions remain for local testing only.
   if(['forlaurie','for laurie','tolaurie','to laurie'].indexOf(q.trim().toLowerCase())>=0){ renderLaurie(); return; }
   document.getElementById('gsearch').classList.toggle('has',!!q.trim());
-  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList');
-  if(!q.trim()){ rbox.hidden=true; rbox.innerHTML=''; plist.hidden=false; syncAzRail(); return; }
-  plist.hidden=true; rbox.hidden=false; syncAzRail();
+  const rbox=document.getElementById('gresults'), hint=document.getElementById('searchHint');
+  if(!q.trim()){ rbox.hidden=true; rbox.innerHTML=''; if(hint) hint.hidden=false; return; }
+  rbox.hidden=false; if(hint) hint.hidden=true;
   const results=searchAll(q);
-  if(!results.length){ rbox.innerHTML='<div class="gnone">No matches. Try a park, a campground, or Hemlock 112.</div>'; return; }
-  const tagLabel={park:'Park',cg:'Camp',site:'Site',trail:'Trail'};
-  rbox.innerHTML=results.map((r,i)=>`<button class="gresult" data-i="${i}"><span class="tag ${r.type}">${tagLabel[r.type]}</span><span class="grow"><span class="gt">${r.title}</span><span class="gs">${r.sub}</span></span></button>`).join('');
+  if(!results.length){ rbox.innerHTML='<div class="gnone">'+TL('No matches. Try a park, a campground, or Hemlock 112.')+'</div>'; return; }
+  /* grouped by kind, the way Settings answers a search: a small label, then
+     the rows it owns. The ranked order inside each group is left alone. */
+  const groupLabel={park:'Parks',cg:'Campgrounds',site:'Sites',trail:'Trails'};
+  const order=['park','cg','site','trail'];
+  let ghtml='';
+  order.forEach(function(kind){
+    const rows=results.filter(r=>r.type===kind);
+    if(!rows.length) return;
+    ghtml+='<div class="seclabel">'+TL(groupLabel[kind])+'</div><div class="ios-group">';
+    rows.forEach(function(r){
+      const i=results.indexOf(r);
+      ghtml+='<button class="gresult ios-row ios-row--plain" data-i="'+i+'">'+
+        '<span class="ios-row-body"><span class="ios-row-title">'+r.title+'</span>'+
+        '<span class="ios-row-sub">'+r.sub+'</span></span>'+CHEV_RIGHT+'</button>';
+    });
+    ghtml+='</div>';
+  });
+  rbox.innerHTML=ghtml;
   rbox.querySelectorAll('.gresult').forEach(el=>el.addEventListener('click',()=>gotoResult(results[+el.dataset.i])));
 }
 function clearGSearch(){ const gq=document.getElementById('gq'); if(gq) gq.value='';
   const w=document.getElementById('gsearch'); if(w) w.classList.remove('has');
   const rb=document.getElementById('gresults'); if(rb){ rb.hidden=true; rb.innerHTML=''; }
-  const pl=document.getElementById('parkList'); if(pl) pl.hidden=false; syncAzRail(); }
+  const hint=document.getElementById('searchHint'); if(hint) hint.hidden=false; }
 function esc(x){ return String(x).replace(/</g,'&lt;'); }
 function renderConsole(cmd,pairs){
-  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList');
-  plist.hidden=true; rbox.hidden=false;
+  const rbox=document.getElementById('gresults');
+  rbox.hidden=false;
   rbox.innerHTML='<div class="dbg"><div class="dhead">&gt; '+esc(cmd)+'</div>'+
     pairs.map(p=>'<div class="drow"><span class="dk">'+esc(p[0])+'</span><span class="dv">'+esc(p[1])+'</span></div>').join('')+
     '</div>';
@@ -184,8 +282,8 @@ function renderDebug(){
   renderConsole('debugsearch',pairs);
 }
 function renderDummyCard(msg){
-  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList');
-  plist.hidden=true; rbox.hidden=false;
+  const rbox=document.getElementById('gresults');
+  rbox.hidden=false;
   rbox.innerHTML='<div class="dbg"><div class="dhead">&gt; dummydata</div>'
     +'<div class="drow"><span class="dk">status</span><span class="dv">'+esc(msg||'ready, nothing planted')+'</span></div>'
     +'<button class="dummybtn" id="dummyGo">'+(msg?'Plant again, reshuffled':'Plant dummy data')+'</button></div>';
@@ -193,8 +291,8 @@ function renderDummyCard(msg){
   if(go) go.addEventListener('click',()=>{ buzz(9); const m=plantDummy(); renderDummyCard(m); });
 }
 function renderHundCard(msg){
-  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList');
-  plist.hidden=true; rbox.hidden=false;
+  const rbox=document.getElementById('gresults');
+  rbox.hidden=false;
   rbox.innerHTML='<div class="dbg"><div class="dhead">&gt; dummyhundop</div>'
     +'<div class="drow"><span class="dk">status</span><span class="dv">'+esc(msg||'ready, overwrites every rating')+'</span></div>'
     +'<button class="dummybtn" id="hundGo">'+(msg?'Run again':'Max everything to 5/5')+'</button></div>';
@@ -202,8 +300,8 @@ function renderHundCard(msg){
   if(go) go.addEventListener('click',()=>{ buzz(12); const m=plantHund(); renderHundCard(m); });
 }
 function renderLaurie(){
-  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList');
-  plist.hidden=true; rbox.hidden=false;
+  const rbox=document.getElementById('gresults');
+  rbox.hidden=false;
   rbox.innerHTML='<div class="dedic">'
     +'<div class="d-for">For Laurie</div>'
     +'<p>who introduced us to Bowser, the famous snapping turtle of Gurd Lake at Grundy.</p>'
@@ -214,8 +312,8 @@ function renderLaurie(){
   buzz(6);
 }
 function renderZeroCard(msg){
-  const rbox=document.getElementById('gresults'), plist=document.getElementById('parkList');
-  plist.hidden=true; rbox.hidden=false;
+  const rbox=document.getElementById('gresults');
+  rbox.hidden=false;
   rbox.innerHTML='<div class="dbg"><div class="dhead">&gt; -dummyhundop</div>'
     +'<div class="drow"><span class="dk">status</span><span class="dv">'+esc(msg||'ready, the worst season imaginable')+'</span></div>'
     +'<button class="dummybtn" id="zeroGo" style="background:var(--red)">'+(msg?'Run again':'Zero everything')+'</button></div>';
@@ -444,11 +542,74 @@ function regionChipsHtml(){
     return '<button class="fchip'+(r===regionFilter?' on':'')+'" type="button" data-region="'+r+'">'+
       '<span class="fct">'+(r==='All'?'All regions':r)+'</span></button>'; }).join('')+'</div>';
 }
+
+/* ================= favourites =================
+   An explicit list, kept apart from the derived Visited list: a favourite
+   is something the reader chose, a visit is something the app noticed.
+   Parks and individual campsites can both be favourited. */
+var FAV_KEY='oncamp-favs';
+var FAVS={parks:{},sites:{}};
+try{
+  var _fv=JSON.parse(localStorage.getItem(FAV_KEY)||'null');
+  if(_fv&&typeof _fv==='object'){ FAVS.parks=_fv.parks||{}; FAVS.sites=_fv.sites||{}; }
+}catch(e){}
+function saveFavs(){ try{ localStorage.setItem(FAV_KEY,JSON.stringify(FAVS)); }catch(e){} }
+function isFav(kind,id){ return !!(FAVS[kind]&&FAVS[kind][id]); }
+function toggleFav(kind,id){
+  if(!FAVS[kind]) FAVS[kind]={};
+  if(FAVS[kind][id]) delete FAVS[kind][id]; else FAVS[kind][id]=1;
+  saveFavs();
+  return isFav(kind,id);
+}
+/* the heart itself: a real button, 44px of target, filled when it is on */
+function favBtnHtml(kind,id){
+  var on=isFav(kind,id);
+  return '<span class="favbtn'+(on?' on':'')+'" role="button" tabindex="0"'+
+    ' data-fav="'+kind+'" data-favid="'+String(id).replace(/"/g,'&quot;')+'"'+
+    ' aria-pressed="'+(on?'true':'false')+'"'+
+    ' aria-label="'+(on?TL('Remove from favourites'):TL('Add a favourite'))+'">'+
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 4.6 13.3a4.6 4.6 0 1 1 6.5-6.5l.9.9.9-.9a4.6 4.6 0 1 1 6.5 6.5z"/></svg></span>';
+}
+/* one delegated listener: hearts live inside rows that are themselves buttons */
+document.addEventListener('click',function(ev){
+  var h=ev.target.closest?ev.target.closest('[data-fav]'):null;
+  if(!h) return;
+  ev.preventDefault(); ev.stopPropagation();
+  toggleFav(h.getAttribute('data-fav'),h.getAttribute('data-favid'));
+  buzz(6);
+  renderParks();
+},true);
+
+
+/* favourited campsites, listed under the favourite parks. The stored id is
+   the same key the ratings use, so a favourite survives every re-render. */
+function favSiteRows(visible){
+  var ids=Object.keys(FAVS.sites||{});
+  if(!ids.length) return '';
+  var rows='';
+  visible.forEach(function(p){
+    (p.campgrounds||[]).forEach(function(c){
+      cgSites(c).forEach(function(s){
+        var k=keyOf(p.id,c.id,s);
+        if(!isFav('sites',k)) return;
+        var score=sc('site',k);
+        var val=(score!=null)?score+'/5':'';
+        rows+='<button class="ios-row ios-row--plain" type="button" data-park="'+p.id+'" data-cg="'+c.id+'">'+
+          '<span class="ios-row-body"><span class="ios-row-title">'+TL('Site')+' '+s+'</span>'+
+          '<span class="ios-row-sub">'+p.name+' · '+c.id+'</span></span>'+
+          (val?'<span class="ios-row-value tnum">'+val+'</span>':'')+
+          favBtnHtml('sites',k)+CHEV_RIGHT+'</button>';
+      });
+    });
+  });
+  return rows;
+}
+
 function parkRowHtml(p,st,sub,value){
   return '<button class="ios-row ios-row--plain" type="button" data-park="'+p.id+'">'+
     '<span class="ios-row-body"><span class="ios-row-title">'+p.name+'</span>'+
     (sub?'<span class="ios-row-sub">'+sub+'</span>':'')+'</span>'+
-    (value?'<span class="ios-row-value tnum">'+value+'</span>':'')+CHEV_RIGHT+'</button>';
+    (value?'<span class="ios-row-value tnum">'+value+'</span>':'')+favBtnHtml('parks',p.id)+CHEV_RIGHT+'</button>';
 }
 function renderParks(){ const box=document.getElementById('parkList'); if(!box) return; box.innerHTML='';
   if(!PARKS.length){ box.innerHTML=`<div class="empty" style="border:1px solid var(--separator);border-radius:var(--r);background:var(--bg-elevated);padding:26px 18px">Park data could not be loaded.<br>Check your connection and reopen the app.</div>`; renderAzRail([]); return; }
@@ -456,19 +617,31 @@ function renderParks(){ const box=document.getElementById('parkList'); if(!box) 
   const info={}; visible.forEach(p=>{ info[p.id]=parkTouchInfo(p); });
   const ts=state.touched||{};
   let html='';
-  /* my parks: anything with a rating, wishlist, note or photo */
+  /* favourites: the parks and campsites the reader picked out */
+  const favParks=visible.filter(p=>isFav('parks',p.id))
+    .sort((a,b)=>a.name.localeCompare(b.name));
+  const favSites=favSiteRows(visible);
+  if(favParks.length||favSites){
+    html+='<div class="seclabel">'+TL('Favourites')+'</div><div class="ios-group" id="favParks">'+
+      favParks.map(p=>{ const st=info[p.id];
+        const sub=st.rated>0
+          ?st.rated+' '+TL('of')+' '+st.total+' '+TL('sites rated')+' · '+st.avg.toFixed(1)+' '+TL('average')
+          :TL('Saved to your favourites');
+        return parkRowHtml(p,st,sub,''); }).join('')+favSites+'</div>';
+  }
+  /* visited: anything with a rating, wishlist, note or photo */
   const mine=visible.filter(p=>info[p.id].touched)
     .sort((a,b)=>((ts[b.id]||0)-(ts[a.id]||0))||a.name.localeCompare(b.name));
   if(mine.length){
-    html+='<div class="seclabel">My parks</div><div class="ios-group" id="myParks">'+
+    html+='<div class="seclabel">'+TL('Visited')+'</div><div class="ios-group" id="myParks">'+
       mine.map(p=>{ const st=info[p.id];
         const sub=st.rated>0
-          ?st.rated+' of '+st.total+' sites rated · '+st.avg.toFixed(1)+' average'
-          :'Saved to your journal';
+          ?st.rated+' '+TL('of')+' '+st.total+' '+TL('sites rated')+' · '+st.avg.toFixed(1)+' '+TL('average')
+          :TL('Saved to your journal');
         return parkRowHtml(p,st,sub,''); }).join('')+'</div>';
   }
   /* all parks, one flat alphabetical list split by first letter */
-  html+='<div class="seclabel">All parks A to Z</div>'+regionChipsHtml();
+  html+='<div class="seclabel">'+TL('All parks A to Z')+'</div>'+regionChipsHtml();
   const shown=((regionFilter==='All')?visible:visible.filter(p=>broadOf(p)===regionFilter))
     .slice().sort((a,b)=>a.name.localeCompare(b.name));
   const letters=[], byLetter={};
@@ -529,13 +702,13 @@ function openPark(pid){
     <div class="seclabel">${p.dayuse?'Rating':'Park rating'}</div>
     <button class="trail" id="parkRate"><div class="tr-left"><div class="tr-name">Rate this park</div></div><span class="tr-rate" id="prVal" hidden></span></button>
     <div id="parkProg"></div>
-    ${p.dayuse?'':'<div class="seclabel">Campgrounds</div>'}
+    ${p.dayuse?'':'<div class="seclabel">'+TL('Campgrounds')+'</div>'}
     <div id="cgs"></div>
 
-    ${(p.trails&&p.trails.length)?'<div class="seclabel">Trails</div><div id="trails"></div>':''}
-    <div id="wantSection" hidden><div class="seclabel">Wishlist</div><div id="wantList"></div></div>
-    <div id="topSection" hidden><div class="seclabel">Top sites</div><ul class="rank" id="topSites"></ul></div>
-    ${p.dayuse?'':`<div id="statsWrap" hidden><div class="seclabel">Stats</div>
+    ${(p.trails&&p.trails.length)?'<div class="seclabel">'+TL('Trails')+'</div><div id="trails"></div>':''}
+    <div id="wantSection" hidden><div class="seclabel">'+TL('Wishlist')+'</div><div id="wantList"></div></div>
+    <div id="topSection" hidden><div class="seclabel">'+TL('Top sites')+'</div><ul class="rank" id="topSites"></ul></div>
+    ${p.dayuse?'':`<div id="statsWrap" hidden><div class="seclabel">'+TL('Stats')+'</div>
     <details class="statscard"><summary>Park stats<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></summary><div class="statsbody" id="statsBody"></div></details></div>`}
 `;
   renderCgs(); renderTrails(); wireParkControls(); updatePark(); renderGlance();
@@ -599,7 +772,7 @@ document.getElementById('backBtn').addEventListener('click',function(){
     return {app:'site-journal',format:1,appVersion:'0.205',exported:new Date().toISOString(),data:data,photos:photos}; }); }
   function backupName(){ var d=new Date(); function p(n){ return (n<10?'0':'')+n; }
     return 'site-journal-backup-'+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'.json'; }
-  function exportDone(){ showThemeToast('Backup exported. Keep it somewhere safe.'); }
+  function exportDone(){ showThemeToast(TL('Backup exported. Keep it somewhere safe.')); }
   function downloadFile(file){ if(window.Capacitor){ showThemeToast('Sharing is not available right now. Try again.'); return; }
     var url=URL.createObjectURL(file); var a=document.createElement('a'); a.href=url; a.download=file.name;
     document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); },1200); exportDone(); }
@@ -639,7 +812,7 @@ document.getElementById('backBtn').addEventListener('click',function(){
     openDB().then(function(db){ return new Promise(function(res){ var tx=db.transaction(STORE,'readwrite'); var st=tx.objectStore(STORE); st.clear();
       Object.keys(photos).forEach(function(k){ var list=photos[k]; if(Array.isArray(list)&&list.length) st.put({siteId:k,list:list}); });
       tx.oncomplete=function(){ res(); }; tx.onerror=function(){ res(); }; }); }).catch(function(){})
-      .then(function(){ showThemeToast('Backup restored. Welcome back.'); setTimeout(function(){ location.reload(); },900); }); }
+      .then(function(){ showThemeToast(TL('Backup restored. Welcome back.')); setTimeout(function(){ location.reload(); },900); }); }
 })();
 (function(){ /* interactive drag-back: the park page follows your finger and reveals home underneath */
   var vp=document.getElementById('view-park'), vh=document.getElementById('view-parks');
@@ -849,7 +1022,7 @@ function campCard(it){
 function shareReview(){
   if(!cur.type||!cur.k) return;
   var score=sc(cur.type,cur.k), note=noteOf(cur.type,cur.k), want=(cur.type==='site'&&wantOf(cur.k));
-  if(score==null && !note && !want){ if(typeof showThemeToast==='function') showThemeToast('Add a rating or a note first'); return; }
+  if(score==null && !note && !want){ if(typeof showThemeToast==='function') showThemeToast(TL('Add a rating or a note first')); return; }
   if(!window.OnShare){ if(typeof showThemeToast==='function') showThemeToast('Sharing is not available'); return; }
   var item=reviewShareItem();
   OnShare.share({ card:campCard(item), item:item,
@@ -860,7 +1033,7 @@ function shareReview(){
 
 /* ---- receive a shared review (#/shared/<data>) ---- */
 function showShared(item){
-  ['view-parks','view-park','view-map','view-journal','view-more','view-account','view-photos'].forEach(function(id){ var el=document.getElementById(id); if(el) el.hidden=true; });
+  ['view-parks','view-park','view-map','view-journal','view-more','view-account','view-photos','view-search'].forEach(function(id){ var el=document.getElementById(id); if(el) el.hidden=true; });
   var sec=document.getElementById('view-shared'); if(!sec) return;
   sec.hidden=false;
   var tb=document.getElementById('tabbar');
@@ -1158,6 +1331,8 @@ function setAppearance(key,val){
      the entry animation never replays; the next tab switch clears it */
   document.querySelectorAll('#views > section:not([hidden])').forEach(function(el){ el.classList.add('no-anim'); });
   applyAppearance(); renderAppearancePanel();
+  /* the map is built once and lives in a hidden tab, so it is told directly */
+  try{ if(window.refreshCampMapTheme) window.refreshCampMapTheme(); }catch(e){}
 }
 function applyAppearance(){
   var a=getAppearance(), d=document.documentElement;
@@ -1179,23 +1354,24 @@ function apSeg(key,opts,cur,label){
 function renderAppearancePanel(){
   var box=document.getElementById('appearancePanel'); if(!box) return;
   var a=getAppearance();
-  /* theme, glass and text size, nothing else: the look itself is not a
-     choice here, this app simply wears its own colours and type */
+  /* theme and text size, nothing else: the look itself is not a choice
+     here, this app simply wears its own colours and type */
   var html='';
-  html+='<div class="ios-row ios-row--plain ap-row"><span class="ios-row-body"><span class="ios-row-title">Theme</span></span>'
-    +apSeg('theme',[['auto','Auto'],['light','Light'],['dark','Dark']],a.theme,'Theme')+'</div>';
-  html+='<button type="button" class="ios-row ios-row--plain ap-row" id="glassRow" role="switch"'
-    +' aria-checked="'+(a.glass==='on'?'true':'false')+'">'
-    +'<span class="ios-row-body"><span class="ios-row-title">Glass</span>'
-    +'<span class="ios-row-sub">Frosted bars and buttons</span></span>'
-    +'<span class="ios-switch" aria-hidden="true"><i></i></span></button>';
-  html+='<div class="ios-row ios-row--plain ap-row"><span class="ios-row-body"><span class="ios-row-title">Text size</span></span>'
-    +apSeg('size',[['s','S','Small'],['m','M','Medium'],['l','L','Large'],['xl','XL','Extra large']],a.size,'Text size')+'</div>';
+  html+='<div class="ios-row ios-row--plain ap-row"><span class="ios-row-body"><span class="ios-row-title">'+TL('Theme')+'</span></span>'
+    +apSeg('theme',[['auto',TL('Auto')],['light',TL('Light')],['dark',TL('Dark')]],a.theme,TL('Theme'))+'</div>';
+  html+='<div class="ios-row ios-row--plain ap-row"><span class="ios-row-body"><span class="ios-row-title">'+TL('Text size')+'</span></span>'
+    +apSeg('size',[['s','S',TL('Small')],['m','M',TL('Medium')],['l','L',TL('Large')],['xl','XL',TL('Extra large')]],a.size,TL('Text size'))+'</div>';
+  /* language is this app's own choice, not a shared appearance key */
+  html+='<div class="ios-row ios-row--plain ap-row"><span class="ios-row-body"><span class="ios-row-title">'+TL('Language')+'</span></span>'
+    +'<div class="segmented ap-seg" role="group" aria-label="'+TL('Language')+'">'
+    +'<button type="button" class="seg-opt'+(LANG==='en'?' on':'')+'" data-lang="en" aria-pressed="'+(LANG==='en'?'true':'false')+'">English</button>'
+    +'<button type="button" class="seg-opt'+(LANG==='fr'?' on':'')+'" data-lang="fr" aria-pressed="'+(LANG==='fr'?'true':'false')+'">Français</button>'
+    +'</div></div>';
   box.innerHTML=html;
+  box.querySelectorAll('[data-lang]').forEach(function(b){
+    b.addEventListener('click',function(){ setLang(b.dataset.lang); buzz(6); }); });
   box.querySelectorAll('[data-ap]').forEach(function(b){
     b.addEventListener('click',function(){ setAppearance(b.dataset.ap,b.dataset.val); buzz(6); }); });
-  var gr=document.getElementById('glassRow');
-  if(gr) gr.addEventListener('click',function(){ setAppearance('glass',a.glass==='on'?'off':'on'); buzz(6); });
 }
 /* ---- one-time migration: single Algonquin -> split campground parks ---- */
 var ALG_CG_MAP={'Tea Lake':'algonquintea','Canisbay Lake':'algonquincanisbay','Mew Lake':'algonquinmew','Lake of Two Rivers':'algonquintworivers','Pog Lake':'algonquinpog','Kearney Lake':'algonquinkearney','Raccoon Lake':'algonquinraccoon','Rock Lake':'algonquinrock','Achray':'algonquinachray'};
@@ -1235,12 +1411,11 @@ function fillAboutStats(){
   PARKS.forEach(function(p){ (p.campgrounds||[]).forEach(function(c){ cgs++; sites+=cgSites(c).length; }); });
   function row(k,v){ return '<div class="ios-row ios-row--plain"><span class="ios-row-body"><span class="ios-row-title">'+k+'</span></span>'+
     '<span class="ios-row-value tnum">'+v+'</span></div>'; }
-  var ver=document.getElementById('verBtn');
-  el.innerHTML=row('Parks in guide',parks)+row('Campgrounds',cgs)+row('Sites',sites.toLocaleString())+
-    '<button class="ios-row ios-row--plain" id="aboutVerBtn" type="button"><span class="ios-row-body"><span class="ios-row-title">Version</span></span>'+
-    '<span class="ios-row-value tnum">'+(ver?ver.textContent:'')+'</span></button>'+
-    '<a class="ios-row ios-row--plain" href="https://katsuma0.github.io" target="_blank" rel="noopener">'+
-    '<span class="ios-row-body"><span class="ios-row-title">Made by Katsuma Onishi</span></span>'+CHEV_RIGHT+'</a>';
+  el.innerHTML=row(TL('Parks in guide'),parks)+row(TL('Campgrounds'),cgs)+row(TL('Sites'),sites.toLocaleString())+
+    '<button class="ios-row ios-row--plain" id="aboutVerBtn" type="button"><span class="ios-row-body"><span class="ios-row-title">'+TL('Version')+'</span></span>'+
+    '<span class="ios-row-value tnum">v'+APP_VERSION+'</span></button>'+
+    '<a class="ios-row ios-row--plain" href="https://katsuma.ca/" target="_blank" rel="noopener">'+
+    '<span class="ios-row-body"><span class="ios-row-title">katsuma.ca</span></span>'+CHEV_RIGHT+'</a>';
   var vb=document.getElementById('aboutVerBtn');
   if(vb) vb.addEventListener('click',function(){ buzz(6); openVersions(); });
 }
@@ -1279,8 +1454,8 @@ function renderAccount(){
   var st=accountStats();
   var e1=document.getElementById('stParks'); if(e1) e1.textContent=st.parks;
   var e2=document.getElementById('stSites'); if(e2) e2.textContent=st.sites;
-  var vb=document.getElementById('verBtn'), av=document.getElementById('acctVersion');
-  if(av&&vb) av.textContent=vb.textContent;
+  var av=document.getElementById('acctVersion');
+  if(av) av.textContent='v'+APP_VERSION;
   countPhotosSaved().then(function(n){
     var e3=document.getElementById('stPhotos'); if(e3) e3.textContent=n;
     var pc=document.getElementById('acctPhotoCount'); if(pc) pc.textContent=n||''; });
@@ -1311,10 +1486,14 @@ async function renderPhotosScreen(){
       box.appendChild(b); }); } }
 (function(){
   var ab=document.getElementById('avatarBtn'), rb=document.getElementById('rateSiteBtn'), sb=document.getElementById('searchBtn');
-  function toSearch(){ showTab('guide'); var q=document.getElementById('gq'); if(q){ try{ q.focus(); }catch(e){} } }
+  /* its own screen, the way iOS Settings does it: the field is there but
+     focus stays manual, because autofocusing pans the page on iOS Safari */
+  function toSearch(){ showTab('search'); }
   if(ab) ab.addEventListener('click',function(){ buzz(6); showTab('account'); });
   if(rb) rb.addEventListener('click',function(){ buzz(6); toSearch(); });
   if(sb) sb.addEventListener('click',function(){ buzz(6); toSearch(); });
+  var sc=document.getElementById('searchCancel');
+  if(sc) sc.addEventListener('click',function(){ buzz(6); clearGSearch(); showTab(LAST_TAB_BEFORE_SEARCH||'guide'); });
   var pb=document.getElementById('acctPhotosBtn');
   if(pb) pb.addEventListener('click',function(){ buzz(6); showTab('photos'); });
   var bk=document.getElementById('photosBack');
@@ -1366,9 +1545,9 @@ function renderJournal(){ var box=document.getElementById('journalBody'); if(!bo
   var NOTE_G='<svg aria-hidden="true"><use href="assets/icons.svg#notebook"/></svg>';
   var PHOTO_G='<svg aria-hidden="true"><use href="assets/icons.svg#image"/></svg>';
   var html='<div class="acct-stats">'
-    +'<div class="acct-stat"><b class="tnum">'+s.parks+'</b><span>Parks touched</span></div>'
-    +'<div class="acct-stat"><b class="tnum">'+s.sites+'</b><span>Sites rated</span></div>'
-    +'<div class="acct-stat"><b class="tnum">'+(s.n?s.avg.toFixed(1):'0')+'</b><span>Average given</span></div>'
+    +'<div class="acct-stat"><b class="tnum">'+s.parks+'</b><span>'+TL('Parks visited')+'</span></div>'
+    +'<div class="acct-stat"><b class="tnum">'+s.sites+'</b><span>'+TL('Ratings')+'</span></div>'
+    +'<div class="acct-stat"><b class="tnum">'+(s.n?s.avg.toFixed(1):'0')+'</b><span>'+TL('Average rating')+'</span></div>'
     +'</div>';
   var ORDER={campground:0,site:1,trail:2};
   pids.forEach(function(pid){ var p=PARK_BY_ID[pid], list=byPark[pid];
@@ -1390,8 +1569,9 @@ function renderJournal(){ var box=document.getElementById('journalBody'); if(!bo
 }
 
 /* ---- shared footer tab bar ---- */
-var TAB_SECTIONS={guide:'view-parks',map:'view-map',journal:'view-journal',more:'view-more',account:'view-account',photos:'view-photos'};
-var ALL_VIEWS=['view-parks','view-park','view-map','view-journal','view-more','view-shared','view-account','view-photos'];
+var LAST_TAB_BEFORE_SEARCH='guide';
+var TAB_SECTIONS={guide:'view-parks',map:'view-map',journal:'view-journal',more:'view-more',account:'view-account',photos:'view-photos',search:'view-search'};
+var ALL_VIEWS=['view-parks','view-park','view-map','view-journal','view-more','view-shared','view-account','view-photos','view-search'];
 var learnRendered=false;
 function setHeaderHidden(h){ var el=document.getElementById('iosHeader'); if(el) el.hidden=!!h; }
 /* blended headers: transparent at rest, frosted only once content actually runs
@@ -1410,6 +1590,7 @@ function setHeaderHidden(h){ var el=document.getElementById('iosHeader'); if(el)
 })();
 function showTab(tab){
   if(!TAB_SECTIONS[tab]) tab='guide';
+  if(tab!=='search') LAST_TAB_BEFORE_SEARCH=tab;
   ALL_VIEWS.forEach(function(id){ var el=document.getElementById(id); if(el) el.hidden=true; });
   var target=document.getElementById(tab==='guide'?'view-parks':TAB_SECTIONS[tab]);
   if(target){
@@ -1452,7 +1633,7 @@ function renderLearn(){
     {t:'Leave no trace', b:`<p>The idea is simple: leave the site the way you would want to find it. Pack out all your trash, including food scraps and dog waste. Use the outhouse, or bury human waste well away from water.</p><p>Keep to the trails and the tent pads so the ground around the site can recover. Do not feed wildlife, and do not carve or nail into trees. Keep the noise down after quiet hours, since sound carries a long way over water at night. A good campsite is one the next person cannot tell you used.</p>`},
     {t:'Wildlife on the roads', b:`<p>Moose and deer are most active at dawn and dusk, and a collision with a moose is dangerous because the body comes through the windshield. Slow down at night in wildlife areas and watch the shoulders for eye-shine.</p><p>If an animal is crossing, brake in a straight line rather than swerving. Turtles cross roads to nest in June, and you can move one across in the direction it was already headed, well clear of traffic. Never pick a snapping turtle up by the tail, which injures its spine.</p>`},
     {t:'Cold water and weather', b:`<p>Cold water is the real risk on Ontario lakes, even in summer. It saps your strength fast, so wear a lifejacket in any boat or canoe and keep one on children at the shore.</p><p>Watch the sky. Afternoon thunderstorms build quickly, and open water is no place to be when one arrives. If you hear thunder, get off the water and away from tall lone trees. Tell someone your route and when you will be back before a longer paddle or hike.</p>`},
-    {t:'Report a bear or a hazard', b:`<p>Seeing a bear, a road hazard, or wildlife on a road? on-wildlife has a quick report that drops it on a shared map for the area, with sensitive spots coarsened for privacy.</p><p><a href="https://katsuma0.github.io/on-wildlife/#/more" target="_blank" rel="noopener">Open on-wildlife to report</a></p>`}
+    {t:'Report a bear or a hazard', b:`<p>Seeing a bear, a road hazard, or wildlife on a road? on-wildlife has a quick report that drops it on a shared map for the area, with sensitive spots coarsened for privacy.</p><p><a class="footlink" href="https://katsuma0.github.io/on-wildlife/#/more" target="_blank" rel="noopener">Open on-wildlife to report</a></p>`}
   ];
   el.innerHTML='<div class="ios-group">'+A.map(function(a){
     return '<details class="cell-details"><summary class="ios-row ios-row--plain"><span class="ios-row-body"><span class="ios-row-title">'+a.t+'</span></span>'+CHEV+'</summary>'+
@@ -1491,13 +1672,13 @@ function openVersions(){ settingsBackdrop.classList.add('on'); const vs=document
 function closeVersions(){ const vs=document.getElementById('versionsSheet'); settingsBackdrop.classList.remove('on'); vs.classList.remove('on'); vs.style.transform=''; unlockScroll(); }
 settingsBackdrop.addEventListener('click',closeVersions);
 makeSheetSwipe(document.getElementById('versionsSheet'),closeVersions);
-document.getElementById('verBtn').addEventListener('click',function(e){ e.stopPropagation(); buzz(6); openVersions(); });
+/* the version chip left the title; version history opens from the About row */
 makeSheetSwipe(sheet,closeSheet);
 
 
 /* ================= boot ================= */
 (async function(){
-  applyAppearance();
+  applyAppearance(); applyLang();
   buildDots(); load(); migrateAlgonquin(); migrateScale5();
   loadParksEmbedded(); buildSearchIndex(); wireGlobalSearch(); renderAppearancePanel(); renderAvatar();
   renderParks();                 /* instant first paint, no network wait */

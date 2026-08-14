@@ -2431,3 +2431,161 @@ h1, h2, h3, h4, .btn { font-family: var(--font-display); }
    restart the entry animation; the next tab switch clears it */
 #views > section.no-anim,
 :root:not([data-glass="off"]) #views > section.no-anim:not(.view-anim):not(.view-out) { animation: none; }
+
+/* =====================================================================
+   polish round: a quiet map, an iOS spinner, native breathing room
+   ===================================================================== */
+
+/* Chrome over the map is solid, never frosted: blurring live tiles behind
+   a bar is what costs frames while panning a phone. */
+.map-wrap .map-card {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 600;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .14);
+}
+.map-wrap .map-card::-webkit-scrollbar { display: none; }
+.map-card .chip { flex: 0 0 auto; }
+.map-note,
+:root:not([data-glass="off"]) .map-note {
+  top: 66px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card);
+  color: var(--label);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .14);
+}
+.map-note[hidden] { display: none; }
+.map-fabs .fab,
+:root:not([data-glass="off"]) .map-fabs .fab {
+  background: var(--card);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* the iOS activity spinner: eight blades fading in turn */
+.ios-spinner {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  flex: none;
+}
+.ios-spinner span {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2.5px;
+  height: 6px;
+  margin-left: -1.25px;
+  border-radius: 2px;
+  background: var(--label-2);
+  transform-origin: 50% 10px;
+  animation: spinner-fade 0.8s linear infinite;
+}
+@keyframes spinner-fade { from { opacity: 1; } to { opacity: 0.15; } }
+
+/* the account avatar breathes before the name card, and the stat row
+   breathes before the rows under it */
+.acct-hero { margin-bottom: 18px; }
+.acct-stats { margin-bottom: 22px; }
+
+/* the favourite heart: small glyph, full size target, filled when it is on */
+.favbtn {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  margin: -6px 2px -6px 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--label-3);
+  position: relative;
+}
+.favbtn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+}
+.favbtn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.favbtn.on { color: var(--tone3); }
+.favbtn.on svg { fill: currentColor; stroke: currentColor; }
+.favbtn:active { background: var(--fill); }
+
+/* the search screen: a title line with Cancel, then the field */
+.search-head { display: flex; align-items: baseline; gap: 12px; }
+.search-head .screen-title { flex: 1; }
+.search-cancel {
+  flex: none;
+  background: none;
+  border: 0;
+  padding: 6px 2px;
+  min-height: 44px;
+  color: var(--tint);
+  font: inherit;
+  font-size: var(--fs-body);
+  cursor: pointer;
+}
+.search-cancel:active { opacity: .5; }
+.search-hint {
+  margin: 14px 4px;
+  color: var(--label-2);
+  font-size: var(--fs-footnote);
+  line-height: var(--lh-footnote);
+}
+
+/* the map toggles are real thumb targets, not label-sized pills */
+.map-card .chip {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 7px 13px;
+  border-radius: 17px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-subhead);
+  line-height: 1;
+  font-weight: 600;
+  color: var(--label);
+  background: var(--fill);
+  border: 0;
+  position: relative;
+  cursor: pointer;
+}
+.map-card .chip::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 44px;
+  transform: translateY(-50%);
+}
+.map-card .chip.on { background: var(--tint); color: var(--on-tint); }
+.map-card .chip:active { opacity: .7; }
+
+/* the footer link is a real target, not a line of fine print */
+.footlink {
+  display: inline-block;
+  padding: 7px 2px;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

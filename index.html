@@ -64,22 +64,16 @@
 <main id="views">
 <section id="view-parks">
   <div class="appbar">
-    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-site</h1><button class="ver" id="verBtn">v0.206</button></div>
+    <div class="titlebar"><h1 id="appTitle" style="cursor:pointer;-webkit-tap-highlight-color:transparent">on-site</h1></div>
   </div>
   <div class="wrap">
-    <div class="gsearch" id="gsearch">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="gq" inputmode="search" autocomplete="off" placeholder="Parks, sites, trails, or a fish">
-      <button class="gclear" id="gclear" aria-label="Clear search">✕</button>
-    </div>
-    <div id="gresults" class="gresults" hidden></div>
     <div id="parkList"></div>
 
   </div>
   <div class="azrail" id="azRail" aria-label="Jump to a letter" hidden></div>
   <footer>
     Everything you save stays on this device.<br>
-    Created by <a href="https://katsuma0.github.io" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Katsuma Onishi</a> · <a href="https://katsuma.ca/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px">katsuma.ca</a>
+    <a class="footlink" href="https://katsuma.ca/" target="_blank" rel="noopener">katsuma.ca</a>
   </footer>
 </section>
 
@@ -90,28 +84,45 @@
   <div class="wrap" id="parkBody"></div>
   <footer>
     Everything you save stays on this device.<br>
-    Created by <a href="https://katsuma0.github.io" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Katsuma Onishi</a> · <a href="https://katsuma.ca/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px">katsuma.ca</a>
+    <a class="footlink" href="https://katsuma.ca/" target="_blank" rel="noopener">katsuma.ca</a>
     <br><br>
     <button class="resetlink" id="resetBtnPark"></button>
   </footer>
 </section>
 
+<section id="view-search" class="tabscreen" hidden>
+  <div class="wrap">
+    <div class="search-head">
+      <h1 class="screen-title" data-i18n="Search">Search</h1>
+      <button class="search-cancel" id="searchCancel" type="button" data-i18n="Cancel">Cancel</button>
+    </div>
+    <div class="gsearch" id="gsearch">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="gq" inputmode="search" autocomplete="off" placeholder="Search parks, campgrounds and sites" data-i18n-ph="Search parks, campgrounds and sites" aria-label="Search parks, campgrounds and sites">
+      <button class="gclear" id="gclear" aria-label="Clear search">✕</button>
+    </div>
+    <div id="gresults" class="gresults" hidden></div>
+    <p class="search-hint" id="searchHint" data-i18n="Every park, campground, site and trail in the guide.">Every park, campground, site and trail in the guide.</p>
+  </div>
+</section>
+
 <section id="view-map" class="tabscreen" hidden>
   <div class="map-wrap">
     <div id="campMap"></div>
-    <div class="map-note" id="campMapNote">Tap a pin to open its park.</div>
+    <div class="map-card" id="campMapChips"></div>
+    <div class="map-note" id="campMapNote" data-i18n="Choose what to show.">Choose what to show.</div>
     <div class="map-fabs"><button class="fab" id="mapLocate" type="button" aria-label="Find my location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/></svg></button></div>
   </div>
 </section>
 
 <section id="view-journal" class="tabscreen" hidden>
-  <h1 class="screen-title">Journal</h1>
-  <p class="screen-sub">Everything you have rated, park by park.</p>
+  <h1 class="screen-title" data-i18n="Journal">Journal</h1>
+  <p class="screen-sub" data-i18n="Everything you have rated, park by park.">Everything you have rated, park by park.</p>
   <div class="wrap" id="journalBody"></div>
 </section>
 
 <section id="view-shared" class="tabscreen" hidden>
-  <h1 class="screen-title">Shared with you</h1>
+  <h1 class="screen-title" data-i18n="Shared with you">Shared with you</h1>
   <p class="screen-sub">A park review someone sent you.</p>
   <div class="wrap" id="sharedBody"></div>
 </section>
@@ -124,16 +135,16 @@
 
     <div class="ios-group">
       <label class="ios-row ios-row--plain" for="displayName">
-        <span class="ios-row-body"><span class="ios-row-title">Name</span></span>
-        <input class="acct-input" id="displayName" type="text" placeholder="Your name" autocomplete="name" enterkeyhint="done">
+        <span class="ios-row-body"><span class="ios-row-title" data-i18n="Name">Name</span></span>
+        <input class="acct-input" id="displayName" type="text" placeholder="Your name" data-i18n-ph="Your name" autocomplete="name" enterkeyhint="done">
       </label>
     </div>
     <p class="ios-group-foot">Your avatar initial, shared with the other outdoors apps. It never leaves this device.</p>
 
     <div class="acct-stats">
-      <div class="acct-stat"><b id="stParks" class="tnum">0</b><span>Parks touched</span></div>
-      <div class="acct-stat"><b id="stSites" class="tnum">0</b><span>Sites rated</span></div>
-      <div class="acct-stat"><b id="stPhotos" class="tnum">0</b><span>Photos</span></div>
+      <div class="acct-stat"><b id="stParks" class="tnum">0</b><span data-i18n="Parks visited">Parks visited</span></div>
+      <div class="acct-stat"><b id="stSites" class="tnum">0</b><span data-i18n="Ratings">Ratings</span></div>
+      <div class="acct-stat"><b id="stPhotos" class="tnum">0</b><span data-i18n="Photos">Photos</span></div>
     </div>
 
     <div class="ios-group">
@@ -170,7 +181,7 @@
   <div class="wrap">
     <button class="acct-back" id="photosBack" type="button"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-left"/></svg>Account</button>
   </div>
-  <h1 class="screen-title">Photos</h1>
+  <h1 class="screen-title" data-i18n="Photos">Photos</h1>
   <p class="screen-sub">Tap a photo to open its site.</p>
   <div class="wrap"><div class="pgrid" id="photosGrid"></div></div>
 </section>
@@ -210,6 +221,7 @@
 <div class="sheet" id="versionsSheet" role="dialog" aria-modal="true" aria-label="Versions">
   <div class="grabber"></div>
   <div class="kind" style="margin-bottom:12px">Versions</div>
+  <div class="verline"><span class="vv">v0.207</span>A polish pass: the map starts clean and stays in step with the theme, search has its own screen, favourites, and a French option</div>
   <div class="verline"><span class="vv">v0.206</span>The words got a plain-language pass</div>
   <div class="verline"><span class="vv">v0.205</span>on-camp is now on-site. Flat controls, the floating tab capsule, a top bar that fades in, and the GitHub dark theme</div>
   <div class="verline"><span class="vv">v0.204</span>On a laptop it reads as a website: top bar, sidebar tabs, and sheets become dialogs</div>
@@ -260,7 +272,7 @@
 </div>
 
 <section id="view-more" class="tabscreen" hidden>
-  <h1 class="screen-title">More</h1>
+  <h1 class="screen-title" data-i18n="More">More</h1>
   <div class="wrap">
 
   <h2 class="ios-section-title">Learn</h2>
