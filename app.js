@@ -30,7 +30,7 @@ function cidOf(pid,cgId){ return pid+'#'+cgId; }
 /* ================= state ================= */
 let state={site:{},campground:{},trail:{}};
 const KEY='ontario-scout-v2';
-var APP_VERSION='0.210';
+var APP_VERSION='0.211';
 
 /* ================= language =================
    English is the default; French is a choice in More. The dictionary is
@@ -56,6 +56,12 @@ var FR={
   'Parks visited':'Parcs visités','Ratings':'Évaluations','Average rating':'Note moyenne',
   'Favourites':'Favoris','Name':'Nom','Your name':'Votre nom',
   'Rate a campsite':'Évaluer un emplacement','Find another park':'Trouver un autre parc',
+  'Legal':'Mentions légales','Privacy policy':'Politique de confidentialité',
+  'What stays on this device, and what does not':'Ce qui reste sur cet appareil, et ce qui n’y reste pas',
+  'Terms of use':'Conditions d’utilisation',
+  'Including what this app is not safe for':'Y compris ce pour quoi cette appli n’est pas sûre',
+  'Support':'Assistance','Help, and how to reach me':'Aide, et comment me joindre',
+  'Not affiliated with Ontario Parks, the Government of Ontario or Apple. Book through their official channels. Map images come from CARTO using OpenStreetMap data.':'Sans lien avec Parcs Ontario, le gouvernement de l’Ontario ou Apple. Réservez par leurs canaux officiels. Les images de carte viennent de CARTO à partir des données OpenStreetMap.',
   'Where you were last':'Où vous étiez la dernière fois',
   'Parks in guide':'Parcs dans le guide','Version':'Version',
   'Browse the parks':'Parcourir les parcs',
