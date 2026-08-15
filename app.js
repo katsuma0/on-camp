@@ -30,7 +30,7 @@ function cidOf(pid,cgId){ return pid+'#'+cgId; }
 /* ================= state ================= */
 let state={site:{},campground:{},trail:{}};
 const KEY='ontario-scout-v2';
-var APP_VERSION='0.208';
+var APP_VERSION='0.209';
 
 /* ================= language =================
    English is the default; French is a choice in More. The dictionary is
@@ -54,7 +54,7 @@ var FR={
   'Campgrounds':'Terrains de camping','Sites':'Emplacements','Trails':'Sentiers','Cancel':'Annuler',
   /* account and journal */
   'Parks visited':'Parcs visités','Ratings':'Évaluations','Average rating':'Note moyenne',
-  'Favourites':'Favoris','Visited':'Visités','Name':'Nom','Your name':'Votre nom',
+  'Favourites':'Favoris','Name':'Nom','Your name':'Votre nom',
   'Parks in guide':'Parcs dans le guide','Version':'Version',
   'Browse the parks':'Parcourir les parcs',
   'Rate your first site and it lands here, with every note, star and photo.':'Évaluez votre premier emplacement et il apparaîtra ici, avec chaque note, étoile et photo.',
@@ -635,28 +635,26 @@ function renderParks(){ const box=document.getElementById('parkList'); if(!box) 
   const info={}; visible.forEach(p=>{ info[p.id]=parkTouchInfo(p); });
   const ts=state.touched||{};
   let html='';
-  /* favourites: the parks and campsites the reader picked out */
+  /* One section, not two. Favourites and Visited held the same kind of park
+     and a park in both appeared twice. Everything the reader has a reason to
+     come back to sits under Favourites now: the ones they picked out first,
+     A to Z, then the ones they have rated or written in, most recent first,
+     then their favourite campsites. The row's own line says which it is. */
   const favParks=visible.filter(p=>isFav('parks',p.id))
     .sort((a,b)=>a.name.localeCompare(b.name));
-  const favSites=favSiteRows(visible);
-  if(favParks.length||favSites){
-    html+='<div class="seclabel">'+TL('Favourites')+'</div><div class="ios-group" id="favParks">'+
-      favParks.map(p=>{ const st=info[p.id];
-        const sub=st.rated>0
-          ?st.rated+' '+TL('of')+' '+st.total+' '+TL('sites rated')+' · '+st.avg.toFixed(1)+' '+TL('average')
-          :TL('Saved to your favourites');
-        return parkRowHtml(p,st,sub,''); }).join('')+favSites+'</div>';
-  }
-  /* visited: anything with a rating, wishlist, note or photo */
-  const mine=visible.filter(p=>info[p.id].touched)
+  const mine=visible.filter(p=>info[p.id].touched&&!isFav('parks',p.id))
     .sort((a,b)=>((ts[b.id]||0)-(ts[a.id]||0))||a.name.localeCompare(b.name));
-  if(mine.length){
-    html+='<div class="seclabel">'+TL('Visited')+'</div><div class="ios-group" id="myParks">'+
-      mine.map(p=>{ const st=info[p.id];
-        const sub=st.rated>0
-          ?st.rated+' '+TL('of')+' '+st.total+' '+TL('sites rated')+' · '+st.avg.toFixed(1)+' '+TL('average')
-          :TL('Saved to your journal');
-        return parkRowHtml(p,st,sub,''); }).join('')+'</div>';
+  const favSites=favSiteRows(visible);
+  if(favParks.length||mine.length||favSites){
+    const row=(p,fallback)=>{ const st=info[p.id];
+      const sub=st.rated>0
+        ?st.rated+' '+TL('of')+' '+st.total+' '+TL('sites rated')+' · '+st.avg.toFixed(1)+' '+TL('average')
+        :TL(fallback);
+      return parkRowHtml(p,st,sub,''); };
+    html+='<div class="seclabel">'+TL('Favourites')+'</div><div class="ios-group" id="favParks">'+
+      favParks.map(p=>row(p,'Saved to your favourites')).join('')+
+      mine.map(p=>row(p,'Saved to your journal')).join('')+
+      favSites+'</div>';
   }
   /* all parks, one flat alphabetical list split by first letter */
   html+='<div class="seclabel">'+TL('All parks A to Z')+'</div>'+regionChipsHtml();
