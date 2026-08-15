@@ -30,7 +30,7 @@ function cidOf(pid,cgId){ return pid+'#'+cgId; }
 /* ================= state ================= */
 let state={site:{},campground:{},trail:{}};
 const KEY='ontario-scout-v2';
-var APP_VERSION='0.208';
+var APP_VERSION='0.211';
 
 /* ================= language =================
    English is the default; French is a choice in More. The dictionary is
@@ -54,7 +54,15 @@ var FR={
   'Campgrounds':'Terrains de camping','Sites':'Emplacements','Trails':'Sentiers','Cancel':'Annuler',
   /* account and journal */
   'Parks visited':'Parcs visités','Ratings':'Évaluations','Average rating':'Note moyenne',
-  'Favourites':'Favoris','Visited':'Visités','Name':'Nom','Your name':'Votre nom',
+  'Favourites':'Favoris','Name':'Nom','Your name':'Votre nom',
+  'Rate a campsite':'Évaluer un emplacement','Find another park':'Trouver un autre parc',
+  'Legal':'Mentions légales','Privacy policy':'Politique de confidentialité',
+  'What stays on this device, and what does not':'Ce qui reste sur cet appareil, et ce qui n’y reste pas',
+  'Terms of use':'Conditions d’utilisation',
+  'Including what this app is not safe for':'Y compris ce pour quoi cette appli n’est pas sûre',
+  'Support':'Assistance','Help, and how to reach me':'Aide, et comment me joindre',
+  'Not affiliated with Ontario Parks, the Government of Ontario or Apple. Book through their official channels. Map images come from CARTO using OpenStreetMap data.':'Sans lien avec Parcs Ontario, le gouvernement de l’Ontario ou Apple. Réservez par leurs canaux officiels. Les images de carte viennent de CARTO à partir des données OpenStreetMap.',
+  'Where you were last':'Où vous étiez la dernière fois',
   'Parks in guide':'Parcs dans le guide','Version':'Version',
   'Browse the parks':'Parcourir les parcs',
   'Rate your first site and it lands here, with every note, star and photo.':'Évaluez votre premier emplacement et il apparaîtra ici, avec chaque note, étoile et photo.',
@@ -635,28 +643,26 @@ function renderParks(){ const box=document.getElementById('parkList'); if(!box) 
   const info={}; visible.forEach(p=>{ info[p.id]=parkTouchInfo(p); });
   const ts=state.touched||{};
   let html='';
-  /* favourites: the parks and campsites the reader picked out */
+  /* One section, not two. Favourites and Visited held the same kind of park
+     and a park in both appeared twice. Everything the reader has a reason to
+     come back to sits under Favourites now: the ones they picked out first,
+     A to Z, then the ones they have rated or written in, most recent first,
+     then their favourite campsites. The row's own line says which it is. */
   const favParks=visible.filter(p=>isFav('parks',p.id))
     .sort((a,b)=>a.name.localeCompare(b.name));
-  const favSites=favSiteRows(visible);
-  if(favParks.length||favSites){
-    html+='<div class="seclabel">'+TL('Favourites')+'</div><div class="ios-group" id="favParks">'+
-      favParks.map(p=>{ const st=info[p.id];
-        const sub=st.rated>0
-          ?st.rated+' '+TL('of')+' '+st.total+' '+TL('sites rated')+' · '+st.avg.toFixed(1)+' '+TL('average')
-          :TL('Saved to your favourites');
-        return parkRowHtml(p,st,sub,''); }).join('')+favSites+'</div>';
-  }
-  /* visited: anything with a rating, wishlist, note or photo */
-  const mine=visible.filter(p=>info[p.id].touched)
+  const mine=visible.filter(p=>info[p.id].touched&&!isFav('parks',p.id))
     .sort((a,b)=>((ts[b.id]||0)-(ts[a.id]||0))||a.name.localeCompare(b.name));
-  if(mine.length){
-    html+='<div class="seclabel">'+TL('Visited')+'</div><div class="ios-group" id="myParks">'+
-      mine.map(p=>{ const st=info[p.id];
-        const sub=st.rated>0
-          ?st.rated+' '+TL('of')+' '+st.total+' '+TL('sites rated')+' · '+st.avg.toFixed(1)+' '+TL('average')
-          :TL('Saved to your journal');
-        return parkRowHtml(p,st,sub,''); }).join('')+'</div>';
+  const favSites=favSiteRows(visible);
+  if(favParks.length||mine.length||favSites){
+    const row=(p,fallback)=>{ const st=info[p.id];
+      const sub=st.rated>0
+        ?st.rated+' '+TL('of')+' '+st.total+' '+TL('sites rated')+' · '+st.avg.toFixed(1)+' '+TL('average')
+        :TL(fallback);
+      return parkRowHtml(p,st,sub,''); };
+    html+='<div class="seclabel">'+TL('Favourites')+'</div><div class="ios-group" id="favParks">'+
+      favParks.map(p=>row(p,'Saved to your favourites')).join('')+
+      mine.map(p=>row(p,'Saved to your journal')).join('')+
+      favSites+'</div>';
   }
   /* all parks, one flat alphabetical list split by first letter */
   html+='<div class="seclabel">'+TL('All parks A to Z')+'</div>'+regionChipsHtml();
@@ -1505,13 +1511,62 @@ async function renderPhotosScreen(){
       b.appendChild(img); b.appendChild(cap);
       b.addEventListener('click',function(){ buzz(6); openPhotoTarget(k); });
       box.appendChild(b); }); } }
+/* ---- the plus: rate a campsite ----
+   The plus and the search glass sat side by side and both opened the search
+   screen, so half the header did nothing of its own. The plus is a quick
+   action now: it puts you in a park, because that is where a rating happens.
+   Rating starts at a park you are already keeping, so the sheet offers your
+   favourites and the parks you were in most recently, then a way to find any
+   other. With no history there is nothing to offer, so it opens search
+   directly rather than showing an empty sheet. */
+function ratePickerParks(){
+  var seen={}, out=[];
+  function add(p,why){ if(!p||seen[p.id]||!parkVisible(p)) return; seen[p.id]=1; out.push({p:p,why:why}); }
+  PARKS.filter(function(p){ return isFav('parks',p.id); })
+    .sort(function(a,b){ return a.name.localeCompare(b.name); })
+    .forEach(function(p){ add(p,TL('Saved to your favourites')); });
+  var ts=state.touched||{};
+  Object.keys(ts).map(function(id){ return PARK_BY_ID[id]; }).filter(Boolean)
+    .sort(function(a,b){ return (ts[b.id]||0)-(ts[a.id]||0); })
+    .forEach(function(p){ add(p,TL('Where you were last')); });
+  return out.slice(0,6);
+}
+function openRateSheet(){
+  var list=ratePickerParks();
+  if(!list.length){ showTab('search'); return; }
+  var box=document.getElementById('rateSheetBody');
+  if(!box) { showTab('search'); return; }
+  box.innerHTML='<div class="ios-group">'+
+    list.map(function(r){
+      return '<button class="ios-row ios-row--plain" type="button" data-ratepark="'+r.p.id+'">'+
+        '<span class="ios-row-body"><span class="ios-row-title">'+r.p.name+'</span>'+
+        '<span class="ios-row-sub">'+r.why+'</span></span>'+CHEV_RIGHT+'</button>'; }).join('')+
+    '</div><div class="ios-group" style="margin-top:14px">'+
+    '<button class="ios-row ios-row--plain" type="button" data-ratepark="">'+
+    '<span class="ios-row-body"><span class="ios-row-title">'+TL('Find another park')+'</span></span>'+
+    CHEV_RIGHT+'</button></div>';
+  settingsBackdrop.classList.add('on');
+  var rs=document.getElementById('rateSheet');
+  rs.classList.add('on'); rs.scrollTop=0; lockScroll();
+}
+function closeRateSheet(){
+  var rs=document.getElementById('rateSheet');
+  settingsBackdrop.classList.remove('on'); rs.classList.remove('on'); rs.style.transform=''; unlockScroll();
+}
+document.addEventListener('click',function(ev){
+  var b=ev.target.closest?ev.target.closest('[data-ratepark]'):null;
+  if(!b) return;
+  var pid=b.getAttribute('data-ratepark');
+  closeRateSheet(); buzz(6);
+  if(pid&&PARK_BY_ID[pid]){ showTab('guide'); openPark(pid); } else { showTab('search'); }
+});
 (function(){
   var ab=document.getElementById('avatarBtn'), rb=document.getElementById('rateSiteBtn'), sb=document.getElementById('searchBtn');
   /* its own screen, the way iOS Settings does it: the field is there but
      focus stays manual, because autofocusing pans the page on iOS Safari */
   function toSearch(){ showTab('search'); }
   if(ab) ab.addEventListener('click',function(){ buzz(6); showTab('account'); });
-  if(rb) rb.addEventListener('click',function(){ buzz(6); toSearch(); });
+  if(rb) rb.addEventListener('click',function(){ buzz(6); openRateSheet(); });
   if(sb) sb.addEventListener('click',function(){ buzz(6); toSearch(); });
   var sc=document.getElementById('searchCancel');
   if(sc) sc.addEventListener('click',function(){ buzz(6); clearGSearch(); showTab(LAST_TAB_BEFORE_SEARCH||'guide'); });
@@ -1693,6 +1748,9 @@ function openVersions(){ settingsBackdrop.classList.add('on'); const vs=document
 function closeVersions(){ const vs=document.getElementById('versionsSheet'); settingsBackdrop.classList.remove('on'); vs.classList.remove('on'); vs.style.transform=''; unlockScroll(); }
 settingsBackdrop.addEventListener('click',closeVersions);
 makeSheetSwipe(document.getElementById('versionsSheet'),closeVersions);
+/* the rate picker shares the settings backdrop, so it needs its own dismiss */
+settingsBackdrop.addEventListener('click',closeRateSheet);
+makeSheetSwipe(document.getElementById('rateSheet'),closeRateSheet);
 /* the version chip left the title; version history opens from the About row */
 makeSheetSwipe(sheet,closeSheet);
 

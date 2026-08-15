@@ -137,7 +137,6 @@
         <input class="acct-input" id="displayName" type="text" placeholder="Your name" data-i18n-ph="Your name" autocomplete="name" enterkeyhint="done">
       </label>
     </div>
-    <p class="ios-group-foot">Your avatar initial, shared with the other outdoors apps. It never leaves this device.</p>
 
     <div class="acct-stats">
       <div class="acct-stat"><b id="stParks" class="tnum">0</b><span data-i18n="Parks visited">Parks visited</span></div>
@@ -216,9 +215,17 @@
 <div class="lightbox" id="lightbox"><img id="lightboxImg" alt="site photo"></div>
 
 <div class="backdrop" id="settingsBackdrop"></div>
+<div class="sheet" id="rateSheet" role="dialog" aria-modal="true" aria-label="Rate a campsite">
+  <div class="grabber"></div>
+  <div class="kind" style="margin-bottom:12px" data-i18n="Rate a campsite">Rate a campsite</div>
+  <div id="rateSheetBody"></div>
+</div>
 <div class="sheet" id="versionsSheet" role="dialog" aria-modal="true" aria-label="Versions">
   <div class="grabber"></div>
   <div class="kind" style="margin-bottom:12px">Versions</div>
+  <div class="verline"><span class="vv">v0.211</span>Privacy, terms and support live in More, for the App Store</div>
+  <div class="verline"><span class="vv">v0.210</span>The plus starts a rating instead of repeating the search button</div>
+  <div class="verline"><span class="vv">v0.209</span>One Favourites section instead of two, and fewer captions</div>
   <div class="verline"><span class="vv">v0.208</span>Favourite a park from the park page, and a quieter map</div>
   <div class="verline"><span class="vv">v0.207</span>A polish pass: the map starts clean and stays in step with the theme, search has its own screen, favourites, and a French option</div>
   <div class="verline"><span class="vv">v0.206</span>The words got a plain-language pass</div>
@@ -276,7 +283,6 @@
 
   <h2 class="ios-section-title">Learn</h2>
   <div id="learnBody"></div>
-  <p class="ios-group-foot">These notes cover safety and low-impact camping in Ontario parks.</p>
 
   <h2 class="ios-section-title">Your data</h2>
   <div class="ios-group">
@@ -301,7 +307,6 @@
 
   <h2 class="ios-section-title">Appearance</h2>
   <div class="ios-group" id="appearancePanel"></div>
-  <p class="ios-group-foot">The outdoors apps on this device share these appearance settings.</p>
 
   <h2 class="ios-section-title">More from the Ontario outdoors</h2>
   <div class="ios-group">
@@ -316,7 +321,6 @@
       <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
     </a>
   </div>
-  <p class="ios-group-foot">on-wildlife and on-fishing are companion apps with the same design as on-site.</p>
 
   <h2 class="ios-section-title">About</h2>
   <div class="aboutbody">
@@ -326,6 +330,26 @@
     <p>Everything you save stays on this device. There is no account, no server, and nothing is tracked. Ratings and notes live in the browser and photos in local storage, and you can export a backup to a file and load it on another phone. Please do not photograph occupied sites, and leave a site the way you would want to find it.</p>
   </div>
   <div class="ios-group" id="aboutStats" style="margin-top:16px"></div>
+
+  <h2 class="ios-section-title" data-i18n="Legal">Legal</h2>
+  <div class="ios-group">
+    <a class="ios-row" href="https://katsuma.ca/privacy.html" target="_blank" rel="noopener">
+      <span class="ios-row-body"><span class="ios-row-title" data-i18n="Privacy policy">Privacy policy</span>
+      <span class="ios-row-sub" data-i18n="What stays on this device, and what does not">What stays on this device, and what does not</span></span>
+      <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
+    </a>
+    <a class="ios-row" href="https://katsuma.ca/terms.html" target="_blank" rel="noopener">
+      <span class="ios-row-body"><span class="ios-row-title" data-i18n="Terms of use">Terms of use</span>
+      <span class="ios-row-sub" data-i18n="Including what this app is not safe for">Including what this app is not safe for</span></span>
+      <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
+    </a>
+    <a class="ios-row" href="https://katsuma.ca/support.html" target="_blank" rel="noopener">
+      <span class="ios-row-body"><span class="ios-row-title" data-i18n="Support">Support</span>
+      <span class="ios-row-sub" data-i18n="Help, and how to reach me">Help, and how to reach me</span></span>
+      <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
+    </a>
+  </div>
+  <p class="ios-group-foot" data-i18n="Not affiliated with Ontario Parks, the Government of Ontario or Apple. Book through their official channels. Map images come from CARTO using OpenStreetMap data.">Not affiliated with Ontario Parks, the Government of Ontario or Apple. Book through their official channels. Map images come from CARTO using OpenStreetMap data.</p>
   </div>
 </section>
 </main>
