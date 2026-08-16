@@ -55,7 +55,6 @@
     <button class="ios-avatar" id="avatarBtn" type="button" aria-label="Account"><svg aria-hidden="true"><use href="assets/icons.svg#user"/></svg></button>
     <span class="ios-brand">on-site</span>
     <div class="ios-header-actions">
-      <button class="ios-glass-btn" id="rateSiteBtn" type="button" aria-label="Rate a campsite"><svg aria-hidden="true"><use href="assets/icons.svg#plus"/></svg></button>
       <button class="ios-glass-btn" id="searchBtn" type="button" aria-label="Search"><svg aria-hidden="true"><use href="assets/icons.svg#search"/></svg></button>
     </div>
   </div>
@@ -215,14 +214,15 @@
 <div class="lightbox" id="lightbox"><img id="lightboxImg" alt="site photo"></div>
 
 <div class="backdrop" id="settingsBackdrop"></div>
-<div class="sheet" id="rateSheet" role="dialog" aria-modal="true" aria-label="Rate a campsite">
+<div class="sheet" id="legalSheet" role="dialog" aria-modal="true" aria-label="Legal">
   <div class="grabber"></div>
-  <div class="kind" style="margin-bottom:12px" data-i18n="Rate a campsite">Rate a campsite</div>
-  <div id="rateSheetBody"></div>
+  <div class="kind" style="margin-bottom:12px" id="legalTitle">Legal</div>
+  <div class="legalbody" id="legalBody"></div>
 </div>
 <div class="sheet" id="versionsSheet" role="dialog" aria-modal="true" aria-label="Versions">
   <div class="grabber"></div>
   <div class="kind" style="margin-bottom:12px">Versions</div>
+  <div class="verline"><span class="vv">v0.212</span>About leads More, legal reads inside the app, and the laptop layout settles down</div>
   <div class="verline"><span class="vv">v0.211</span>Privacy, terms and support live in More, for the App Store</div>
   <div class="verline"><span class="vv">v0.210</span>The plus starts a rating instead of repeating the search button</div>
   <div class="verline"><span class="vv">v0.209</span>One Favourites section instead of two, and fewer captions</div>
@@ -281,6 +281,17 @@
   <h1 class="screen-title" data-i18n="More">More</h1>
   <div class="wrap">
 
+  <h2 class="ios-section-title">About</h2>
+  <div class="aboutbody">
+    <p>Ever since I was young, my parents took me camping often. Lately I have been sharing that love with my friends and showing them the beauty of being outdoors. With that comes the responsibility of booking the campsites, and choosing a site you have never seen is a gamble.</p>
+    <p>on-site is a private journal for Ontario Parks campgrounds. For the low, low price of a nice walk around the campground, you can rate each site out of five, add a note or a photo, and mark the ones worth booking again. It covers every reservable Ontario Park, down to the campgrounds, the individual sites, and the trails around them.</p>
+    <p>Everything you save stays on this device. There is no account, no server, and nothing is tracked. Ratings and notes live in the browser and photos in local storage, and you can export a backup to a file and load it on another phone. Please do not photograph occupied sites, and leave a site the way you would want to find it.</p>
+  </div>
+  <div class="ios-group" id="aboutStats" style="margin-top:16px"></div>
+
+  <h2 class="ios-section-title">Appearance</h2>
+  <div class="ios-group" id="appearancePanel"></div>
+
   <h2 class="ios-section-title">Learn</h2>
   <div id="learnBody"></div>
 
@@ -305,9 +316,6 @@
   <p class="ios-group-foot">Export a backup to move your journal to another phone.</p>
   <input type="file" id="importInput" accept=".json,application/json" hidden>
 
-  <h2 class="ios-section-title">Appearance</h2>
-  <div class="ios-group" id="appearancePanel"></div>
-
   <h2 class="ios-section-title">More from the Ontario outdoors</h2>
   <div class="ios-group">
     <a class="ios-row" href="https://katsuma0.github.io/on-wildlife/" target="_blank" rel="noopener">
@@ -322,32 +330,23 @@
     </a>
   </div>
 
-  <h2 class="ios-section-title">About</h2>
-  <div class="aboutbody">
-    <p>on-site is a private journal for Ontario Parks campsites. Walk a campground, rate each site out of five, add a note or a photo, and mark the ones worth booking again. It covers every reservable Ontario Park, down to the campgrounds, the individual sites, and the trails.</p>
-    <p>on-camp is now called on-site. Another product already uses the name CampOn, so this app has a new name. Nothing else changed.</p>
-    <p>I book the camping trips for my friends and family, and choosing a site you have never seen is a gamble. Some are good and some are not, and a year later you cannot remember which was which. This is the notebook I wanted for that.</p>
-    <p>Everything you save stays on this device. There is no account, no server, and nothing is tracked. Ratings and notes live in the browser and photos in local storage, and you can export a backup to a file and load it on another phone. Please do not photograph occupied sites, and leave a site the way you would want to find it.</p>
-  </div>
-  <div class="ios-group" id="aboutStats" style="margin-top:16px"></div>
-
   <h2 class="ios-section-title" data-i18n="Legal">Legal</h2>
   <div class="ios-group">
-    <a class="ios-row" href="https://katsuma.ca/privacy.html" target="_blank" rel="noopener">
+    <button class="ios-row" type="button" data-legal="privacy">
       <span class="ios-row-body"><span class="ios-row-title" data-i18n="Privacy policy">Privacy policy</span>
       <span class="ios-row-sub" data-i18n="What stays on this device, and what does not">What stays on this device, and what does not</span></span>
       <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
-    </a>
-    <a class="ios-row" href="https://katsuma.ca/terms.html" target="_blank" rel="noopener">
+    </button>
+    <button class="ios-row" type="button" data-legal="terms">
       <span class="ios-row-body"><span class="ios-row-title" data-i18n="Terms of use">Terms of use</span>
       <span class="ios-row-sub" data-i18n="Including what this app is not safe for">Including what this app is not safe for</span></span>
       <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
-    </a>
-    <a class="ios-row" href="https://katsuma.ca/support.html" target="_blank" rel="noopener">
+    </button>
+    <button class="ios-row" type="button" data-legal="support">
       <span class="ios-row-body"><span class="ios-row-title" data-i18n="Support">Support</span>
       <span class="ios-row-sub" data-i18n="Help, and how to reach me">Help, and how to reach me</span></span>
       <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
-    </a>
+    </button>
   </div>
   <p class="ios-group-foot" data-i18n="Not affiliated with Ontario Parks, the Government of Ontario or Apple. Book through their official channels. Map images come from CARTO using OpenStreetMap data.">Not affiliated with Ontario Parks, the Government of Ontario or Apple. Book through their official channels. Map images come from CARTO using OpenStreetMap data.</p>
   </div>
