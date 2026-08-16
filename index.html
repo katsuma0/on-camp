@@ -97,7 +97,7 @@
     </div>
     <div class="gsearch" id="gsearch">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="gq" inputmode="search" autocomplete="off" placeholder="Search parks, campgrounds and sites" data-i18n-ph="Search parks, campgrounds and sites" aria-label="Search parks, campgrounds and sites">
+      <input id="gq" inputmode="search" autocomplete="off" placeholder="Search parks and sites" data-i18n-ph="Search parks and sites" aria-label="Search parks and sites">
       <button class="gclear" id="gclear" aria-label="Clear search">✕</button>
     </div>
     <div id="gresults" class="gresults" hidden></div>
@@ -222,6 +222,7 @@
 <div class="sheet" id="versionsSheet" role="dialog" aria-modal="true" aria-label="Versions">
   <div class="grabber"></div>
   <div class="kind" style="margin-bottom:12px">Versions</div>
+  <div class="verline"><span class="vv">v0.214</span>Text size reaches every screen, and Appearance sits below Learn</div>
   <div class="verline"><span class="vv">v0.213</span>The app lives at katsuma.ca/on-site now that the repo is renamed</div>
   <div class="verline"><span class="vv">v0.212</span>About leads More, legal reads inside the app, and the laptop layout settles down</div>
   <div class="verline"><span class="vv">v0.211</span>Privacy, terms and support live in More, for the App Store</div>
@@ -290,11 +291,11 @@
   </div>
   <div class="ios-group" id="aboutStats" style="margin-top:16px"></div>
 
-  <h2 class="ios-section-title">Appearance</h2>
-  <div class="ios-group" id="appearancePanel"></div>
-
   <h2 class="ios-section-title">Learn</h2>
   <div id="learnBody"></div>
+
+  <h2 class="ios-section-title">Appearance</h2>
+  <div class="ios-group" id="appearancePanel"></div>
 
   <h2 class="ios-section-title">Your data</h2>
   <div class="ios-group">
@@ -319,12 +320,12 @@
 
   <h2 class="ios-section-title">More from the Ontario outdoors</h2>
   <div class="ios-group">
-    <a class="ios-row" href="https://katsuma0.github.io/on-wildlife/" target="_blank" rel="noopener">
+    <a class="ios-row" href="https://katsuma.ca/on-wildlife/" target="_blank" rel="noopener">
       <span class="ios-tile ios-tile--green"><svg aria-hidden="true"><use href="assets/icons.svg#paw"/></svg></span>
       <span class="ios-row-body"><span class="ios-row-title">on-wildlife</span></span>
       <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>
     </a>
-    <a class="ios-row" id="fishLink" href="https://katsuma0.github.io/on-fishing/" target="_blank" rel="noopener">
+    <a class="ios-row" id="fishLink" href="https://katsuma.ca/on-fishing/" target="_blank" rel="noopener">
       <span class="ios-tile ios-tile--blue"><svg aria-hidden="true"><use href="assets/icons.svg#fish"/></svg></span>
       <span class="ios-row-body"><span class="ios-row-title">on-fishing</span></span>
       <span class="ios-chevron"><svg aria-hidden="true"><use href="assets/icons.svg#chevron-right"/></svg></span>

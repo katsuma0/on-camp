@@ -105,12 +105,12 @@
     var el = document.createElement('div');
     var nm = document.createElement('div');
     nm.textContent = p.name;
-    nm.style.cssText = 'font-weight:700;font-size:15px;margin-bottom:5px;color:var(--label)';
+    nm.style.cssText = 'font-weight:700;font-size:var(--fs-subhead);margin-bottom:5px;color:var(--label)';
     var a = document.createElement('button');
     a.type = 'button';
     a.textContent = 'Open park';
     a.style.cssText = 'appearance:none;border:0;background:none;cursor:pointer;font-family:var(--font-sys);' +
-      'color:var(--tint);font-weight:700;font-size:13px;text-decoration:underline;text-underline-offset:2px;padding:0';
+      'color:var(--tint);font-weight:700;font-size:var(--fs-footnote);text-decoration:underline;text-underline-offset:2px;padding:0';
     a.onclick = function () {
       if (typeof window.openParkFromMap === 'function') {
         try { window.openParkFromMap(p.id); } catch (e) {}

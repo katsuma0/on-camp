@@ -30,7 +30,7 @@ function cidOf(pid,cgId){ return pid+'#'+cgId; }
 /* ================= state ================= */
 let state={site:{},campground:{},trail:{}};
 const KEY='ontario-scout-v2';
-var APP_VERSION='0.213';
+var APP_VERSION='0.214';
 
 /* ================= language =================
    English is the default; French is a choice in More. The dictionary is
@@ -49,7 +49,7 @@ var FR={
   'Fishing zones':'Zones de pêche',
   'Find my location':'Trouver ma position',
   /* search */
-  'Search':'Recherche','Search parks, campgrounds and sites':'Chercher parcs, terrains et emplacements',
+  'Search':'Recherche','Search parks and sites':'Chercher parcs et emplacements',
   'No matches. Try a park, a campground, or Hemlock 112.':'Aucun résultat. Essayez un parc, un terrain ou Hemlock 112.',
   'Campgrounds':'Terrains de camping','Sites':'Emplacements','Trails':'Sentiers','Cancel':'Annuler',
   /* account and journal */
@@ -1654,7 +1654,7 @@ function renderLearn(){
     {t:'Leave no trace', b:`<p>The idea is simple: leave the site the way you would want to find it. Pack out all your trash, including food scraps and dog waste. Use the outhouse, or bury human waste well away from water.</p><p>Keep to the trails and the tent pads so the ground around the site can recover. Do not feed wildlife, and do not carve or nail into trees. Keep the noise down after quiet hours, since sound carries a long way over water at night. A good campsite is one the next person cannot tell you used.</p>`},
     {t:'Wildlife on the roads', b:`<p>Moose and deer are most active at dawn and dusk, and a collision with a moose is dangerous because the body comes through the windshield. Slow down at night in wildlife areas and watch the shoulders for eye-shine.</p><p>If an animal is crossing, brake in a straight line rather than swerving. Turtles cross roads to nest in June, and you can move one across in the direction it was already headed, well clear of traffic. Never pick a snapping turtle up by the tail, which injures its spine.</p>`},
     {t:'Cold water and weather', b:`<p>Cold water is the real risk on Ontario lakes, even in summer. It saps your strength fast, so wear a lifejacket in any boat or canoe and keep one on children at the shore.</p><p>Watch the sky. Afternoon thunderstorms build quickly, and open water is no place to be when one arrives. If you hear thunder, get off the water and away from tall lone trees. Tell someone your route and when you will be back before a longer paddle or hike.</p>`},
-    {t:'Report a bear or a hazard', b:`<p>Seeing a bear, a road hazard, or wildlife on a road? on-wildlife has a quick report that drops it on a shared map for the area, with sensitive spots coarsened for privacy.</p><p><a class="footlink" href="https://katsuma0.github.io/on-wildlife/#/more" target="_blank" rel="noopener">Open on-wildlife to report</a></p>`}
+    {t:'Report a bear or a hazard', b:`<p>Seeing a bear, a road hazard, or wildlife on a road? on-wildlife has a quick report that drops it on a shared map for the area, with sensitive spots coarsened for privacy.</p><p><a class="footlink" href="https://katsuma.ca/on-wildlife/#/more" target="_blank" rel="noopener">Open on-wildlife to report</a></p>`}
   ];
   el.innerHTML='<div class="ios-group">'+A.map(function(a){
     return '<details class="cell-details"><summary class="ios-row ios-row--plain"><span class="ios-row-body"><span class="ios-row-title">'+a.t+'</span></span>'+CHEV+'</summary>'+
