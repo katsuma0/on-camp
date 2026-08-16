@@ -10,9 +10,8 @@ On your Mac (Xcode 15 or newer, Apple Developer account):
 
 1. Get the code and open the project:
 
-       git clone https://github.com/katsuma0/on-camp.git
-       cd on-camp
-       git checkout claude/share    # or main once https://github.com/katsuma0/on-camp/pull/4 is merged
+       git clone https://github.com/katsuma0/on-site.git
+       cd on-site
        open ios/OnCamp.xcodeproj
 
 2. In Xcode, click the blue project icon, pick the "OnCamp" target,

@@ -57,8 +57,8 @@ try {
     if (miss.length) bad('OnShare API', 'missing ' + miss.join(', ')); else ok('OnShare exposes ' + need.join('/'));
     var round = OS.decode(OS.encode({ t: 'camp-review', title: 'Aaron', x: 'ábc/+=' }));
     if (round && round.title === 'Aaron' && round.x === 'ábc/+=') ok('encode/decode round-trips (unicode-safe)'); else bad('encode/decode', JSON.stringify(round));
-    OS.config({ app: 'on-camp', base: 'https://katsuma0.github.io/on-camp/' });
-    if (/on-camp\/#\/shared\//.test(OS.link({ t: 'camp-review' }))) ok('link builds a #/shared/ deep link'); else bad('link format', OS.link({ t: 'camp-review' }));
+    OS.config({ app: 'on-camp', base: 'https://katsuma.ca/on-site/' });
+    if (/on-site\/#\/shared\//.test(OS.link({ t: 'camp-review' }))) ok('link builds a #/shared/ deep link'); else bad('link format', OS.link({ t: 'camp-review' }));
   }
 } catch (e) { bad('share module load', e.message); }
 
