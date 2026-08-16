@@ -30,7 +30,7 @@ function cidOf(pid,cgId){ return pid+'#'+cgId; }
 /* ================= state ================= */
 let state={site:{},campground:{},trail:{}};
 const KEY='ontario-scout-v2';
-var APP_VERSION='0.211';
+var APP_VERSION='0.212';
 
 /* ================= language =================
    English is the default; French is a choice in More. The dictionary is
@@ -55,17 +55,14 @@ var FR={
   /* account and journal */
   'Parks visited':'Parcs visités','Ratings':'Évaluations','Average rating':'Note moyenne',
   'Favourites':'Favoris','Name':'Nom','Your name':'Votre nom',
-  'Rate a campsite':'Évaluer un emplacement','Find another park':'Trouver un autre parc',
   'Legal':'Mentions légales','Privacy policy':'Politique de confidentialité',
   'What stays on this device, and what does not':'Ce qui reste sur cet appareil, et ce qui n’y reste pas',
   'Terms of use':'Conditions d’utilisation',
   'Including what this app is not safe for':'Y compris ce pour quoi cette appli n’est pas sûre',
   'Support':'Assistance','Help, and how to reach me':'Aide, et comment me joindre',
   'Not affiliated with Ontario Parks, the Government of Ontario or Apple. Book through their official channels. Map images come from CARTO using OpenStreetMap data.':'Sans lien avec Parcs Ontario, le gouvernement de l’Ontario ou Apple. Réservez par leurs canaux officiels. Les images de carte viennent de CARTO à partir des données OpenStreetMap.',
-  'Where you were last':'Où vous étiez la dernière fois',
   'Parks in guide':'Parcs dans le guide','Version':'Version',
   'Browse the parks':'Parcourir les parcs',
-  'Rate your first site and it lands here, with every note, star and photo.':'Évaluez votre premier emplacement et il apparaîtra ici, avec chaque note, étoile et photo.',
   /* settings */
   'Appearance':'Apparence','Theme':'Thème','Auto':'Auto','Light':'Clair','Dark':'Sombre',
   'Text size':'Taille du texte','Small':'Petit','Medium':'Moyen','Large':'Grand','Extra large':'Très grand',
@@ -1511,62 +1508,12 @@ async function renderPhotosScreen(){
       b.appendChild(img); b.appendChild(cap);
       b.addEventListener('click',function(){ buzz(6); openPhotoTarget(k); });
       box.appendChild(b); }); } }
-/* ---- the plus: rate a campsite ----
-   The plus and the search glass sat side by side and both opened the search
-   screen, so half the header did nothing of its own. The plus is a quick
-   action now: it puts you in a park, because that is where a rating happens.
-   Rating starts at a park you are already keeping, so the sheet offers your
-   favourites and the parks you were in most recently, then a way to find any
-   other. With no history there is nothing to offer, so it opens search
-   directly rather than showing an empty sheet. */
-function ratePickerParks(){
-  var seen={}, out=[];
-  function add(p,why){ if(!p||seen[p.id]||!parkVisible(p)) return; seen[p.id]=1; out.push({p:p,why:why}); }
-  PARKS.filter(function(p){ return isFav('parks',p.id); })
-    .sort(function(a,b){ return a.name.localeCompare(b.name); })
-    .forEach(function(p){ add(p,TL('Saved to your favourites')); });
-  var ts=state.touched||{};
-  Object.keys(ts).map(function(id){ return PARK_BY_ID[id]; }).filter(Boolean)
-    .sort(function(a,b){ return (ts[b.id]||0)-(ts[a.id]||0); })
-    .forEach(function(p){ add(p,TL('Where you were last')); });
-  return out.slice(0,6);
-}
-function openRateSheet(){
-  var list=ratePickerParks();
-  if(!list.length){ showTab('search'); return; }
-  var box=document.getElementById('rateSheetBody');
-  if(!box) { showTab('search'); return; }
-  box.innerHTML='<div class="ios-group">'+
-    list.map(function(r){
-      return '<button class="ios-row ios-row--plain" type="button" data-ratepark="'+r.p.id+'">'+
-        '<span class="ios-row-body"><span class="ios-row-title">'+r.p.name+'</span>'+
-        '<span class="ios-row-sub">'+r.why+'</span></span>'+CHEV_RIGHT+'</button>'; }).join('')+
-    '</div><div class="ios-group" style="margin-top:14px">'+
-    '<button class="ios-row ios-row--plain" type="button" data-ratepark="">'+
-    '<span class="ios-row-body"><span class="ios-row-title">'+TL('Find another park')+'</span></span>'+
-    CHEV_RIGHT+'</button></div>';
-  settingsBackdrop.classList.add('on');
-  var rs=document.getElementById('rateSheet');
-  rs.classList.add('on'); rs.scrollTop=0; lockScroll();
-}
-function closeRateSheet(){
-  var rs=document.getElementById('rateSheet');
-  settingsBackdrop.classList.remove('on'); rs.classList.remove('on'); rs.style.transform=''; unlockScroll();
-}
-document.addEventListener('click',function(ev){
-  var b=ev.target.closest?ev.target.closest('[data-ratepark]'):null;
-  if(!b) return;
-  var pid=b.getAttribute('data-ratepark');
-  closeRateSheet(); buzz(6);
-  if(pid&&PARK_BY_ID[pid]){ showTab('guide'); openPark(pid); } else { showTab('search'); }
-});
 (function(){
-  var ab=document.getElementById('avatarBtn'), rb=document.getElementById('rateSiteBtn'), sb=document.getElementById('searchBtn');
+  var ab=document.getElementById('avatarBtn'), sb=document.getElementById('searchBtn');
   /* its own screen, the way iOS Settings does it: the field is there but
      focus stays manual, because autofocusing pans the page on iOS Safari */
   function toSearch(){ showTab('search'); }
   if(ab) ab.addEventListener('click',function(){ buzz(6); showTab('account'); });
-  if(rb) rb.addEventListener('click',function(){ buzz(6); openRateSheet(); });
   if(sb) sb.addEventListener('click',function(){ buzz(6); toSearch(); });
   var sc=document.getElementById('searchCancel');
   if(sc) sc.addEventListener('click',function(){ buzz(6); clearGSearch(); showTab(LAST_TAB_BEFORE_SEARCH||'guide'); });
@@ -1612,13 +1559,11 @@ function renderJournal(){ var box=document.getElementById('journalBody'); if(!bo
     box.innerHTML='<div class="jempty">'
       +'<svg aria-hidden="true"><use href="assets/icons.svg#tent"/></svg>'
       +'<h3>Your journal starts here</h3>'
-      +'<p>Rate your first site and it lands here, with every note, star and photo.</p>'
       +'<button class="btn-share primary" id="jBrowse" type="button">Browse the parks</button></div>';
     var jb=document.getElementById('jBrowse'); if(jb) jb.addEventListener('click',function(){ buzz(6); showTab('guide'); });
     return; }
   var s=journalStats(), ts=state.touched||{};
   pids.sort(function(a,b){ return ((ts[b]||0)-(ts[a]||0))||PARK_BY_ID[a].name.localeCompare(PARK_BY_ID[b].name); });
-  var NOTE_G='<svg aria-hidden="true"><use href="assets/icons.svg#notebook"/></svg>';
   var PHOTO_G='<svg aria-hidden="true"><use href="assets/icons.svg#image"/></svg>';
   var html='<div class="acct-stats">'
     +'<div class="acct-stat"><b class="tnum">'+s.parks+'</b><span>'+TL('Parks visited')+'</span></div>'
@@ -1632,7 +1577,7 @@ function renderJournal(){ var box=document.getElementById('journalBody'); if(!bo
       ||String(a.title).localeCompare(String(b.title),undefined,{numeric:true}); });
     html+='<div class="seclabel">'+p.name+'</div><div class="ios-group">'+list.map(function(en){
       var col=(en.score!=null)?scoreColor(en.score):null;
-      var glyphs=(en.note?NOTE_G:'')+(en.photo?PHOTO_G:'');
+      var glyphs=(en.photo?PHOTO_G:'');
       return '<button class="ios-row ios-row--plain jrow" type="button" data-key="'+en.k.replace(/"/g,'&quot;')+'" data-type="'+en.type+'">'
         +'<span class="ios-row-body"><span class="ios-row-title">'+(en.want?'<span class="wstar">★</span>':'')+en.title+'</span>'
         +(en.sub?'<span class="ios-row-sub">'+en.sub+'</span>':'')+'</span>'
@@ -1743,14 +1688,62 @@ function makeSheetSwipe(el,closeFn){
     if(dy>70){ closeFn(); } else { el.style.transform=''; }
   });
 }
+/* ---- legal, read inside the app ----
+   The privacy policy, terms and support live in a sheet rather than a link
+   out to katsuma.ca, so they are readable offline and nobody is bounced to
+   a browser mid-app. The full pages stay on the site; this is the same
+   content, condensed to what a reader of this app needs. */
+var LEGAL_PAGES={
+  privacy:{t:'Privacy policy',h:''
+    +'<p><b>The short version.</b> There are no accounts, no advertising and no analytics. Nothing you write, rate or photograph is sent to me. It is stored on this device and it stays here. I cannot read it and I never see that it exists.</p>'
+    +'<p><b>What the app stores.</b> Your ratings, notes, wishlist marks and photos, your favourites, your display name and your settings. All of it lives in this browser\u2019s storage on this device. Your display name is used only to draw an initial in the corner of the app and is never transmitted.</p>'
+    +'<p><b>What leaves this device.</b> Map images are fetched from CARTO, which renders OpenStreetMap data, when you open the Map. Like any web request, that carries your IP address and roughly which part of the map you are looking at. It does not carry your notes, ratings, photos or name. The web version is served from GitHub Pages, which keeps ordinary server logs.</p>'
+    +'<p><b>Permissions.</b> Location is used only when you tap the locate button on the Map, and never in the background. The camera and photo library are used only when you attach a photo to a site. If you decline either, everything else still works.</p>'
+    +'<p><b>Keeping and deleting.</b> Your data is kept until you delete it. More, then Your data, then Reset all data removes everything, and deleting the app does the same. Export a backup writes your whole journal to one readable file, and Import reads it back on any device. There is no server copy, so nothing can be recovered once it is gone.</p>'
+    +'<p><b>Children.</b> The app is safe for a child to use. Nothing in it collects personal information from anyone, of any age.</p>'
+    +'<p>The full policy is at katsuma.ca/privacy.html. Questions: katsuma123@gmail.com.</p>'},
+  terms:{t:'Terms of use',h:''
+    +'<p><b>Safety first.</b> This app is a reference, not safety equipment. It cannot call for help. Carry a way to reach emergency services where you are going, and tell someone your plan. Maps and locations are approximate, so do not navigate by them.</p>'
+    +'<p><b>Your content is yours.</b> What you write, rate and photograph belongs to you. It is stored on your device and never sent to me, so I acquire no rights to it.</p>'
+    +'<p><b>Acceptable use.</b> Do not use the app to break the law, to harass anyone, or to harm a park. Do not photograph occupied sites, and leave a site the way you would want to find it.</p>'
+    +'<p><b>No warranty.</b> The app is provided as it is, free of charge, with no warranty of any kind. Park information can be incomplete or out of date. Book through Ontario Parks\u2019 official channels.</p>'
+    +'<p><b>Data loss.</b> Everything is stored on your device and nothing is backed up to a server, so your journal can be lost if you delete the app, clear site data or lose the device. Export regularly.</p>'
+    +'<p><b>Not affiliated.</b> This is an independent app, not made by or endorsed by Ontario Parks, the Government of Ontario or Apple. Map images come from CARTO, rendering OpenStreetMap data, \u00a9 OpenStreetMap contributors.</p>'
+    +'<p>The full terms are at katsuma.ca/terms.html. These terms are governed by the laws of Ontario, Canada.</p>'},
+  support:{t:'Support',h:''
+    +'<p><b>Reach me.</b> Email katsuma123@gmail.com and I will reply. Problems can also be filed at github.com/katsuma0/on-camp/issues.</p>'
+    +'<p><b>Moving to a new phone.</b> On the old phone: More, then Your data, then Export a backup. Send that file to yourself. On the new phone: Import a backup and pick the file. Importing the same file twice is safe.</p>'
+    +'<p><b>Deleted the app?</b> The journal went with it, because nothing is stored on a server. Export before you delete and before a phone upgrade. I have no copy and cannot recover anything.</p>'
+    +'<p><b>No signal?</b> Every park, site and rating works offline. Map tiles are the one exception: parts of the map you have never opened cannot be drawn without a connection, so load the map over wifi before you leave.</p>'
+    +'<p><b>Looks like the old version?</b> Close the app completely and open it again. It keeps its files on your device so it works offline, and swaps in updates on the next launch.</p>'
+    +'<p><b>Accessibility.</b> The app follows the system text size and works with VoiceOver. If something is hard to read, hit or hear announced, tell me. That is a bug, not a preference.</p>'},
+};
+function openLegal(key){
+  var pg=LEGAL_PAGES[key]; if(!pg) return;
+  var t=document.getElementById('legalTitle'), b=document.getElementById('legalBody');
+  if(t) t.textContent=TL(pg.t);
+  if(b) b.innerHTML=pg.h;
+  settingsBackdrop.classList.add('on');
+  var ls=document.getElementById('legalSheet');
+  ls.classList.add('on'); ls.scrollTop=0; lockScroll();
+}
+function closeLegal(){
+  var ls=document.getElementById('legalSheet');
+  settingsBackdrop.classList.remove('on'); ls.classList.remove('on'); ls.style.transform=''; unlockScroll();
+}
+document.querySelectorAll('[data-legal]').forEach(function(b){
+  b.addEventListener('click',function(){ buzz(6); openLegal(b.getAttribute('data-legal')); });
+});
+
 /* settings is a tab screen now, not a swipe-to-close sheet */
 function openVersions(){ settingsBackdrop.classList.add('on'); const vs=document.getElementById('versionsSheet'); vs.classList.add('on'); vs.scrollTop=0; lockScroll(); }
 function closeVersions(){ const vs=document.getElementById('versionsSheet'); settingsBackdrop.classList.remove('on'); vs.classList.remove('on'); vs.style.transform=''; unlockScroll(); }
 settingsBackdrop.addEventListener('click',closeVersions);
 makeSheetSwipe(document.getElementById('versionsSheet'),closeVersions);
-/* the rate picker shares the settings backdrop, so it needs its own dismiss */
-settingsBackdrop.addEventListener('click',closeRateSheet);
-makeSheetSwipe(document.getElementById('rateSheet'),closeRateSheet);
+/* the legal pages open in their own sheet, so leaving the app to read a
+   policy is never required; the same backdrop and swipe dismiss it */
+settingsBackdrop.addEventListener('click',closeLegal);
+makeSheetSwipe(document.getElementById('legalSheet'),closeLegal);
 /* the version chip left the title; version history opens from the About row */
 makeSheetSwipe(sheet,closeSheet);
 
