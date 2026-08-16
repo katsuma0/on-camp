@@ -30,7 +30,7 @@ function cidOf(pid,cgId){ return pid+'#'+cgId; }
 /* ================= state ================= */
 let state={site:{},campground:{},trail:{}};
 const KEY='ontario-scout-v2';
-var APP_VERSION='0.212';
+var APP_VERSION='0.213';
 
 /* ================= language =================
    English is the default; French is a choice in More. The dictionary is
@@ -1711,7 +1711,7 @@ var LEGAL_PAGES={
     +'<p><b>Not affiliated.</b> This is an independent app, not made by or endorsed by Ontario Parks, the Government of Ontario or Apple. Map images come from CARTO, rendering OpenStreetMap data, \u00a9 OpenStreetMap contributors.</p>'
     +'<p>The full terms are at katsuma.ca/terms.html. These terms are governed by the laws of Ontario, Canada.</p>'},
   support:{t:'Support',h:''
-    +'<p><b>Reach me.</b> Email katsuma123@gmail.com and I will reply. Problems can also be filed at github.com/katsuma0/on-camp/issues.</p>'
+    +'<p><b>Reach me.</b> Email katsuma123@gmail.com and I will reply. Problems can also be filed at github.com/katsuma0/on-site/issues.</p>'
     +'<p><b>Moving to a new phone.</b> On the old phone: More, then Your data, then Export a backup. Send that file to yourself. On the new phone: Import a backup and pick the file. Importing the same file twice is safe.</p>'
     +'<p><b>Deleted the app?</b> The journal went with it, because nothing is stored on a server. Export before you delete and before a phone upgrade. I have no copy and cannot recover anything.</p>'
     +'<p><b>No signal?</b> Every park, site and rating works offline. Map tiles are the one exception: parts of the map you have never opened cannot be drawn without a connection, so load the map over wifi before you leave.</p>'
@@ -1770,7 +1770,7 @@ makeSheetSwipe(sheet,closeSheet);
   window.addEventListener('hashchange',fromHash);
   fromHash();
 })();
-if(window.OnShare) OnShare.config({ app:'on-camp', base:'https://katsuma0.github.io/on-camp/', accent:'#284162' });
+if(window.OnShare) OnShare.config({ app:'on-camp', base:'https://katsuma.ca/on-site/', accent:'#284162' });
 (function(){ /* #/shared/<data> receive route */
   function fromSharedHash(){
     var m=(location.hash||'').match(/^#\/shared\/(.+)$/); if(!m) return;
