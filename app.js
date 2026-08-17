@@ -30,7 +30,7 @@ function cidOf(pid,cgId){ return pid+'#'+cgId; }
 /* ================= state ================= */
 let state={site:{},campground:{},trail:{}};
 const KEY='ontario-scout-v2';
-var APP_VERSION='0.214';
+var APP_VERSION='0.215';
 
 /* ================= language =================
    English is the default; French is a choice in More. The dictionary is
@@ -727,9 +727,9 @@ function openPark(pid){
     <div id="cgs"></div>
 
     ${(p.trails&&p.trails.length)?'<div class="seclabel">'+TL('Trails')+'</div><div id="trails"></div>':''}
-    <div id="wantSection" hidden><div class="seclabel">'+TL('Wishlist')+'</div><div id="wantList"></div></div>
-    <div id="topSection" hidden><div class="seclabel">'+TL('Top sites')+'</div><ul class="rank" id="topSites"></ul></div>
-    ${p.dayuse?'':`<div id="statsWrap" hidden><div class="seclabel">'+TL('Stats')+'</div>
+    <div id="wantSection" hidden><div class="seclabel">${TL('Wishlist')}</div><div id="wantList"></div></div>
+    <div id="topSection" hidden><div class="seclabel">${TL('Top sites')}</div><ul class="rank" id="topSites"></ul></div>
+    ${p.dayuse?'':`<div id="statsWrap" hidden><div class="seclabel">${TL('Stats')}</div>
     <details class="statscard"><summary>Park stats<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></summary><div class="statsbody" id="statsBody"></div></details></div>`}
 `;
   renderCgs(); renderTrails(); wireParkControls(); updatePark(); renderGlance();
